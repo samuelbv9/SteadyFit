@@ -6,27 +6,12 @@
 	objectVersion = 77;
 	objects = {
 
-/* Begin PBXContainerItemProxy section */
-		741AE31D2CB435C6007A6252 /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 741AE3042CB435C3007A6252 /* Project object */;
-			proxyType = 1;
-			remoteGlobalIDString = 741AE30B2CB435C3007A6252;
-			remoteInfo = SteadyFit;
-		};
-		741AE3272CB435C6007A6252 /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 741AE3042CB435C3007A6252 /* Project object */;
-			proxyType = 1;
-			remoteGlobalIDString = 741AE30B2CB435C3007A6252;
-			remoteInfo = SteadyFit;
-		};
-/* End PBXContainerItemProxy section */
+/* Begin PBXBuildFile section */
+		74AB62BD2CB4461300E6B1C1 /* FirebaseAuth in Frameworks */ = {isa = PBXBuildFile; productRef = 74AB62BC2CB4461300E6B1C1 /* FirebaseAuth */; };
+/* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
 		741AE30C2CB435C3007A6252 /* SteadyFit.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = SteadyFit.app; sourceTree = BUILT_PRODUCTS_DIR; };
-		741AE31C2CB435C6007A6252 /* SteadyFitTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = SteadyFitTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
-		741AE3262CB435C6007A6252 /* SteadyFitUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = SteadyFitUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
@@ -42,20 +27,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-		741AE3192CB435C6007A6252 /* Frameworks */ = {
-			isa = PBXFrameworksBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-		741AE3232CB435C6007A6252 /* Frameworks */ = {
-			isa = PBXFrameworksBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
+				74AB62BD2CB4461300E6B1C1 /* FirebaseAuth in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -66,6 +38,7 @@
 			isa = PBXGroup;
 			children = (
 				741AE30E2CB435C3007A6252 /* SteadyFit */,
+				74AB62BB2CB4461300E6B1C1 /* Frameworks */,
 				741AE30D2CB435C3007A6252 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -74,10 +47,15 @@
 			isa = PBXGroup;
 			children = (
 				741AE30C2CB435C3007A6252 /* SteadyFit.app */,
-				741AE31C2CB435C6007A6252 /* SteadyFitTests.xctest */,
-				741AE3262CB435C6007A6252 /* SteadyFitUITests.xctest */,
 			);
 			name = Products;
+			sourceTree = "<group>";
+		};
+		74AB62BB2CB4461300E6B1C1 /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			name = Frameworks;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -100,50 +78,11 @@
 			);
 			name = SteadyFit;
 			packageProductDependencies = (
+				74AB62BC2CB4461300E6B1C1 /* FirebaseAuth */,
 			);
 			productName = SteadyFit;
 			productReference = 741AE30C2CB435C3007A6252 /* SteadyFit.app */;
 			productType = "com.apple.product-type.application";
-		};
-		741AE31B2CB435C6007A6252 /* SteadyFitTests */ = {
-			isa = PBXNativeTarget;
-			buildConfigurationList = 741AE3332CB435C6007A6252 /* Build configuration list for PBXNativeTarget "SteadyFitTests" */;
-			buildPhases = (
-				741AE3182CB435C6007A6252 /* Sources */,
-				741AE3192CB435C6007A6252 /* Frameworks */,
-				741AE31A2CB435C6007A6252 /* Resources */,
-			);
-			buildRules = (
-			);
-			dependencies = (
-				741AE31E2CB435C6007A6252 /* PBXTargetDependency */,
-			);
-			name = SteadyFitTests;
-			packageProductDependencies = (
-			);
-			productName = SteadyFitTests;
-			productReference = 741AE31C2CB435C6007A6252 /* SteadyFitTests.xctest */;
-			productType = "com.apple.product-type.bundle.unit-test";
-		};
-		741AE3252CB435C6007A6252 /* SteadyFitUITests */ = {
-			isa = PBXNativeTarget;
-			buildConfigurationList = 741AE3362CB435C6007A6252 /* Build configuration list for PBXNativeTarget "SteadyFitUITests" */;
-			buildPhases = (
-				741AE3222CB435C6007A6252 /* Sources */,
-				741AE3232CB435C6007A6252 /* Frameworks */,
-				741AE3242CB435C6007A6252 /* Resources */,
-			);
-			buildRules = (
-			);
-			dependencies = (
-				741AE3282CB435C6007A6252 /* PBXTargetDependency */,
-			);
-			name = SteadyFitUITests;
-			packageProductDependencies = (
-			);
-			productName = SteadyFitUITests;
-			productReference = 741AE3262CB435C6007A6252 /* SteadyFitUITests.xctest */;
-			productType = "com.apple.product-type.bundle.ui-testing";
 		};
 /* End PBXNativeTarget section */
 
@@ -158,17 +97,9 @@
 					741AE30B2CB435C3007A6252 = {
 						CreatedOnToolsVersion = 16.0;
 					};
-					741AE31B2CB435C6007A6252 = {
-						CreatedOnToolsVersion = 16.0;
-						TestTargetID = 741AE30B2CB435C3007A6252;
-					};
-					741AE3252CB435C6007A6252 = {
-						CreatedOnToolsVersion = 16.0;
-						TestTargetID = 741AE30B2CB435C3007A6252;
-					};
 				};
 			};
-			buildConfigurationList = 741AE3072CB435C3007A6252 /* Build configuration list for PBXProject "SteadyFit" */;
+			buildConfigurationList = 741AE3072CB435C3007A6252 /* Build configuration list for PBXProject "SteadFit" */;
 			developmentRegion = en;
 			hasScannedForEncodings = 0;
 			knownRegions = (
@@ -177,34 +108,21 @@
 			);
 			mainGroup = 741AE3032CB435C3007A6252;
 			minimizedProjectReferenceProxies = 1;
+			packageReferences = (
+				74D2626E2CB444EF00A12727 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */,
+			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 741AE30D2CB435C3007A6252 /* Products */;
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
 				741AE30B2CB435C3007A6252 /* SteadyFit */,
-				741AE31B2CB435C6007A6252 /* SteadyFitTests */,
-				741AE3252CB435C6007A6252 /* SteadyFitUITests */,
 			);
 		};
 /* End PBXProject section */
 
 /* Begin PBXResourcesBuildPhase section */
 		741AE30A2CB435C3007A6252 /* Resources */ = {
-			isa = PBXResourcesBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-		741AE31A2CB435C6007A6252 /* Resources */ = {
-			isa = PBXResourcesBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-		741AE3242CB435C6007A6252 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -221,34 +139,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-		741AE3182CB435C6007A6252 /* Sources */ = {
-			isa = PBXSourcesBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-		741AE3222CB435C6007A6252 /* Sources */ = {
-			isa = PBXSourcesBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
 /* End PBXSourcesBuildPhase section */
-
-/* Begin PBXTargetDependency section */
-		741AE31E2CB435C6007A6252 /* PBXTargetDependency */ = {
-			isa = PBXTargetDependency;
-			target = 741AE30B2CB435C3007A6252 /* SteadyFit */;
-			targetProxy = 741AE31D2CB435C6007A6252 /* PBXContainerItemProxy */;
-		};
-		741AE3282CB435C6007A6252 /* PBXTargetDependency */ = {
-			isa = PBXTargetDependency;
-			target = 741AE30B2CB435C3007A6252 /* SteadyFit */;
-			targetProxy = 741AE3272CB435C6007A6252 /* PBXContainerItemProxy */;
-		};
-/* End PBXTargetDependency section */
 
 /* Begin XCBuildConfiguration section */
 		741AE32E2CB435C6007A6252 /* Debug */ = {
@@ -428,82 +319,10 @@
 			};
 			name = Release;
 		};
-		741AE3342CB435C6007A6252 /* Debug */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				BUNDLE_LOADER = "$(TEST_HOST)";
-				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = 4PMVB9WLQ4;
-				GENERATE_INFOPLIST_FILE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 18.0;
-				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = edu.umich.sbechar.SteadyFitTests;
-				PRODUCT_NAME = "$(TARGET_NAME)";
-				SWIFT_EMIT_LOC_STRINGS = NO;
-				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = "1,2";
-				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/SteadyFit.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/SteadyFit";
-			};
-			name = Debug;
-		};
-		741AE3352CB435C6007A6252 /* Release */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				BUNDLE_LOADER = "$(TEST_HOST)";
-				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = 4PMVB9WLQ4;
-				GENERATE_INFOPLIST_FILE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 18.0;
-				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = edu.umich.sbechar.SteadyFitTests;
-				PRODUCT_NAME = "$(TARGET_NAME)";
-				SWIFT_EMIT_LOC_STRINGS = NO;
-				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = "1,2";
-				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/SteadyFit.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/SteadyFit";
-			};
-			name = Release;
-		};
-		741AE3372CB435C6007A6252 /* Debug */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = 4PMVB9WLQ4;
-				GENERATE_INFOPLIST_FILE = YES;
-				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = edu.umich.sbechar.SteadyFitUITests;
-				PRODUCT_NAME = "$(TARGET_NAME)";
-				SWIFT_EMIT_LOC_STRINGS = NO;
-				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = "1,2";
-				TEST_TARGET_NAME = SteadyFit;
-			};
-			name = Debug;
-		};
-		741AE3382CB435C6007A6252 /* Release */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = 4PMVB9WLQ4;
-				GENERATE_INFOPLIST_FILE = YES;
-				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = edu.umich.sbechar.SteadyFitUITests;
-				PRODUCT_NAME = "$(TARGET_NAME)";
-				SWIFT_EMIT_LOC_STRINGS = NO;
-				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = "1,2";
-				TEST_TARGET_NAME = SteadyFit;
-			};
-			name = Release;
-		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
-		741AE3072CB435C3007A6252 /* Build configuration list for PBXProject "SteadyFit" */ = {
+		741AE3072CB435C3007A6252 /* Build configuration list for PBXProject "SteadFit" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				741AE32E2CB435C6007A6252 /* Debug */,
@@ -521,25 +340,26 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		741AE3332CB435C6007A6252 /* Build configuration list for PBXNativeTarget "SteadyFitTests" */ = {
-			isa = XCConfigurationList;
-			buildConfigurations = (
-				741AE3342CB435C6007A6252 /* Debug */,
-				741AE3352CB435C6007A6252 /* Release */,
-			);
-			defaultConfigurationIsVisible = 0;
-			defaultConfigurationName = Release;
-		};
-		741AE3362CB435C6007A6252 /* Build configuration list for PBXNativeTarget "SteadyFitUITests" */ = {
-			isa = XCConfigurationList;
-			buildConfigurations = (
-				741AE3372CB435C6007A6252 /* Debug */,
-				741AE3382CB435C6007A6252 /* Release */,
-			);
-			defaultConfigurationIsVisible = 0;
-			defaultConfigurationName = Release;
-		};
 /* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		74D2626E2CB444EF00A12727 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/firebase/firebase-ios-sdk";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 11.3.0;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		74AB62BC2CB4461300E6B1C1 /* FirebaseAuth */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 74D2626E2CB444EF00A12727 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
+			productName = FirebaseAuth;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = 741AE3042CB435C3007A6252 /* Project object */;
 }
