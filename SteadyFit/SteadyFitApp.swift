@@ -17,7 +17,7 @@ struct SteadyFitApp: App {
     
     var body: some Scene {
         WindowGroup {
-            ContentView()
+            LoginView()
         }
     }
 }
