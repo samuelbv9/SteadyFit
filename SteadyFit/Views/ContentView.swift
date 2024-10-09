@@ -32,25 +32,23 @@ struct ContentView: View {
     }
     
     var content: some View {
-        VStack {
-            TextField("Email", text: $email)
-            
-            SecureField("Password", text: $password)
-            
-            Button {
-                register()
-            } label: {
-                Text("Sign Up")
+        NavigationView {
+            VStack {
+                TextField("Email", text: $email)
+                
+                SecureField("Password", text: $password)
+                
+                NavigationLink("Register", destination: RegisterView())
+                
+                Button {
+                    login()
+                } label: {
+                    Text("Already have an account? Login")
+                }
+                
             }
-            
-            Button {
-                login()
-            } label: {
-                Text("Already have an account? Login")
-            }
-
+            .frame(width: 350)
         }
-        .frame(width: 350)
     }
     
     func login() {
