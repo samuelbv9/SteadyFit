@@ -19,9 +19,10 @@ struct LoginRegisterButton: View {
         } label: {
             ZStack {
                 RoundedRectangle(cornerRadius: 10)
-                    .foregroundColor(Color.blue)
+                    .foregroundColor(background)
                     .frame(height: 50)
                 Text(title)
+                    .foregroundColor(Color.white)
             }
         }
     }

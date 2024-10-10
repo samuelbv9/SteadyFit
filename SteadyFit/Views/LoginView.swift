@@ -10,17 +10,25 @@ import SwiftUI
 import FirebaseAuth
 
 struct LoginView: View {
-    @State private var email = ""
-    @State private var password = ""
+    @StateObject var viewModel = LoginViewModel()
     @State private var userIsLoggedIn = false
     var body: some View {
         NavigationView {
             VStack {
-                TextField("Email", text: $email)
+                if !viewModel.errorMessage.isEmpty {
+                    Text(viewModel.errorMessage)
+                        .foregroundColor(Color.red)
+                }
                 
-                SecureField("Password", text: $password)
-
-                LoginRegisterButton(title: "Login", background: .red, action: login)
+                TextField("Email", text: $viewModel.email)
+                    .autocorrectionDisabled()
+                    .autocapitalization(.none)
+                
+                SecureField("Password", text: $viewModel.password)
+                    .autocorrectionDisabled()
+                    .autocapitalization(.none)
+                
+                LoginRegisterButton(title: "Login", background: .blue, action: viewModel.login)
                     .padding()
                 
                 NavigationLink("Register", destination: RegisterView())
@@ -29,7 +37,7 @@ struct LoginView: View {
         }
     }
     func login() {
-        Auth.auth().signIn(withEmail: email, password: password) { result, error in
+        Auth.auth().signIn(withEmail: viewModel.email, password: viewModel.password) { result, error in
             if error != nil {
                 // show some popup maybe?
                 print(error!.localizedDescription)

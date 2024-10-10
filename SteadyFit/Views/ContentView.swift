@@ -5,18 +5,18 @@
 //  Created by Samuel Bechar on 10/7/24.
 //
 
+import Foundation
 import SwiftUI
 import FirebaseAuth
 
 struct ContentView: View {
-    @State private var email = ""
-    @State private var password = ""
-    @State private var userIsLoggedIn = false
+    @StateObject var viewModel = ContentViewModel()
+
     var body: some View {
-        if userIsLoggedIn {
+        if viewModel.isSignedIn {
             otherPage
         } else {
-            content
+            LoginView()
         }
     }
     
@@ -30,56 +30,11 @@ struct ContentView: View {
             }
         }
     }
-    
-    var content: some View {
-        NavigationView {
-            VStack {
-                TextField("Email", text: $email)
-                
-                SecureField("Password", text: $password)
-                
-                NavigationLink("Register", destination: RegisterView())
-                
-                Button {
-                    login()
-                } label: {
-                    Text("Already have an account? Login")
-                }
-                
-            }
-            .frame(width: 350)
-        }
-    }
-    
-    func login() {
-        Auth.auth().signIn(withEmail: email, password: password) { result, error in
-            if error != nil {
-                // show some popup maybe?
-                print(error!.localizedDescription)
-            }
-            else {
-                userIsLoggedIn = true
-            }
-        }
-    }
-    
-    func register() {
-        Auth.auth().createUser(withEmail: email, password: password) { result, error in
-            if error != nil {
-                // show some popup maybe?
-                print(error!.localizedDescription)
-            }
-            else {
-                userIsLoggedIn = true
-            }
-            
-        }
-    }
-    
+        
     func logout() {
         do {
             try Auth.auth().signOut()
-            userIsLoggedIn = false
+            print("Singed Out")
         }
         catch {
             print("Failed to sign out: \(error.localizedDescription)")
