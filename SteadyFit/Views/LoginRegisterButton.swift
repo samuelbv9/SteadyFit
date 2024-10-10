@@ -4,6 +4,8 @@
 //
 //  Created by Brenden Saur on 10/9/24.
 //
+// This is a reusable button for login and register
+// Use: LoginRegisterButton(title: "Text", background: .blue, action: viewModel.someFunc)
 
 import SwiftUI
 

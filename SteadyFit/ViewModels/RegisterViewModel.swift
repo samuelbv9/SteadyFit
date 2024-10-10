@@ -4,22 +4,27 @@
 //
 //  Created by Brenden Saur on 10/9/24.
 //
+// This is the View Model for RegisterView
+//
+// TODOS:
+// 1. Show a pop-up for FirebaseAuth failure
 
 import Foundation
 import FirebaseAuth
 
 class RegisterViewModel: ObservableObject {
+    // Public vars
     @Published var email = ""
     @Published var password = ""
     @Published var errorMessage = ""
     
+    // Registers the user using FirebaseAuth
     func register() {
         guard validate() else {
             return
         }
         Auth.auth().createUser(withEmail: email, password: password) { result, error in
             if error != nil {
-                // show some popup maybe?
                 print("FAILED REGISTER!!")
                 print(error!.localizedDescription)
             }
@@ -30,6 +35,7 @@ class RegisterViewModel: ObservableObject {
         }
     }
     
+    // Validates imput meets criteria
     private func validate() -> Bool {
         guard !email.trimmingCharacters(in: .whitespaces).isEmpty,
               !password.trimmingCharacters(in: .whitespaces).isEmpty else {
@@ -39,6 +45,11 @@ class RegisterViewModel: ObservableObject {
         
         guard email.contains("@") && email.contains(".") else {
             errorMessage = "Invalid Email"
+            return false
+        }
+        
+        guard password.count >= 6 else {
+            errorMessage = "Password must be 6 or more characters"
             return false
         }
         

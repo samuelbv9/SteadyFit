@@ -4,17 +4,23 @@
 //
 //  Created by Brenden Saur on 10/9/24.
 //
+// This is the View Model for LoginView
+//
+// TODOS:
+// 1. Make a pop-up for incorrect password or email
 
 import Foundation
 import FirebaseAuth
 
 class LoginViewModel: ObservableObject {
+    // Public vars
     @Published var email = ""
     @Published var password = ""
     @Published var errorMessage = ""
     
     init() {}
     
+    // Logs in user using FirebaseAuth
     func login(){
         guard validate() else {
             return
@@ -32,6 +38,7 @@ class LoginViewModel: ObservableObject {
         }
     }
     
+    // Validates imput meets criteria
     private func validate() -> Bool {
         guard !email.trimmingCharacters(in: .whitespaces).isEmpty,
               !password.trimmingCharacters(in: .whitespaces).isEmpty else {

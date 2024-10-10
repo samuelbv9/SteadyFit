@@ -4,6 +4,7 @@
 //
 //  Created by Brenden Saur on 10/9/24.
 //
+// This is the Register Screen
 
 import Foundation
 import SwiftUI
@@ -14,6 +15,12 @@ struct RegisterView: View {
     var body: some View {
         NavigationView {
             VStack {
+                // Shows Error Message From viewModel
+                if !viewModel.errorMessage.isEmpty {
+                    Text(viewModel.errorMessage)
+                        .foregroundColor(Color.red)
+                }
+                
                 TextField("Email", text: $viewModel.email)
                     .autocorrectionDisabled()
                     .autocapitalization(.none)
