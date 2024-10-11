@@ -17,16 +17,16 @@ struct NavBarView: View {
                 Spacer()
                 
                 HStack {
-                    Image("calendar-weight-hd")
+                    Image("home-icon-hd")
                         .resizable()
                         .padding(.bottom, 35)
-                        .padding(.trailing, 20)
+                        .padding(.trailing, 30)
                         .frame(width: 70, height: 70)
                     
                     Image("vert-line")
                         .padding(.bottom, 35)
                     
-                    Image("user-alt")
+                    Image("calendar-weight-hd")
                         .resizable()
                         .padding(.bottom, 35)
                         .padding(.trailing, 20)
@@ -36,7 +36,7 @@ struct NavBarView: View {
                     Image("vert-line")
                         .padding(.bottom, 35)
                     
-                    Image("home-icon-hd")
+                    Image("user-alt")
                         .resizable()
                         .padding(.bottom, 35)
                         .padding(.leading, 30)
