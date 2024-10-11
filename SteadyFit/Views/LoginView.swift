@@ -16,6 +16,9 @@ struct LoginView: View {
     var body: some View {
         NavigationView {
             VStack {
+                HeaderView()
+                Spacer()
+                
                 // Shows Error Message From viewModel
                 if !viewModel.errorMessage.isEmpty {
                     Text(viewModel.errorMessage)
@@ -34,8 +37,12 @@ struct LoginView: View {
                     .padding()
                 
                 NavigationLink("Register", destination: RegisterView())
+                
+                Spacer()
+                NavBarView()
             }
             .frame(width: 350)
+            .ignoresSafeArea()
         }
     }
 }
