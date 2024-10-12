@@ -23,28 +23,7 @@ struct ContentView: View {
             LoginView()
         }
     }
-    
-    var otherPage: some View {
-        VStack {
-            Text("Logged In")
-            Button {
-                logout()
-            } label: {
-                Text("Log Out")
-            }
-        }
-    }
-        
-    func logout() {
-        do {
-            try Auth.auth().signOut()
-            print("Singed Out")
-        }
-        catch {
-            print("Failed to sign out: \(error.localizedDescription)")
-        }
             
-    }
 }
 
 #Preview {

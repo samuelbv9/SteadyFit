@@ -4,11 +4,12 @@
 //
 //  Created by Brenden Saur on 10/11/24.
 //
+//  This is the Profile Screen
 
 import SwiftUI
 
 struct ProfileView: View {
-    @StateObject var viewModel = HomeViewModel()
+    @StateObject var viewModel = ProfileViewModel()
     
     var body: some View {
         NavigationView {
