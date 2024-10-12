@@ -6,12 +6,32 @@ import random
 import string
 
 def goal(request):
+    """
+    Fetches goal details for the current game
+
+    Request must contain: user_id, game_code
+    """
     if request.method != 'GET':
         return HttpResponse(status=404)
-    
-    cursor = connection.cursor()
 
-    pass
+    cursor = connection.cursor()
+    json_data = json.loads(request.body)
+    game_code = json_data["game_code"]
+    user_id = json_data["user_id"]
+
+    cursor.execute("SELECT totalDistance, totalFrequency FROM GameParticipants WHERE gameCode = %s AND userId = %s", (game_code,user_id))
+    goal = cursor.fetchone()
+    cursor.execute("SELECT exerciseType, frequency, duration, FROM Games WHERE gamecode = %s", (game_code))
+    gameInfo = cursor.fetchone()
+    response_data = {
+                        "exerciseType": gameInfo[0],
+                        "currentDistance": goal[0],
+                        "currentFrequency": goal[1], 
+                        "totalDistance": gameInfo[2],
+                        "totalFrequency": gameInfo[1]
+                    }
+
+    return JsonResponse(response_data)
 
 def past_games(request):
     if request.method != 'GET':
@@ -33,7 +53,7 @@ def active_games(request):
 def create_game(request):
     """
     Creates a new game and adds the current user to the game.
-    
+
     Request must contain: user_id, bet_amount, exercise_type,
     frequency, distance, duration, adaptive_goals, start_date
     """
@@ -50,7 +70,7 @@ def create_game(request):
     user_id, bet_amount, exercise_type, frequency, \
     distance, duration, adaptive_goals, start_date = (
         json_data.get(key) for key in [
-            "user_id", "bet_amount", "exercise_type", "frequency", 
+            "user_id", "bet_amount", "exercise_type", "frequency",
             "distance", "duration", "adaptive_goals", "start_date"
         ]
     )
@@ -58,7 +78,7 @@ def create_game(request):
     # Add game to Games table
     cursor.execute("INSERT INTO Games (betAmount, exerciseType, frequency, \
                    distance, duration, adaptiveGoals, startDate) \
-                   VALUES (%s, %s, %s, %s, %s, %s, %s)", 
+                   VALUES (%s, %s, %s, %s, %s, %s, %s)",
                    (bet_amount, exercise_type, frequency, distance,
                     duration, adaptive_goals, start_date))
 
@@ -100,7 +120,7 @@ def bet_details(request):
     cursor.execute("SELECT userID, balance FROM GameParticipants WHERE gameCode = %s", (game_code,))
     participants = cursor.fetchall()
     response_data = [
-        {"userID": row[0], "balance": row[1]} 
+        {"userID": row[0], "balance": row[1]}
         for row in participants
     ]
 
