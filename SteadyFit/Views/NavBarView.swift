@@ -8,6 +8,9 @@
 import SwiftUI
 
 struct NavBarView: View {
+    //@StateObject var viewModel = NavBarViewModel()
+    let viewIndex: Int
+
     var body: some View {
         ZStack {
             RoundedRectangle(cornerRadius: 0)
@@ -17,17 +20,27 @@ struct NavBarView: View {
                 Spacer()
                 
                 HStack {
-                    Image("home-icon-hd")
-                        .resizable()
-                        .padding(.bottom, 35)
-                        .padding(.trailing, 30)
-                        .frame(width: 70, height: 70)
+                    NavigationLink(destination: HomeView().navigationBarBackButtonHidden(true)) {
+                        Image(viewIndex == 0 ? "home-icon-blue" : "home-icon-hd")
+                            .resizable()
+                            .background(
+                                RoundedRectangle(cornerRadius: 10)
+                                    .fill(viewIndex == 0 ? Color.white : Color.clear)
+                            )
+                            .padding(.bottom, 35)
+                            .padding(.trailing, 30)
+                            .frame(width: 70, height: 70)
+                    }
                     
                     Image("vert-line")
                         .padding(.bottom, 35)
                     
                     Image("calendar-weight-hd")
                         .resizable()
+                        .background(
+                            RoundedRectangle(cornerRadius: 10)
+                                .fill(viewIndex == 1 ? Color.white : Color.clear)
+                        )
                         .padding(.bottom, 35)
                         .padding(.trailing, 20)
                         .padding(.leading, 20)
@@ -36,11 +49,17 @@ struct NavBarView: View {
                     Image("vert-line")
                         .padding(.bottom, 35)
                     
-                    Image("user-alt")
-                        .resizable()
-                        .padding(.bottom, 35)
-                        .padding(.leading, 30)
-                        .frame(width: 70, height: 70)
+                    NavigationLink(destination: ProfileView().navigationBarBackButtonHidden(true)) {
+                        Image("user-alt")
+                            .resizable()
+                            .background(
+                                RoundedRectangle(cornerRadius: 10)
+                                    .fill(viewIndex == 2 ? Color.white : Color.clear)
+                            )
+                            .padding(.bottom, 35)
+                            .padding(.leading, 30)
+                            .frame(width: 70, height: 70)
+                    }
                 }
             }
         }
@@ -50,5 +69,5 @@ struct NavBarView: View {
 }
 
 #Preview {
-    NavBarView()
+    NavBarView(viewIndex: 0)
 }

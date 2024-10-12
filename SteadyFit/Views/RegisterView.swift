@@ -15,6 +15,9 @@ struct RegisterView: View {
     var body: some View {
         NavigationView {
             VStack {
+                HeaderView()
+                Spacer()
+                
                 // Shows Error Message From viewModel
                 if !viewModel.errorMessage.isEmpty {
                     Text(viewModel.errorMessage)
@@ -32,7 +35,9 @@ struct RegisterView: View {
                 LoginRegisterButton(title: "Sign Up", background: .green, action: viewModel.register)
                     .padding()
                 
-                NavigationLink("Already have an account? Log in", destination: LoginView())
+                NavigationLink("Already have an account? Log in", destination: LoginView().navigationBarBackButtonHidden(true))
+                
+                Spacer()
                 
             }
             .frame(width: 350)

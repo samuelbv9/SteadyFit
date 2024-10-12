@@ -39,7 +39,6 @@ struct LoginView: View {
                 NavigationLink("Register", destination: RegisterView())
                 
                 Spacer()
-                NavBarView()
             }
             .frame(width: 350)
             .ignoresSafeArea()

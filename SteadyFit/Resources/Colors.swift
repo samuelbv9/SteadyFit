@@ -10,4 +10,6 @@ import SwiftUI
 
 extension Color {
     static let steadyBlue = Color(red: 133/255, green: 197/255, blue: 243/255)
+    
+    static let deepBlue = Color(red: 68/255, green: 138/255, blue: 188/255)
 }

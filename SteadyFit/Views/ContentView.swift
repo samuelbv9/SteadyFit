@@ -18,7 +18,7 @@ struct ContentView: View {
 
     var body: some View {
         if viewModel.isSignedIn {
-            otherPage
+            HomeView()
         } else {
             LoginView()
         }
