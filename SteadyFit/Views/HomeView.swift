@@ -38,10 +38,26 @@ struct HomeView: View {
                             
                             Spacer()
                             
-                            // This will change to the Join a game button
-                            LoginRegisterButton(title: "Logout", background: .deepBlue, action: viewModel.logout)
-                                .padding(.bottom, 10)
-                            
+                            Button(action: {
+                                // Action can be left empty if navigation is the only purpose
+                            }) {
+                                NavigationLink(destination: CreateGameView()) {
+                                    HStack {
+                                        Text("Join a Game")
+                                            .foregroundColor(.white)
+                                            .font(.custom("Poppins-SemiBold", size: 15))
+                                            .kerning(-0.3) // Decreases letter spacing
+                                        Spacer()
+                                        Image(systemName: "chevron.right")
+                                            .foregroundColor(.white)
+                                    }
+                                    .padding()
+                                    .frame(maxWidth: .infinity)
+                                    .background(Color.deepBlue)
+                                    .cornerRadius(10)
+                                }
+                            }
+                            .padding(.bottom, 10)
                             
                             
                             Button(action: {
@@ -49,7 +65,7 @@ struct HomeView: View {
                             }) {
                                 NavigationLink(destination: CreateGameView()) {
                                     HStack {
-                                        Text("Create Game")
+                                        Text("Create a Game")
                                             .foregroundColor(.deepBlue)
                                             .font(.custom("Poppins-SemiBold", size: 15))
                                             .kerning(-0.3) // Decreases letter spacing
