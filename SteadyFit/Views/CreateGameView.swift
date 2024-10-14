@@ -19,96 +19,59 @@ struct CreateGameView: View {
     
     let exerciseOptions = ["Choose an exercise", "Swimming", "Running/Walking", "Strength Training"]
     let timeUnits = ["unit", "day(s)", "week(s)", "month(s)"]
-    
 
     var body: some View {
         VStack {
-            /// HEADER
-            Text("SteadyFit")
-                .font(.largeTitle)
-                .fontWeight(.bold)
-                .foregroundColor(.white)
-                .frame(maxWidth: .infinity)
-                .padding()
-                .background(Color(red: 0.5215686275, green: 0.7725490196, blue: 0.9529411765))
-
-            Spacer().frame(height: 30)
-
-            /// MAIN CONTENT
-            VStack(alignment: .leading) {
-                Text("GOAL SETTING")
-                    .font(.subheadline)
-                Text("Create a Game")
-                    .font(.largeTitle)
-                    .fontWeight(.semibold)
-                
-                /// TYPE OF EXERCISE
+            HeaderView()
+            VStack (alignment: .leading){
+                VStack(alignment: .leading) {
+                    Text("GOAL SETTING")
+                        .font(.subheadline)
+                    Text("Create a Game")
+                        .font(.largeTitle)
+                        .fontWeight(.semibold)
+                }
                 HStack {
                     Text("Type of Exercise:")
                     Spacer()
-                    Picker("Select an option", selection: $selectedExerciseOption) {
-                        ForEach(exerciseOptions, id: \.self) { option in
-                            Text(option)
-                        }
-                    }
-                    .pickerStyle(MenuPickerStyle())
+                    DropdownPicker(selection: $selectedExerciseOption, options: exerciseOptions)
                 }
-                /// FREQUENCY OF EXERCISE
                 HStack {
                     Text("Frequency:")
                     Spacer()
-                    TextField("Enter an integer", text: $frequencyStr)
-                        .keyboardType(.numberPad)
-                                        .textFieldStyle(RoundedBorderTextFieldStyle())
-                                        .padding()
-                                        .onChange(of: frequencyStr) { newValue in
-                                            if let number = Int(newValue) {
-                                                frequencyInt = number
-                                            } else {
-                                                frequencyInt = nil
-                                            }
-                                        }
-                    Spacer()
+                    NumberInputField(inputText: $frequencyStr, outputInt: $frequencyInt)
                     Text("/")
-                    Spacer()
-                    Picker("Select an option", selection: $selectedFrequencyUnitOption) {
-                        ForEach(timeUnits, id: \.self) { option in
-                            Text(option)
-                        }
-                    }
+                    DropdownPicker(selection: $selectedFrequencyUnitOption, options: timeUnits)
                 }
-                /// CHALLENGE DURATION
                 HStack {
                     Text("Challenge Duration: ")
                     Spacer()
-                    TextField("Enter an integer", text: $durationStr)
-                        .keyboardType(.numberPad)
-                                        .textFieldStyle(RoundedBorderTextFieldStyle())
-                                        .padding()
-                                        .onChange(of: durationStr) { newValue in
-                                            if let number = Int(newValue) {
-                                                durationInt = number
-                                            } else {
-                                                durationInt = nil
-                                            }
-                                        }
-                    Spacer()
-                    Picker("Select an option", selection: $selectedDurationUnitOption) {
-                        ForEach(timeUnits, id: \.self) { option in
-                            Text(option)
-                        }
-                    }
+                    NumberInputField(inputText: $durationStr, outputInt: $durationInt).frame(width: 100)
+                    DropdownPicker(selection: $selectedDurationUnitOption, options: timeUnits)
+                    
                 }
+                CheckboxView(isChecked: $adaptiveGoalsChecked, checkboxText: "Enable Adaptive Goals")
             }
-            .padding(.horizontal)
-            .padding(.bottom, 20)
+            .padding(.top, 10.0)
+            Spacer()
+            ZStack {
+                RoundedRectangle(cornerRadius: 0)
+                    .foregroundColor(.steadyDarkBlue)
+                    HStack() {
+                        Text("Next")
+                            .font(.custom("Poppins-Bold", size: 25))
+                            .foregroundColor(Color.white)
+                    }
+            }
+            .frame(width: UIScreen.main.bounds.width * 3,
+                   height: 80)
+            NavBarView()
         }
-        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
+        .frame(width: 350)
+        .ignoresSafeArea()
     }
 }
 
 #Preview {
     CreateGameView()
 }
-
-// red: 133, 197, 243
