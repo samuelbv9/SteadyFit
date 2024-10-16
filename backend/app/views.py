@@ -71,7 +71,7 @@ def game_details(request):
     pass
 
 
-@csrf_exempt 
+# @csrf_exempt 
 # needed for testing with curl 
 def create_game(request):
     """
