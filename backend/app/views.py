@@ -141,8 +141,11 @@ def bet_details(request):
         return HttpResponse(status=404)
 
     cursor = connection.cursor()
-    json_data = json.loads(request.body)
-    game_code = json_data["game_code"]
+    # json_data = json.loads(request.body)
+    # game_code = json_data["game_code"]
+
+    # approach 2
+    game_code = request.GET.get("game_code")
 
     if not game_code:
         return HttpResponse(status=400)        
