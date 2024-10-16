@@ -45,13 +45,13 @@ struct NavBarView: View {
                         .padding(.bottom, 35)
                         .padding(.trailing, 20)
                         .padding(.leading, 20)
-                        .frame(width: 70, height: 65)
+                        .frame(width: 80, height: 75)
                     
                     Image("vert-line")
                         .padding(.bottom, 35)
                     
                     NavigationLink(destination: ProfileView().navigationBarBackButtonHidden(true)) {
-                        Image("user-alt")
+                        Image(viewIndex == 2 ? "user-hd-blue" : "user-hd")
                             .resizable()
                             .background(
                                 RoundedRectangle(cornerRadius: 10)
