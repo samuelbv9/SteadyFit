@@ -69,6 +69,7 @@ def game_details(request):
     pass
 
 
+@csrf_exempt
 def create_game(request):
     """
     Creates a new game and adds the current user to the game.
@@ -85,11 +86,12 @@ def create_game(request):
     # check for duplicate game codes
     # while cursor.execute("SELECT * FROM Games WHERE gameCode = %s", (game_code,)).fetchall():
     #     game_code = ''.join(random.choice(string.ascii_letters + string.digits) for _ in range(8))
-    game_code = ''.join(random.choice(string.ascii_letters + string.digits) for _ in range(8))
-    cursor.execute("SELECT * FROM Games WHERE gameCode = %s", (game_code,))
-    while cursor.fetchall():  
-        game_code = ''.join(random.choice(string.ascii_letters + string.digits) for _ in range(8))
-        cursor.execute("SELECT * FROM Games WHERE gameCode = %s", (game_code,))
+
+    # game_code = ''.join(random.choice(string.ascii_letters + string.digits) for _ in range(8))
+    # cursor.execute("SELECT * FROM Games WHERE gameCode = %s", (game_code,))
+    # while cursor.fetchall():  
+    #     game_code = ''.join(random.choice(string.ascii_letters + string.digits) for _ in range(8))
+    #     cursor.execute("SELECT * FROM Games WHERE gameCode = %s", (game_code,))
 
     user_id, bet_amount, exercise_type, frequency, \
     distance, duration, adaptive_goals, start_date = (
@@ -98,7 +100,7 @@ def create_game(request):
             "distance", "duration", "adaptive_goals", "start_date"
         ]
     )
-    
+    game_code = "GAME004"
     # Add game to Games table
     cursor.execute("INSERT INTO Games (gameCode, betAmount, exerciseType, frequency, \
                    distance, duration, adaptiveGoals, startDate) \
