@@ -100,7 +100,7 @@ def create_game(request):
             "distance", "duration", "adaptive_goals", "start_date"
         ]
     )
-    game_code = "GAME004"
+    game_code = "GAME005"
     # Add game to Games table
     cursor.execute("INSERT INTO Games (gameCode, betAmount, exerciseType, frequency, \
                    distance, duration, adaptiveGoals, startDate) \
@@ -113,7 +113,9 @@ def create_game(request):
                    (game_code, user_id))
 
     # should we return some type of confirmation details or the game code so the frontend has some feedback?
-    return JsonResponse({})
+    return JsonResponse({
+                        "done": game_code,
+                    })
 
 
 def join_game(request):
@@ -158,3 +160,5 @@ def bet_details(request):
     ]
 
     return JsonResponse(response_data)
+
+# need to add a create user endpoint
