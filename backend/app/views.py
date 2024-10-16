@@ -86,7 +86,7 @@ def create_game(request):
     # check for duplicate game codes
     # while cursor.execute("SELECT * FROM Games WHERE gameCode = %s", (game_code,)).fetchall():
     #     game_code = ''.join(random.choice(string.ascii_letters + string.digits) for _ in range(8))
-
+    game_code = UtETsHtf
     game_code = ''.join(random.choice(string.ascii_letters + string.digits) for _ in range(8))
     cursor.execute("SELECT * FROM Games WHERE gameCode = %s", (game_code,))
     while cursor.fetchone() is not None:        
