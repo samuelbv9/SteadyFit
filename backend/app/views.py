@@ -40,6 +40,7 @@ def goal(request):
                         "currentFrequency": goal[1], # may be null
                         "totalDistance": gameInfo[2], # may be null
                         "totalFrequency": gameInfo[1] # may be null
+                        # freq or distance can be null, not both 
                     }
     # for testing, inserted users, games, into db for (freq and distance) (only freq) (only distance)
     # when tested, returned null in the appropriate places 
@@ -80,7 +81,7 @@ def create_game(request):
     Request must contain: user_id, bet_amount, exercise_type,
     frequency, distance, duration, adaptive_goals, start_date
 
-    frequncy, distance may be null
+    frequncy or distance may be null (not both)
     """
     if request.method != 'POST':
         return HttpResponse(status=404)
