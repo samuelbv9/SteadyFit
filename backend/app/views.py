@@ -19,7 +19,7 @@ def goal(request):
     # game_code = json_data["game_code"]
     # user_id = json_data["user_id"]
 
-    # approach 2
+    # approach 2 
     game_code = request.GET.get("game_code")
     user_id = request.GET.get("user_id")
 
@@ -41,6 +41,8 @@ def goal(request):
                         "totalDistance": gameInfo[2], # may be null
                         "totalFrequency": gameInfo[1] # may be null
                     }
+    # for testing, inserted users, games, into db for (freq and distance) (only freq) (only distance)
+    # when tested, returned null in the appropriate places 
 
     return JsonResponse(response_data)
 
@@ -69,13 +71,15 @@ def game_details(request):
     pass
 
 
-@csrf_exempt
+# @csrf_exempt
 def create_game(request):
     """
     Creates a new game and adds the current user to the game.
 
     Request must contain: user_id, bet_amount, exercise_type,
     frequency, distance, duration, adaptive_goals, start_date
+
+    frequncy, distance may be null
     """
     if request.method != 'POST':
         return HttpResponse(status=404)
@@ -84,15 +88,15 @@ def create_game(request):
     json_data = json.loads(request.body)
 
     # check for duplicate game codes
-    # while cursor.execute("SELECT * FROM Games WHERE gameCode = %s", (game_code,)).fetchall():
-    #     game_code = ''.join(random.choice(string.ascii_letters + string.digits) for _ in range(8))
     game_code = ''.join(random.choice(string.ascii_letters + string.digits) for _ in range(8))
-    game_code = "UtETsHtf"
+    # for testing, wrote "game_code = <existing game code>" on this line, 
+    # when testing, a different game code was returned, not the existing one, so unique game codes works 
     cursor.execute("SELECT * FROM Games WHERE gameCode = %s", (game_code,))
     while cursor.fetchone() is not None:        
         game_code = ''.join(random.choice(string.ascii_letters + string.digits) for _ in range(8))
         cursor.execute("SELECT * FROM Games WHERE gameCode = %s", (game_code,))
 
+    # also tested for null values in frequency, distance 
     user_id, bet_amount, exercise_type, frequency, \
     distance, duration, adaptive_goals, start_date = (
         json_data.get(key) for key in [
@@ -153,10 +157,10 @@ def bet_details(request):
 
     cursor.execute("SELECT userId, balance FROM GameParticipants WHERE gameCode = %s", (game_code,))
     participants = cursor.fetchall()
-    response_data = [
+    response_data = {
         {"userId": row[0], "balance": row[1]}
         for row in participants
-    ]
+    }
 
     return JsonResponse(response_data)
 
