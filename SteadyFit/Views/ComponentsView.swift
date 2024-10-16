@@ -60,6 +60,61 @@ struct CheckboxToggleStyle: ToggleStyle {
     }
 }
 
-//#Preview {
-//    DropdownPicker()
-//}
+struct MultiSelectDropdown<Item: Identifiable & Hashable>: View {
+    @Binding var selectedItems: [Item]
+    var items: [Item]
+    var itemName: (Item) -> String
+
+    @State private var isExpanded = false
+
+    var body: some View {
+        VStack {
+            Button(action: {
+                withAnimation {
+                    isExpanded.toggle()
+                }
+            }) {
+                HStack {
+                    Text(selectedItems.isEmpty ? "Select Friends" : selectedItems.map { itemName($0) }.joined(separator: ", "))
+                        .foregroundColor(selectedItems.isEmpty ? .gray : .black)
+                    Spacer()
+                    Image(systemName: isExpanded ? "chevron.up" : "chevron.down")
+                }
+                .padding()
+                .background(Color.gray.opacity(0.2))
+                .cornerRadius(8)
+            }
+            
+            if isExpanded {
+                List {
+                    ForEach(items) { item in
+                        HStack {
+                            Text(itemName(item))
+                            Spacer()
+                            if selectedItems.contains(where: { $0.id == item.id }) {
+                                Image(systemName: "checkmark")
+                                    .foregroundColor(.blue)
+                            }
+                        }
+                        .contentShape(Rectangle())
+                        .onTapGesture {
+                            toggleSelection(for: item)
+                        }
+                    }
+                }
+                .frame(maxHeight: 200)
+                .cornerRadius(8)
+                .shadow(radius: 5)
+            }
+        }
+        .padding()
+    }
+    
+    private func toggleSelection(for item: Item) {
+        if let index = selectedItems.firstIndex(where: { $0.id == item.id }) {
+            selectedItems.remove(at: index)
+        } else {
+            selectedItems.append(item)
+        }
+    }
+}
