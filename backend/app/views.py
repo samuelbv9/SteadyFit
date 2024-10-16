@@ -71,7 +71,8 @@ def game_details(request):
     pass
 
 
-# @csrf_exempt
+@csrf_exempt 
+# needed for testing with curl 
 def create_game(request):
     """
     Creates a new game and adds the current user to the game.
@@ -96,7 +97,8 @@ def create_game(request):
         game_code = ''.join(random.choice(string.ascii_letters + string.digits) for _ in range(8))
         cursor.execute("SELECT * FROM Games WHERE gameCode = %s", (game_code,))
 
-    # also tested for null values in frequency, distance 
+    # also tested with null values for frequency, distance 
+    # inserted into db correctly with nulls
     user_id, bet_amount, exercise_type, frequency, \
     distance, duration, adaptive_goals, start_date = (
         json_data.get(key) for key in [
@@ -117,7 +119,7 @@ def create_game(request):
 
     # should we return some type of confirmation details or the game code so the frontend has some feedback?
     return JsonResponse({
-                        "done": game_code,
+                        "done": game_code, # used for testing
                     })
 
 
@@ -162,6 +164,6 @@ def bet_details(request):
         for row in participants
     ]
 
-    return JsonResponse(response_data, safe=False)  
+    return JsonResponse(response_data, safe=False)  # safe = false : not returning dict
 
 # need to add a create user endpoint
