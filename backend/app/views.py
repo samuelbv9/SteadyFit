@@ -157,11 +157,11 @@ def bet_details(request):
 
     cursor.execute("SELECT userId, balance FROM GameParticipants WHERE gameCode = %s", (game_code,))
     participants = cursor.fetchall()
-    response_data = {
+    response_data = [
         {"userId": row[0], "balance": row[1]}
         for row in participants
-    }
+    ]
 
-    return JsonResponse(response_data)
+    return JsonResponse(response_data, safe=False)  
 
 # need to add a create user endpoint
