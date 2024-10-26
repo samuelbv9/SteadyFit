@@ -46,6 +46,17 @@ def goal(request):
 
     return JsonResponse(response_data)
 
+def user_details(request):
+    """
+    Gets details related to a particular user.
+    """
+    if request.method != 'GET':
+        return HttpResponse(status=404)
+
+    cursor = connection.cursor()
+
+    pass
+
 def past_games(request):
     if request.method != 'GET':
         return HttpResponse(status=404)
