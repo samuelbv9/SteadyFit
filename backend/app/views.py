@@ -63,12 +63,34 @@ def active_games(request):
     pass
 
 def game_details(request):
+    """
+    Gets all details for a specific game given its game code.
+
+    Request must contain: game code
+
+    """
     if request.method != 'GET':
         return HttpResponse(status=404)
 
     cursor = connection.cursor()
+    game_code = request.GET.get("game_code")
+    if not game_code:
+        return HttpResponse(status=400)
 
-    pass
+    cursor.execute("SELECT * FROM Games WHERE gameCode = %s", (game_code,))
+    game = cursor.fetchone()
+    if not game:
+        return HttpResponse(status=404)
+
+    cursor.execute("SELECT * FROM GameParticipants WHERE gameCode = %s", (game_code,))
+    participants = cursor.fetchall()
+
+    response_data = {
+        "gameData": game,
+        "participantsData": participants
+    }
+
+    return JsonResponse(response_data)
 
 
 # @csrf_exempt 
