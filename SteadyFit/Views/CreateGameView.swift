@@ -46,18 +46,31 @@ struct CreateGameView: View {
                     DropdownPicker(selection: $userData.selectedExerciseOption, options: exerciseOptions)
                 }
                 HStack {
-                    Text("Frequency:")
-                    Spacer()
-                    NumberInputField(inputText: $userData.frequencyStr, outputInt: $userData.frequencyInt)
-                    Text("/")
-                    DropdownPicker(selection: $userData.selectedFrequencyUnitOption, options: timeUnits)
+                    if userData.selectedExerciseOption == "Strength Training" {
+                        VStack(alignment: .leading) {
+                               Text("Frequency:")
+                                   .padding(.bottom, 2)
+                               HStack {
+                                   NumberInputField(inputText: $userData.frequencyStr, outputInt: $userData.frequencyInt)
+                                   Text("session(s) /")
+                                   DropdownPicker(selection: $userData.selectedFrequencyUnitOption, options: timeUnits)
+                               }
+                           }
+                    }
+                    else {
+                        Text("Distance: ")
+                        Spacer()
+                        NumberInputField(inputText: $userData.frequencyStr, outputInt: $userData.frequencyInt)
+                        Text("mile(s) /")
+                        DropdownPicker(selection: $userData.selectedFrequencyUnitOption, options: timeUnits)
+                    }
+
                 }
                 HStack {
                     Text("Challenge Duration: ")
                     Spacer()
                     NumberInputField(inputText: $userData.durationStr, outputInt: $userData.durationInt).frame(width: 100)
                     DropdownPicker(selection: $userData.selectedDurationUnitOption, options: timeUnits)
-                    
                 }
                 CheckboxView(isChecked: $userData.adaptiveGoalsChecked, checkboxText: "Enable Adaptive Goals")
             }
@@ -171,4 +184,6 @@ struct CreateGameFriendsView: View {
 
 #Preview {
     CreateGameFriendsView(userData: UserData())
+//    CreateGameView()
+//    CreateGameWagerView(userData: UserData())
 }
