@@ -3,8 +3,6 @@ import csv
 from typing import Dict, List, Tuple
 from itertools import product
 
-i = [1, 2, 3, 4]
-
 
 class Challenge:
     def __init__(self, name: str, vars: Dict[str, List[float]], inital_elo: int = 1200):
@@ -23,7 +21,6 @@ class Challenge:
         s_list = sorted(s_list, key=lambda x: x[0])
 
         return [(tup[1], tuple(tup[2])) for tup in s_list]
-
 
     def probability(self, rating1: float, rating2: float) -> float:
         return 1.0 / (1 + math.pow(10, (rating1 - rating2) / 400.0))
