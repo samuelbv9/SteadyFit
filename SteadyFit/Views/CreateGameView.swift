@@ -76,17 +76,24 @@ struct CreateGameView: View {
             }
             .padding(.top, 20.0)
             Spacer()
-            ZStack {
-                RoundedRectangle(cornerRadius: 0)
-                    .foregroundColor(.deepBlue)
-                Text("Next")
-                    .foregroundColor(Color.white)
-                Spacer()
+            VStack(spacing: 0) {
+                HStack() {
+                    Text("Next")
+                        .fontWeight(.medium)
+                        .foregroundColor(.white)
+                    Spacer()
+                    Image(systemName: "arrow.right")
+                        .resizable()
+                        .frame(width: 25, height: 25)
+                        .foregroundColor(.white)
+                        .padding()
+                }
+                .padding(20)
+                .frame(width: 400,
+                       height: 80)
+                .background(Color.deepBlue)
+                NavBarView(viewIndex: 1)
             }
-            .frame(width: UIScreen.main.bounds.width * 3,
-                   height: 80, alignment: .top)
-            .ignoresSafeArea()
-            NavBarView(viewIndex: 0)
         }
         .frame(width: 350)
         .ignoresSafeArea()
@@ -114,17 +121,32 @@ struct CreateGameWagerView: View {
                 }
             }.padding(.top, 20)
             Spacer()
-            ZStack {
-                RoundedRectangle(cornerRadius: 0)
-                    .foregroundColor(.deepBlue)
-                Text("Next")
-                    .foregroundColor(Color.white)
-                Spacer()
+            VStack(spacing: 0) {
+                HStack() {
+                    Image(systemName: "arrow.left")
+                        .resizable()
+                        .frame(width: 25, height: 25)
+                        .foregroundColor(.white)
+                        .padding()
+                    Text("Back")
+                        .fontWeight(.medium)
+                        .foregroundColor(.white)
+                    Spacer()
+                    Text("Next")
+                        .fontWeight(.medium)
+                        .foregroundColor(.white)
+                    Image(systemName: "arrow.right")
+                        .resizable()
+                        .frame(width: 25, height: 25)
+                        .foregroundColor(.white)
+                        .padding()
+                }
+                .padding(20)
+                .frame(width: 400,
+                       height: 80)
+                .background(Color.deepBlue)
+                NavBarView(viewIndex: 1)
             }
-            .frame(width: UIScreen.main.bounds.width * 3,
-                   height: 80, alignment: .top)
-            .ignoresSafeArea()
-            NavBarView(viewIndex: 0)
         }
         .frame(width: 350)
         .ignoresSafeArea()
@@ -164,18 +186,32 @@ struct CreateGameFriendsView: View {
                 }
             }.padding(.top, 20)
             Spacer()
-            ZStack {
-                RoundedRectangle(cornerRadius: 0)
-                    .foregroundColor(.deepBlue)
-                
-                NavigationLink("Next", destination: CreateGameView())
-                    .foregroundColor(.white)
-                Spacer()
+            VStack(spacing: 0) {
+                HStack() {
+                    Image(systemName: "arrow.left")
+                        .resizable()
+                        .frame(width: 25, height: 25)
+                        .foregroundColor(.white)
+                        .padding()
+                    Text("Back")
+                        .fontWeight(.medium)
+                        .foregroundColor(.white)
+                    Spacer()
+                    Text("Publish")
+                        .fontWeight(.medium)
+                        .foregroundColor(.white)
+                    Image(systemName: "arrow.right")
+                        .resizable()
+                        .frame(width: 25, height: 25)
+                        .foregroundColor(.white)
+                        .padding()
+                }
+                .padding(20)
+                .frame(width: 400,
+                       height: 80)
+                .background(Color.deepBlue)
+                NavBarView(viewIndex: 1)
             }
-            .frame(width: UIScreen.main.bounds.width * 3,
-                   height: 80, alignment: .top)
-            .ignoresSafeArea()
-            NavBarView(viewIndex: 0)
         }
         .frame(width: 350)
         .ignoresSafeArea()
@@ -183,7 +219,7 @@ struct CreateGameFriendsView: View {
 }
 
 #Preview {
-    CreateGameFriendsView(userData: UserData())
+//    CreateGameFriendsView(userData: UserData())
 //    CreateGameView()
-//    CreateGameWagerView(userData: UserData())
+    CreateGameWagerView(userData: UserData())
 }

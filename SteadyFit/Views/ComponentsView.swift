@@ -20,6 +20,20 @@ struct DropdownPicker: View {
     }
 }
 
+struct TextInputField: View {
+    @Binding var text: String
+
+    var body: some View {
+        TextField("Type here...", text: $text)
+//            .padding()
+            .textFieldStyle(RoundedBorderTextFieldStyle())
+//            .background(Color.gray.opacity(0.2))
+            .cornerRadius(10)
+            .keyboardType(.default)
+//            .padding(.horizontal, 20)
+    }
+}
+
 struct NumberInputField: View {
     @Binding var inputText: String
     @Binding var outputInt: Int?

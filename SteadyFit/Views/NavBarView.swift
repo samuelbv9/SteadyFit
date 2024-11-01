@@ -22,7 +22,7 @@ struct NavBarView: View {
                 
                 HStack {
                     NavigationLink(destination: HomeView().navigationBarBackButtonHidden(true)) {
-                        Image(viewIndex == 0 ? "home-icon-blue" : "home-icon-hd")
+                        Image(viewIndex == 0 ? "calendar-weight-blue" : "calendar-weight-hd")
                             .resizable()
                             .background(
                                 RoundedRectangle(cornerRadius: 10)
@@ -36,8 +36,10 @@ struct NavBarView: View {
                     Image("vert-line")
                         .padding(.bottom, 35)
                     
-                    Image("calendar-weight-hd")
+                    Image(viewIndex == 1 ?
+                          "plus-blue-hd" : "plus-hd")
                         .resizable()
+                        .padding(5)
                         .background(
                             RoundedRectangle(cornerRadius: 10)
                                 .fill(viewIndex == 1 ? Color.white : Color.clear)
