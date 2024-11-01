@@ -46,6 +46,17 @@ def goal(request):
 
     return JsonResponse(response_data)
 
+def user_details(request):
+    """
+    Gets details related to a particular user.
+    """
+    if request.method != 'GET':
+        return HttpResponse(status=404)
+
+    cursor = connection.cursor()
+
+    pass
+
 def past_games(request):
     if request.method != 'GET':
         return HttpResponse(status=404)
@@ -62,13 +73,35 @@ def active_games(request):
 
     pass
 
+# @csrf_exempt 
 def game_details(request):
+    """
+    Gets all details for a specific game and its participants given a game code.
+
+    Request must contain: game code
+    """
     if request.method != 'GET':
         return HttpResponse(status=404)
 
     cursor = connection.cursor()
+    game_code = request.GET.get("game_code")
+    if not game_code:
+        return HttpResponse(status=400)
 
-    pass
+    cursor.execute("SELECT * FROM Games WHERE gameCode = %s", (game_code,))
+    game = cursor.fetchone()
+    if not game:
+        return HttpResponse(status=404)
+
+    cursor.execute("SELECT * FROM GameParticipants WHERE gameCode = %s", (game_code,))
+    participants = cursor.fetchall()
+
+    response_data = {
+        "gameData": game,
+        "participantsData": participants
+    }
+
+    return JsonResponse(response_data)
 
 
 # @csrf_exempt 
@@ -122,14 +155,40 @@ def create_game(request):
                         "done": game_code, # used for testing
                     })
 
-
+# @csrf_exempt 
 def join_game(request):
+    """
+    Adds a user to a game with a valid game code.
+
+    Request must contain: user ID, game code
+    """
     if request.method != 'POST':
         return HttpResponse(status=404)
 
     cursor = connection.cursor()
 
-    pass
+    # verify that user id is valid
+    user_id = request.POST.get("user_id")
+    cursor.execute("SELECT * FROM Users WHERE userId = %s", (user_id,))
+    user = cursor.fetchone()
+    if not user:
+        return HttpResponse(status=400)
+
+    # verify that game code is valid + fetch game details
+    game_code = request.POST.get("game_code")
+    cursor.execute("SELECT * FROM Games WHERE gameCode = %s", (game_code,))
+    game = cursor.fetchone()
+    if not game:
+        return HttpResponse(status=404)
+
+    # add user to GameParticipants with default values
+    cursor.execute("INSERT INTO GameParticipants (gameCode, userId) VALUES (%s, %s)",
+                   (game_code, user_id))
+    
+    return JsonResponse({
+                        "game_code": game_code,
+                        "user_id": user_id
+                    })
 
 def goal_status(request):
     if request.method != 'POST':
