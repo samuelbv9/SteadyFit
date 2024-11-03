@@ -8,6 +8,7 @@
 import SwiftUI
 
 struct ActiveGameView: View {
+    @StateObject private var viewModel = ActiveGameViewModel()
     var body: some View {
         VStack {
             HeaderView()
@@ -129,6 +130,9 @@ struct ActiveGameView: View {
         .frame(maxHeight: .infinity, alignment: .top)
         .frame(width: 350)
         .ignoresSafeArea()
+        .onAppear {
+            viewModel.loadCurrentGame(userId: "1", gameCode: "1")
+        }
     }
 }
 
