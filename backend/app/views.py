@@ -15,13 +15,13 @@ def goal(request):
     """
     if request.method != 'GET':
         return HttpResponse(status=404)
-    
+
     # # approach #1
     # json_data = json.loads(request.body)
     # game_code = json_data["game_code"]
     # user_id = json_data["user_id"]
 
-    # approach 2 
+    # approach 2
     game_code = request.GET.get("game_code")
     user_id = request.GET.get("user_id")
 
@@ -32,7 +32,7 @@ def goal(request):
 
     cursor.execute("SELECT totalDistance, totalFrequency FROM GameParticipants WHERE gameCode = %s AND userId = %s", (game_code, user_id))
     goal = cursor.fetchone()
-    
+
     cursor.execute("SELECT exerciseType, frequency, distance FROM Games WHERE gameCode = %s", (game_code,))
     gameInfo = cursor.fetchone()
 
@@ -44,7 +44,7 @@ def goal(request):
                         "totalFrequency": gameInfo[1] # may be null
                     }
     # for testing, inserted users, games, into db for (freq and distance) (only freq) (only distance)
-    # when tested, returned null in the appropriate places 
+    # when tested, returned null in the appropriate places
 
     return JsonResponse(response_data)
 
@@ -105,7 +105,7 @@ def past_games(request):
             "exerciseType": exercise_type,
             "duration": duration,
             "betAmount": float(bet_amount),
-            "completed": time_completed 
+            "completed": time_completed
         })
 
     return JsonResponse(result, safe=False) # listed starting with most recently finished
@@ -118,7 +118,7 @@ def active_games(request):
 
     pass
 
-# @csrf_exempt 
+# @csrf_exempt
 def game_details(request):
     """
     Gets all details for a specific game and its participants given a game code.
@@ -149,8 +149,8 @@ def game_details(request):
     return JsonResponse(response_data)
 
 
-# @csrf_exempt 
-# needed for testing with curl 
+# @csrf_exempt
+# needed for testing with curl
 def create_game(request):
     """
     Creates a new game and adds the current user to the game.
@@ -168,14 +168,14 @@ def create_game(request):
 
     # check for duplicate game codes
     game_code = ''.join(random.choice(string.ascii_letters + string.digits) for _ in range(8))
-    # for testing, wrote "game_code = <existing game code>" on this line, 
-    # when testing, a different game code was returned, not the existing one, so unique game codes works 
+    # for testing, wrote "game_code = <existing game code>" on this line,
+    # when testing, a different game code was returned, not the existing one, so unique game codes works
     cursor.execute("SELECT * FROM Games WHERE gameCode = %s", (game_code,))
-    while cursor.fetchone() is not None:        
+    while cursor.fetchone() is not None:
         game_code = ''.join(random.choice(string.ascii_letters + string.digits) for _ in range(8))
         cursor.execute("SELECT * FROM Games WHERE gameCode = %s", (game_code,))
 
-    # also tested with null values for frequency, distance 
+    # also tested with null values for frequency, distance
     # inserted into db correctly with nulls
     user_id, bet_amount, exercise_type, frequency, \
     distance, duration, adaptive_goals, start_date = (
@@ -200,7 +200,7 @@ def create_game(request):
                         "done": game_code, # used for testing
                     })
 
-# @csrf_exempt 
+# @csrf_exempt
 def join_game(request):
     """
     Adds a user to a game with a valid game code.
@@ -229,11 +229,83 @@ def join_game(request):
     # add user to GameParticipants with default values
     cursor.execute("INSERT INTO GameParticipants (gameCode, userId) VALUES (%s, %s)",
                    (game_code, user_id))
-    
+
     return JsonResponse({
                         "game_code": game_code,
                         "user_id": user_id
                     })
+
+def add_workout(request):
+    """
+    Adds a completed workout to a user's workout list
+
+    Request must contain: user ID, Game code, Activity Type, Distance, Duration
+    """
+    if request.method != 'POST':
+        return HttpResponse(status=404)
+
+    cursor = connection.cursor()
+
+    # verify that user id is valid
+    user_id = request.POST.get("user_id")
+    cursor.execute("SELECT * FROM Users WHERE userId = %s", (user_id,))
+    user = cursor.fetchone()
+    if not user:
+        return HttpResponse(status=400)
+
+    # verify that game code is valid + fetch game details
+    game_code = request.POST.get("game_code")
+    cursor.execute("SELECT isActive FROM Games WHERE gameCode = %s", (game_code,))
+    game = cursor.fetchone()
+    if not game:
+        return HttpResponse(status=404)
+
+    activity_type = request.POST.get("activity_type")
+    distance = request.POST.get("distance")
+    duration = request.POST.get("duration")
+
+    cursor.execute("INSERT INTO Activities (gameCode, userId, activity, distance, duration) \
+                    VALUES (%s, %s, %s, %s, %s)", (game_code, user_id, activity_type, distance, duration))
+
+    return JsonResponse({
+        "activity_type": activity_type,
+        "distance": distance,
+        "duration": duration
+    })
+
+def last_upload(request):
+    """
+    Get timestamp for last time workout was uploaded in certain game
+
+    Request must contain: userID, gameCode
+    """
+
+    if request.method != 'GET':
+        return HttpResponse(status=404)
+
+    cursor = connection.cursor()
+
+    # verify that user id is valid
+    user_id = request.POST.get("user_id")
+    cursor.execute("SELECT * FROM Users WHERE userId = %s", (user_id,))
+    user = cursor.fetchone()
+    if not user:
+        return HttpResponse(status=400)
+
+    # verify that game code is valid + fetch game details
+    game_code = request.POST.get("game_code")
+    cursor.execute("SELECT isActive FROM Games WHERE gameCode = %s", (game_code,))
+    game = cursor.fetchone()
+    if not game:
+        return HttpResponse(status=404)
+
+    cursor.execute("SELECT timestamp FROM Activities WHERE gameCode = %s AND userId = %s ORDER BY timestamp DESC LIMIT 1")
+    timestamp = cursor.fetchall()
+    return JsonResponse({
+        "timestamp": timestamp
+    })
+
+
 
 def goal_status(request):
     if request.method != 'POST':
@@ -259,7 +331,7 @@ def bet_details(request):
     game_code = request.GET.get("game_code")
 
     if not game_code:
-        return HttpResponse(status=400)        
+        return HttpResponse(status=400)
 
     cursor.execute("SELECT userId, balance FROM GameParticipants WHERE gameCode = %s", (game_code,))
     participants = cursor.fetchall()
