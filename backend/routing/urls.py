@@ -27,4 +27,6 @@ urlpatterns = [
     path('join_game/', views.join_game, name='join_game'),
     path('goal_status/', views.goal_status, name='goal_status'),
     path('bet_details/', views.bet_details, name='bet_details'),
+    path('last_upload/', views.last_upload, name="last_upload"),
+    path('add_workout/', views.add_workout, name="add_workout"),
 ]
