@@ -33,7 +33,7 @@ CREATE TABLE Activities (
     userId         UUID NOT NULL,
     activity       VARCHAR(20) NOT NULL,
     distance       DECIMAL(10, 2) DEFAULT 0,
-    frequency      INTEGER DEFAULT 0,
+    duration      INTEGER DEFAULT 0,
     timestamp      TIMESTAMP NOT NULL, 
     PRIMARY KEY (gameCode, userId, timestamp),
     FOREIGN KEY (gameCode) REFERENCES Games(gameCode) ON DELETE CASCADE,
