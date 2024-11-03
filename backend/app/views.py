@@ -1,6 +1,8 @@
 from django.http import JsonResponse, HttpResponse
 from django.db import connection
 from django.views.decorators.csrf import csrf_exempt
+from django.utils import timezone
+from datetime import timedelta
 import json
 import random
 import string
@@ -57,13 +59,56 @@ def user_details(request):
 
     pass
 
+def time_ago(time):
+    now = timezone.now()
+    diff = now - time
+    if diff.days >= 365:
+        return f"{diff.days // 365} years ago"
+    elif diff.days >= 1:
+        return f"{diff.days} days ago"
+    elif diff.seconds >= 3600:
+        return f"{diff.seconds // 3600} hours ago"
+    elif diff.seconds >= 60:
+        return f"{diff.seconds // 60} minutes ago"
+    else:
+        return "just now"
+
 def past_games(request):
+    """
+    Fetches past games for a user
+
+    Request must contain: user_id
+    """
     if request.method != 'GET':
         return HttpResponse(status=404)
 
-    cursor = connection.cursor()
+    user_id = request.GET.get('userId')
+    if not user_id:
+        return JsonResponse(status=400)
 
-    pass
+    cursor = connection.cursor()
+    query = '''
+        SELECT G.exerciseType, G.duration, G.betAmount, G.startDate
+        FROM Games G
+        JOIN GameParticipants GP ON G.gameCode = GP.gameCode
+        WHERE GP.userId = %s AND G.isActive = FALSE
+        ORDER BY G.startDate DESC;
+    '''
+    cursor.execute(query, (user_id,))
+    games = cursor.fetchall()
+
+    result = []
+    for game in games:
+        exercise_type, duration, bet_amount, start_date = game
+        time_completed = time_ago(start_date)
+        result.append({
+            "exerciseType": exercise_type,
+            "duration": duration,
+            "betAmount": float(bet_amount),
+            "completed": time_completed 
+        })
+
+    return JsonResponse(result, safe=False) # listed starting with most recently finished
 
 def active_games(request):
     if request.method != 'GET':
