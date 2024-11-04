@@ -235,6 +235,7 @@ def join_game(request):
                         "user_id": user_id
                     })
 
+
 def add_workout(request):
     """
     Adds a completed workout to a user's workout list
@@ -247,25 +248,27 @@ def add_workout(request):
     cursor = connection.cursor()
 
     # verify that user id is valid
-    user_id = request.POST.get("user_id")
+    user_id = request.GET.get("user_id")
     cursor.execute("SELECT * FROM Users WHERE userId = %s", (user_id,))
     user = cursor.fetchone()
     if not user:
         return HttpResponse(status=400)
 
     # verify that game code is valid + fetch game details
-    game_code = request.POST.get("game_code")
+    game_code = request.GET.get("game_code")
     cursor.execute("SELECT isActive FROM Games WHERE gameCode = %s", (game_code,))
     game = cursor.fetchone()
     if not game:
         return HttpResponse(status=404)
 
-    activity_type = request.POST.get("activity_type")
-    distance = request.POST.get("distance")
-    duration = request.POST.get("duration")
+    activity_type = request.GET.get("activity_type")
+    distance = request.GET.get("distance")
+    duration = request.GET.get("duration")
 
-    cursor.execute("INSERT INTO Activities (gameCode, userId, activity, distance, duration) \
-                    VALUES (%s, %s, %s, %s, %s)", (game_code, user_id, activity_type, distance, duration))
+    current_timestamp = timezone.now()
+
+    cursor.execute("INSERT INTO Activities (gameCode, userId, activity, distance, duration, timestamp) \
+                    VALUES (%s, %s, %s, %s, %s, %s)", (game_code, user_id, activity_type, distance, duration, current_timestamp))
 
     return JsonResponse({
         "activity_type": activity_type,
@@ -286,20 +289,20 @@ def last_upload(request):
     cursor = connection.cursor()
 
     # verify that user id is valid
-    user_id = request.POST.get("user_id")
+    user_id = request.GET.get("user_id")
     cursor.execute("SELECT * FROM Users WHERE userId = %s", (user_id,))
     user = cursor.fetchone()
     if not user:
         return HttpResponse(status=400)
 
     # verify that game code is valid + fetch game details
-    game_code = request.POST.get("game_code")
+    game_code = request.GET.get("game_code")
     cursor.execute("SELECT isActive FROM Games WHERE gameCode = %s", (game_code,))
     game = cursor.fetchone()
     if not game:
         return HttpResponse(status=404)
 
-    cursor.execute("SELECT timestamp FROM Activities WHERE gameCode = %s AND userId = %s ORDER BY timestamp DESC LIMIT 1")
+    cursor.execute("SELECT timestamp FROM Activities WHERE gameCode = %s AND userId = %s ORDER BY timestamp DESC LIMIT 1", (game_code, user_id))
     timestamp = cursor.fetchall()
     return JsonResponse({
         "timestamp": timestamp
