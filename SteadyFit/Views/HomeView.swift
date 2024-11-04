@@ -27,6 +27,9 @@ struct HomeView: View {
                             
                             // Add your ActiveGames view or content here
                             // Will have different view for the games being shown here
+                            NavigationLink(destination: ActiveGameView()) {
+                                Text("HERE")
+                            }
                         }
                         .frame(height: geometry.size.height * 2 / 3)
         

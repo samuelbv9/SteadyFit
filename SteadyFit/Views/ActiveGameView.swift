@@ -28,6 +28,12 @@ struct ActiveGameView: View {
         VStack {
             HeaderView()
             Spacer()
+
+            if let gameData = viewModel.gameData {
+                Text("TEST: \(gameData.exerciseType)")
+            } else {
+                Text("no game data")
+            }
             
             HStack { // Game title and back button
                 Button {
@@ -248,7 +254,7 @@ struct ActiveGameView: View {
         .ignoresSafeArea()
         .edgesIgnoringSafeArea(.bottom)
         .onAppear {
-            viewModel.loadCurrentGame(userId: "1", gameCode: "1")
+            viewModel.loadCurrentGame(userId: "8503f31c-8c1f-45eb-a7dd-180095aad816", gameCode: "NODqAbjW")
         }
     }
 }

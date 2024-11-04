@@ -13,25 +13,27 @@ class ActiveGameViewModel: ObservableObject {
     @Published var gameData: GameData?
     @Published var errorMessage: String?
     
-    func fetchCurrentGame(userId: String, gameCode: String) async throws -> [GameData] {
-        guard let url = URL(string: "http://52.200.16.208/api/goal/?user_id=\(userId)&game_code=\(gameCode)") else {
+    func fetchCurrentGame(userId: String, gameCode: String) async throws -> GameData {
+        // http://52.200.16.208/goal/?game_code=NODqAbjW&user_id=8503f31c-8c1f-45eb-a7dd-180095aad816
+        guard let url = URL(string: "https://52.200.16.208/api/goal/?user_id=\(userId)&game_code=\(gameCode)") else {
             self.errorMessage = "Invalid URL"
-            return []
+            return GameData(exerciseType: "failed", currentDistance: 0, currentFrequency: 0, totalDistance: 0, totalFrequency: 0)
         }
         
         let (data, _) = try await URLSession.shared.data(from: url)
         let decoded = try JSONDecoder().decode(GameResponse.self, from: data)
         
-        return decoded.results
+        return decoded.results.first!
     }
 
     func loadCurrentGame(userId: String, gameCode: String) {
         Task {
             do {
                 let gameData = try await fetchCurrentGame(userId: userId, gameCode: gameCode)
-                // print(game)
+                self.gameData = gameData
             } catch {
                 print("Error fetching current game: \(error)")
+                self.errorMessage = "Error fetching current game: \(error.localizedDescription)"
             }
         }
     }
