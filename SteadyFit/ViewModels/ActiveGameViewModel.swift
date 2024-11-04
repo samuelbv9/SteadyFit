@@ -14,7 +14,7 @@ class ActiveGameViewModel: ObservableObject {
     @Published var errorMessage: String?
     
     func fetchCurrentGame(userId: String, gameCode: String) async throws -> [GameData] {
-        guard let url = URL(string: "http://localhost:8000/api/goal/?user_id=\(userId)&game_code=\(gameCode)") else {
+        guard let url = URL(string: "http://52.200.16.208/api/goal/?user_id=\(userId)&game_code=\(gameCode)") else {
             self.errorMessage = "Invalid URL"
             return []
         }

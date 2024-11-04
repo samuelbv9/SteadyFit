@@ -34,21 +34,23 @@ struct JoinGameView: View {
                 Text("or")
                     .frame(maxWidth: .infinity, alignment: .center)
                 
-                VStack(alignment: .leading) {
-                    Text("Create a Game")
-                        .font(.largeTitle)
-                        .fontWeight(.bold)
-                        .foregroundColor(Color.deepBlue)
-                    Spacer()
-                    Text("Got an idea? Create a game and invite your friends!")
-                        .foregroundColor(Color.deepBlue)
+                NavigationLink(destination: CreateGameView()) {
+                    VStack(alignment: .leading) {
+                        Text("Create a Game")
+                            .font(.largeTitle)
+                            .fontWeight(.bold)
+                            .foregroundColor(Color.deepBlue)
+                        Spacer()
+                        Text("Got an idea? Create a game and invite your friends!")
+                            .foregroundColor(Color.deepBlue)
+                    }
+                    .padding(20)
+                    .frame(width: 345, height: 180)
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 15)
+                            .stroke(Color.deepBlue, lineWidth: 4)
+                    )
                 }
-                .padding(20)
-                .frame(width: 345, height: 180)
-                .overlay(
-                    RoundedRectangle(cornerRadius: 15)
-                        .stroke(Color.deepBlue, lineWidth: 4)
-                )
                 
             }
             Spacer()
