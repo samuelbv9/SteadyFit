@@ -256,9 +256,9 @@ def add_workout(request):
 
     # verify that game code is valid + fetch game details
     game_code = request.GET.get("game_code")
-    cursor.execute("SELECT isActive FROM Games WHERE gameCode = %s", (game_code,))
-    game = cursor.fetchone()
-    if not game:
+    cursor.execute("SELECT exerciseType FROM Games WHERE gameCode = %s", (game_code,))
+    exerciseType = cursor.fetchone()
+    if not exerciseType:
         return HttpResponse(status=404)
 
     activity_type = request.GET.get("activity_type")
@@ -267,14 +267,21 @@ def add_workout(request):
 
     current_timestamp = timezone.now()
 
-    cursor.execute("INSERT INTO Activities (gameCode, userId, activity, distance, duration, timestamp) \
-                    VALUES (%s, %s, %s, %s, %s, %s)", (game_code, user_id, activity_type, distance, duration, current_timestamp))
+    # verify activity type is the same as game_type
+    if activity_type == exerciseType:
+        cursor.execute("INSERT INTO Activities (gameCode, userId, activity, distance, duration, timestamp) \
+                        VALUES (%s, %s, %s, %s, %s, %s)",
+                        (game_code, user_id, activity_type, distance, duration, current_timestamp))
 
-    return JsonResponse({
-        "activity_type": activity_type,
-        "distance": distance,
-        "duration": duration
-    })
+        return JsonResponse({
+            "activity_type": activity_type,
+            "distance": distance,
+            "duration": duration
+        })
+    else:
+        return JsonResponse({
+            "error": "uploaded wrong activity so nothing was done"
+        })
 
 def last_upload(request):
     """
