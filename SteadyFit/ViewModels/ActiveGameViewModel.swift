@@ -48,3 +48,9 @@ struct GameData: Decodable {
     let totalDistance: Double // Can be null
     let totalFrequency: Double // Can be null
 }
+
+struct SleepDataPoint: Identifiable {
+    var id = UUID().uuidString
+    var day: String
+    var hours: Int
+}
