@@ -7,6 +7,7 @@ import json
 import random
 import string
 
+@csrf_exempt
 def goal(request):
     """
     Fetches goal details for the current game
@@ -48,6 +49,7 @@ def goal(request):
 
     return JsonResponse(response_data)
 
+@csrf_exempt
 def user_details(request):
     """
     Gets details related to a particular user.
@@ -73,6 +75,7 @@ def time_ago(time):
     else:
         return "just now"
 
+@csrf_exempt
 def past_games(request):
     """
     Fetches past games for a user
@@ -82,7 +85,7 @@ def past_games(request):
     if request.method != 'GET':
         return HttpResponse(status=404)
 
-    user_id = request.GET.get('userId')
+    user_id = request.GET.get('user_id')
     if not user_id:
         return JsonResponse(status=400)
 
@@ -110,15 +113,43 @@ def past_games(request):
 
     return JsonResponse(result, safe=False) # listed starting with most recently finished
 
+@csrf_exempt
 def active_games(request):
+    """
+    Fetches current games for a user
+
+    Request must contain: user_id
+    """
     if request.method != 'GET':
         return HttpResponse(status=404)
 
     cursor = connection.cursor()
 
-    pass
+    user_id = request.GET.get('user_id')
+    if not user_id:
+        return JsonResponse(status=400)
+    
+    query = '''
+        SELECT G.exerciseType, G.duration, G.betAmount, G.startDate
+        FROM Games G
+        JOIN GameParticipants GP ON G.gameCode = GP.gameCode
+        WHERE GP.userId = %s AND G.isActive = TRUE
+        ORDER BY G.startDate DESC;
+    '''
+    cursor.execute(query, (user_id,))
+    games = cursor.fetchall()
 
-# @csrf_exempt 
+    result = []
+    for game in games:
+        exercise_type, duration, bet_amount, start_date = game
+        result.append({
+            "exerciseType": exercise_type,
+            "duration": duration,
+            "betAmount": float(bet_amount),
+            "startDate": start_date
+        })
+
+@csrf_exempt 
 def game_details(request):
     """
     Gets all details for a specific game and its participants given a game code.
@@ -149,7 +180,7 @@ def game_details(request):
     return JsonResponse(response_data)
 
 
-# @csrf_exempt 
+@csrf_exempt 
 # needed for testing with curl 
 def create_game(request):
     """
@@ -200,7 +231,7 @@ def create_game(request):
                         "done": game_code, # used for testing
                     })
 
-# @csrf_exempt 
+@csrf_exempt 
 def join_game(request):
     """
     Adds a user to a game with a valid game code.
@@ -235,14 +266,24 @@ def join_game(request):
                         "user_id": user_id
                     })
 
+@csrf_exempt
 def goal_status(request):
-    if request.method != 'POST':
+    """
+    Gets the progress of a user towards their goal in a certain game.
+
+    Request must contain: user ID, game code
+    """
+    if request.method != 'GET':
         return HttpResponse(status=404)
 
     cursor = connection.cursor()
+    user_id = request.GET.get("user_id")
+    game_code = request.GET.get("game_code")
 
-    pass
+    cursor.execute("SELECT * FROM Games WHERE gameCode = %s", (game_code,))
+    game = cursor.fetchone()
 
+@csrf_exempt
 def bet_details(request):
     """
     Shows current status for all bets in a game.
@@ -269,5 +310,3 @@ def bet_details(request):
     ]
 
     return JsonResponse(response_data, safe=False)  # safe = false : not returning dict
-
-# need to add a create user endpoint
