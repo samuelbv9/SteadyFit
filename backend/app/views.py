@@ -118,7 +118,7 @@ def active_games(request):
 
     pass
 
-# @csrf_exempt
+@csrf_exempt
 def game_details(request):
     """
     Gets all details for a specific game and its participants given a game code.
@@ -149,7 +149,7 @@ def game_details(request):
     return JsonResponse(response_data)
 
 
-# @csrf_exempt
+@csrf_exempt
 # needed for testing with curl
 def create_game(request):
     """
@@ -200,7 +200,7 @@ def create_game(request):
                         "done": game_code, # used for testing
                     })
 
-# @csrf_exempt
+@csrf_exempt
 def join_game(request):
     """
     Adds a user to a game with a valid game code.
