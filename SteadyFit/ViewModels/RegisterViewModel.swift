@@ -28,9 +28,17 @@ class RegisterViewModel: ObservableObject {
                 print("FAILED REGISTER!!")
                 print(error!.localizedDescription)
             }
-            else {
-                print("Registered")
+            guard let uid = result?.user.uid else {
+                DispatchQueue.main.async {
+                    print("Failed to retrieve user UID.")
+                }
+                return
             }
+            
+            // Successfully registered
+            print("Registered with UID: \(uid)")
+            
+            //SEND UUID and username TO DB
             
         }
     }
