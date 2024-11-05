@@ -12,28 +12,34 @@ import Charts
 struct ActiveGameView: View {
     @StateObject private var viewModel = ActiveGameViewModel()
     
-    var data = [ // This will be for the circle chart
-        SleepDataPoint(
-            day: "Mon",
-            hours: 75
-        ),
-        SleepDataPoint (
-            day: "tues",
-            hours: 25
-        )
-    ]
-    // NEED ANOTHER DATA TABLE FOR INSIDE CHART UPDATE NAMES
-
     var body: some View {
-        VStack {
+        let data = [ // This will be for the circle chart
+            SleepDataPoint(
+                day: "Mon",
+                hours: Double(viewModel.gameData?.currentDistance ?? "0") ?? 0
+            ),
+            SleepDataPoint(
+                day: "tues",
+                hours:  Double(viewModel.gameData?.totalDistance ?? "1") ?? 1
+            )
+        ]
+        
+        let data2 = [ // This will be for the circle chart
+            SleepDataPoint(
+                day: "Mon",
+                hours: Double(viewModel.gameData?.currentFrequency ?? 0)
+            ),
+            SleepDataPoint(
+                day: "tues",
+                hours:  Double(viewModel.gameData?.totalFrequency ?? 1)
+            )
+        ]
+        
+        return VStack {
             HeaderView()
             Spacer()
 
-            if let gameData = viewModel.gameData {
-                Text("TEST: \(gameData.exerciseType)")
-            } else {
-                Text("no game data")
-            }
+            let gameData = viewModel.gameData
             
             HStack { // Game title and back button
                 Button {
@@ -49,7 +55,7 @@ struct ActiveGameView: View {
                             .foregroundColor(Color.white)
                     }
                 }
-                Text("Game Title") // Needs to be the game type
+                Text(gameData?.exerciseType.capitalized ?? "no game data")
                 .font(.custom("Poppins-Bold", size: 30))
                 .kerning(-0.6) // Decreases letter spacing
             }
@@ -76,7 +82,7 @@ struct ActiveGameView: View {
                                 //.frame(maxWidth: 300, alignment: .leading)
                                 .padding(.leading, 20)
                             Spacer()
-                            Text ("x units")
+                            Text("\(gameData?.totalDistance ?? "err") units")
                                 .padding(.trailing, 30)
                                 .font(.custom("Poppins-Regular", size: 20))
                                 .kerning(-0.3)
@@ -87,7 +93,7 @@ struct ActiveGameView: View {
                                 .kerning(-0.3) // Decreases letter spacing
                                 .padding(.leading, 20)
                             Spacer()
-                            Text ("x units")
+                            Text("\(gameData?.currentDistance ?? "err") units")
                                 .padding(.trailing, 30)
                                 .font(.custom("Poppins-Regular", size: 20))
                                 .kerning(-0.3)
@@ -155,8 +161,8 @@ struct ActiveGameView: View {
                             
                             Chart {
                                 ForEach(data.indices, id: \.self) { index in
-                                    let d = data[index]
-                                    SectorMark(angle: .value("Hours", d.hours + 25))
+                                    let d = data2[index]
+                                    SectorMark(angle: .value("Hours", d.hours))
                                         .foregroundStyle(Color.customColor2(for: index))
                                 }
                             }
@@ -167,7 +173,10 @@ struct ActiveGameView: View {
                                 .trim(from: 0, to: 1) // weekly goal
                                 .foregroundColor(Color.white)
                                 .frame(width: 50, height: 50)
-                            Text("92.5%")
+                            let currentDistance = Double(viewModel.gameData?.currentDistance ?? "0") ?? 0
+                            let totalDistance = Double(viewModel.gameData?.totalDistance ?? "1") ?? 1
+                            let percentage = (currentDistance / totalDistance) * 100
+                            Text("\(String(format: "%.1f", percentage))%")
                                 .font(.custom("Poppins-Bold", size: 14))
                                 .kerning(-0.6)
                         }
@@ -182,14 +191,14 @@ struct ActiveGameView: View {
                             .font(.custom("Poppins-Bold", size: 18))
                             .frame(width: 183, alignment: .leading)
                         //stats
-                        Text("x/x units")
+                        Text("\(gameData?.currentDistance ?? "err")/\(gameData?.totalDistance ?? "err") units")
                             .font(.custom("Poppins-Regular", size: 18))
                             .frame(width: 183, alignment: .leading)
                         Text("This Week")
                             .font(.custom("Poppins-Bold", size: 18))
                             .frame(width: 183, alignment: .leading)
                         //stats
-                        Text("x/x units")
+                        Text("\(gameData?.currentFrequency ?? 1)/\(gameData?.totalFrequency ?? 1) units")
                             .font(.custom("Poppins-Regular", size: 18))
                             .frame(width: 183, alignment: .leading)
                     }
