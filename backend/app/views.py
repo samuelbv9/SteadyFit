@@ -313,7 +313,7 @@ def add_workout(request):
                    SET weekDistance = weekDistance + %s, \
                    weekFrequency = weekFrequency + 1 \
                    totalDistance = totalDistance + %s, \
-                   totalFrequency = totalFrequency + 1, \
+                   totalFrequency = totalFrequency + 1 \
                    WHERE gameCode = %s AND userId = %s;",
                    (distance, distance, game_code, user_id))
 
@@ -418,10 +418,30 @@ def bet_details(request):
 
     return JsonResponse(response_data, safe=False)  # safe = false : not returning dict
 
+@csrf_exempt
+def create_user(request):
+    """
+    Gets user ID from firebase and pushes to postgresql db. Adds user to ELO table
+    and initializes their scores.
 
+    Request must contain: username, user_id
+    """
+    if request.method != 'POST':
+        return HttpResponse(status=404)
 
+    username = request.POST.get("username")
+    user_id = request.POST.get("user_id")
+    if not username or not user_id:
+        return HttpResponse(status=400)
 
+    cursor = connection.cursor()
+    cursor.execute("INSERT INTO Users (userID, name) VALUES (%s, %s)",
+                   (user_id, username))
+    cursor.execute("INSERT INTO UserEloRatings (userId) VALUES (%s)", (user_id,))
 
+    return JsonResponse({
+                        "done": user_id,
+                    })
 
 
 def weekly_update():
