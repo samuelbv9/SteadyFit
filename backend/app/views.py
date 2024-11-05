@@ -17,12 +17,6 @@ def goal(request):
     if request.method != 'GET':
         return HttpResponse(status=404)
 
-    # # approach #1
-    # json_data = json.loads(request.body)
-    # game_code = json_data["game_code"]
-    # user_id = json_data["user_id"]
-
-    # approach 2
     game_code = request.GET.get("game_code")
     user_id = request.GET.get("user_id")
 
@@ -400,10 +394,6 @@ def bet_details(request):
         return HttpResponse(status=404)
 
     cursor = connection.cursor()
-    # json_data = json.loads(request.body)
-    # game_code = json_data["game_code"]
-
-    # approach 2
     game_code = request.GET.get("game_code")
 
     if not game_code:
@@ -418,24 +408,25 @@ def bet_details(request):
 
     return JsonResponse(response_data, safe=False)  # safe = false : not returning dict
 
+
 @csrf_exempt
 def create_user(request):
     """
     Gets user ID from firebase and pushes to postgresql db. Adds user to ELO table
     and initializes their scores.
 
-    Request must contain: username, user_id
+    Request must contain: email, user_id
     """
     if request.method != 'POST':
         return HttpResponse(status=404)
 
-    username = request.POST.get("username")
+    username = request.POST.get("email")
     user_id = request.POST.get("user_id")
     if not username or not user_id:
         return HttpResponse(status=400)
 
     cursor = connection.cursor()
-    cursor.execute("INSERT INTO Users (userID, name) VALUES (%s, %s)",
+    cursor.execute("INSERT INTO Users (userID, email) VALUES (%s, %s)",
                    (user_id, username))
     cursor.execute("INSERT INTO UserEloRatings (userId) VALUES (%s)", (user_id,))
 
