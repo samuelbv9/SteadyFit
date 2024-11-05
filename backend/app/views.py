@@ -309,6 +309,14 @@ def add_workout(request):
     cursor.execute("INSERT INTO Activities (gameCode, userId, activity, distance, duration) \
                     VALUES (%s, %s, %s, %s, %s)", (game_code, user_id, activity_type, distance, duration))
 
+    cursor.execute("UPDATE GameParticipants \
+                   SET weekDistance = weekDistance + %s, \
+                   weekFrequency = weekFrequency + 1 \
+                   totalDistance = totalDistance + %s, \
+                   totalFrequency = totalFrequency + 1, \
+                   WHERE gameCode = %s AND userId = %s;",
+                   (distance, distance, game_code, user_id))
+
     return JsonResponse({
         "activity_type": activity_type,
         "distance": distance,
