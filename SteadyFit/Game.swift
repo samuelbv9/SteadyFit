@@ -30,7 +30,6 @@ struct userProgress {
     var totalFrequency: Int
 }
 
-
 final class GamesStore {
     static let shared = GamesStore()
     private(set) var activeGames = [Game]()
@@ -39,7 +38,6 @@ final class GamesStore {
     let serverUrl = "http://52.200.16.208/"
     
     func postGame(_ game: UserData) {
-
         // Create a Date object (current date)
         let currentDate = Date()
         let dateFormatter = DateFormatter()
@@ -80,7 +78,6 @@ final class GamesStore {
                    print("postGame: NETWORKING ERROR")
                    return
                }
-
                if let httpStatus = response as? HTTPURLResponse {
                    if httpStatus.statusCode != 200 {
                        print("postGame: HTTP STATUS: \(httpStatus.statusCode)")
@@ -89,7 +86,6 @@ final class GamesStore {
                        print("Completed")
                    }
                }
-
            }.resume()
        }
    }

@@ -102,6 +102,31 @@ struct CreateGameView: View {
 struct CreateGameWagerView: View {
     @Environment(\.presentationMode) var presentationMode
     @ObservedObject var userData: UserData
+    
+    private var perWeek: Int {
+        if let wager = userData.wagerInt, let duration = userData.durationInt, duration != 0 {
+            return wager / duration
+        } else {
+            print("Error: Either wagerInt or durationInt is nil, or durationInt is zero.")
+            return 0
+        }
+    }
+    
+    private var perWorkout: Int {
+        if let wager = userData.wagerInt, let duration = userData.durationInt, duration != 0 {
+            if let frequency = userData.frequencyInt, frequency != 0 {
+                return wager / (duration * frequency)
+            } else if let distance = userData.distanceInt, distance != 0 {
+                return wager / (duration * distance)
+            } else {
+                print("Error: frequencyInt and distanceInt are both nil or zero.")
+                return 0
+            }
+        } else {
+            print("Error: Either wagerInt or durationInt is nil, or durationInt is zero.")
+            return 0
+        }
+    }
 
     
     var body: some View {
@@ -120,6 +145,8 @@ struct CreateGameWagerView: View {
                 VStack(alignment: .leading){
                     Text("Bet Size:")
                     NumberInputField(inputText: $userData.wagerStr, outputInt: $userData.wagerInt)
+                    Text("Per week: \(perWeek)")
+                    Text("Per workout: \(perWorkout)")
                 }
             }.padding(.top, 20)
             Spacer()
