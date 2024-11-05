@@ -53,13 +53,24 @@ def goal(request):
 def user_details(request):
     """
     Gets details related to a particular user.
+
+    Request must contain: user_id
     """
     if request.method != 'GET':
         return HttpResponse(status=404)
 
     cursor = connection.cursor()
 
-    pass
+    user_id = request.GET.get('user_id')
+    if not user_id:
+        return JsonResponse(status=400)
+
+    cursor.execute("SELECT * FROM Users WHERE userId = %s", (user_id,))
+    username = cursor.fetchone()[1]
+    return JsonResponse({
+                        "username": username,
+                        "user_id": user_id
+                    })
 
 def time_ago(time):
     now = timezone.now()
@@ -353,6 +364,23 @@ def goal_status(request):
 
     cursor.execute("SELECT * FROM Games WHERE gameCode = %s", (game_code,))
     game = cursor.fetchone()
+
+    cursor.execute("SELECT * FROM GameParticipants WHERE gameCode = %s AND userId = %s", (game_code, user_id))
+    goal = cursor.fetchone()
+
+    weekly_distance = game[4] / game[5]
+
+    return JsonResponse({
+        "totalExpectedDistance": game[4],
+        "totalCompletedDistance": goal[2],
+        "totalExpectedFrequency": game[3],
+        "totalCompletedFrequency": goal[3],
+        "weeklyExpectedDistance": weekly_distance,
+        "weeklyCompletedDistance": goal[7],
+        "weeklyExpectedFrequency": game[3],
+        "weeklyCompletedFrequency": goal[8]
+    })
+
 
 @csrf_exempt
 def bet_details(request):
