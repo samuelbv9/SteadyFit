@@ -23,6 +23,8 @@ CREATE TABLE GameParticipants (
     amountGained   DECIMAL(10, 2) DEFAULT 0,
     amountLost     DECIMAL(10, 2) DEFAULT 0,
     balance        DECIMAL(10, 2) GENERATED ALWAYS AS (amountGained - amountLost) STORED,
+    weekDistance  DECIMAL(10, 2) DEFAULT 0,
+    weekFrequency INTEGER DEFAULT 0,
     PRIMARY KEY (gameCode, userId),
     FOREIGN KEY (gameCode) REFERENCES Games(gameCode) ON DELETE CASCADE,
     FOREIGN KEY (userId) REFERENCES Users(userId) ON DELETE CASCADE
