@@ -34,21 +34,23 @@ struct JoinGameView: View {
                 Text("or")
                     .frame(maxWidth: .infinity, alignment: .center)
                 
-                VStack(alignment: .leading) {
-                    Text("Create a Game")
-                        .font(.largeTitle)
-                        .fontWeight(.bold)
-                        .foregroundColor(Color.deepBlue)
-                    Spacer()
-                    Text("Got an idea? Create a game and invite your friends!")
-                        .foregroundColor(Color.deepBlue)
+                NavigationLink(destination: CreateGameView()) {
+                    VStack(alignment: .leading) {
+                        Text("Create a Game")
+                            .font(.largeTitle)
+                            .fontWeight(.bold)
+                            .foregroundColor(Color.deepBlue)
+                        Spacer()
+                        Text("Got an idea? Create a game and invite your friends!")
+                            .foregroundColor(Color.deepBlue)
+                    }
+                    .padding(20)
+                    .frame(width: 345, height: 180)
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 15)
+                            .stroke(Color.deepBlue, lineWidth: 4)
+                    )
                 }
-                .padding(20)
-                .frame(width: 345, height: 180)
-                .overlay(
-                    RoundedRectangle(cornerRadius: 15)
-                        .stroke(Color.deepBlue, lineWidth: 4)
-                )
                 
             }
             Spacer()
@@ -102,6 +104,54 @@ struct JoinGamecode: View {
     }
 }
 
+struct JoinGamePreview: View {
+    @State private var userInputGameCode = ""
+    @State private var userInputPassword = ""
+    var body: some View {
+        VStack() {
+            HeaderView()
+            VStack(alignment: .leading) {
+                Text("Join Game")
+                    .font(.largeTitle)
+                    .fontWeight(.semibold)
+                    .padding(.bottom, 20)
+                Text("Game Code")
+                Text("Password (Optional)")
+            }
+            Spacer()
+            VStack(spacing: 0) {
+                HStack() {
+                    Image(systemName: "arrow.left")
+                        .resizable()
+                        .frame(width: 25, height: 25)
+                        .foregroundColor(.white)
+                        .padding()
+                    Text("Back")
+                        .fontWeight(.medium)
+                        .foregroundColor(.white)
+                    Spacer()
+                    Text("Join Game")
+                        .fontWeight(.medium)
+                        .foregroundColor(.white)
+                    Image(systemName: "arrow.right")
+                        .resizable()
+                        .frame(width: 25, height: 25) // Set size
+                        .foregroundColor(.white)
+                        .padding()
+                }
+                .padding(20)
+                .frame(width: 400,
+                       height: 80)
+                .background(Color.deepBlue)
+                NavBarView(viewIndex: 1)
+            }
+        }
+            .frame(width: 350)
+            .ignoresSafeArea()
+    }
+}
+
+
 #Preview {
-    JoinGamecode()
+    JoinGamePreview()
 }
