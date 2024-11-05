@@ -41,3 +41,27 @@ CREATE TABLE Activities (
     FOREIGN KEY (gameCode) REFERENCES Games(gameCode) ON DELETE CASCADE,
     FOREIGN KEY (userId) REFERENCES Users(userId) ON DELETE CASCADE
 );
+
+CREATE TABLE UserEloRatings (
+    userId UUID NOT NULL,
+    walkingElo INT DEFAULT 1200,
+    runningElo INT DEFAULT 1200,
+    cyclingElo INT DEFAULT 1200,
+    ellipticalElo INT DEFAULT 1200,
+    rowerElo INT DEFAULT 1200,
+    stairStepperElo INT DEFAULT 1200,
+    hiitElo INT DEFAULT 1200, 
+    hikingElo INT DEFAULT 1200,
+    yogaElo INT DEFAULT 1200,
+    functionalStrengthElo INT DEFAULT 1200,
+    danceElo INT DEFAULT 1200,
+    coreTrainingElo INT DEFAULT 1200,
+    pilatesElo INT DEFAULT 1200,
+    taiChiElo INT DEFAULT 1200,
+    swimmingElo INT DEFAULT 1200,
+    wheelchairElo INT DEFAULT 1200,
+    multisportElo INT DEFAULT 1200,
+    kickboxingElo INT DEFAULT 1200,
+    PRIMARY KEY (userId),
+    FOREIGN KEY (userId) REFERENCES Users(userId) ON DELETE CASCADE
+);
