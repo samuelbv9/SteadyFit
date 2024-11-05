@@ -409,3 +409,51 @@ def bet_details(request):
     ]
 
     return JsonResponse(response_data, safe=False)  # safe = false : not returning dict
+
+
+
+
+
+
+
+def weekly_update():
+    # get the current date
+    current_date = datetime.now().date()
+
+    # get all active games
+    cursor = connection.cursor()
+    query = '''
+        SELECT G.gameCode, G.startDate
+        FROM Games G
+        WHERE G.isActive = TRUE
+    '''
+    cursor.execute(query)
+    games = cursor.fetchall()
+
+    # iterate through the games and check if a week has passed since startDate
+    for game in games:
+        game_code, start_date, last_updated = game
+        
+        # check if a week has passed
+        weeks_elapsed = (current_date - start_date).days // 7
+
+        # if a week has passed, do updates
+        if weeks_elapsed > last_updated:
+            # Perform your update logic here (e.g., increment totals, adjust balance, etc.)
+            # Example: increment totalFrequency or totalDistance
+            new_total_distance = total_distance + calculate_distance(user_id, game_code)  # Implement your own logic
+            new_total_frequency = total_frequency + calculate_frequency(user_id, game_code)  # Implement your own logic
+            
+            # Update the database with the new stats
+            update_query = '''
+                UPDATE GameParticipants
+                SET totalDistance = %s, totalFrequency = %s
+                WHERE gameCode = %s AND userId = %s
+            '''
+            cursor.execute(update_query, [new_total_distance, new_total_frequency, game_code, user_id])
+    
+    connection.commit()
+
+while True:
+    weekly_update()
+    time.sleep(86400)  
