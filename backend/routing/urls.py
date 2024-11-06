@@ -29,5 +29,6 @@ urlpatterns = [
     path('bet_details/', views.bet_details, name='bet_details'),
     path('last_upload/', views.last_upload, name="last_upload"),
     path('add_workout/', views.add_workout, name="add_workout"),
-    path('create_user/', views.create_user, name="create_user"),   
+    path('create_user/', views.create_user, name="create_user"),
+    path('get_activity_type/', views.get_activity_type, name="get_activity_type"),
 ]

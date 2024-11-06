@@ -456,6 +456,34 @@ def create_user(request):
                         "done": user_id,
                     })
 
+def get_activity_type(request):
+    """
+    Gets activity_type for a certain game
+
+    Request must contain: game_code
+    """
+    if request.method != 'GET':
+        return HttpResponse(status=404)
+
+    # Use query parameters for GET requests
+    game_code = request.GET.get("game_code")
+
+    if not game_code:
+        return HttpResponse(status=400)
+    
+    cursor = connection.cursor()
+    cursor.execute("SELECT exerciseType FROM Games WHERE gamecode = %s", (game_code,))
+    result = cursor.fetchone()
+    
+    if result is None:
+        return HttpResponse(status=404)
+
+    # Fetch the exercise_type from result tuple
+    exercise_type = result[0] if result else None
+
+    return JsonResponse({
+        "exercise_type" : exercise_type
+    })
 
 #def weekly_update():
     # get the current date
