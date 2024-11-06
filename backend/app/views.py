@@ -251,15 +251,20 @@ def join_game(request):
 
     cursor = connection.cursor()
 
+    json_data = json.loads(request.body)
+    user_id, game_code = (
+        json_data.get(key) for key in [
+            "user_id", "game_code"
+        ]
+    )
+    
     # verify that user id is valid
-    user_id = request.POST.get("user_id")
     cursor.execute("SELECT * FROM Users WHERE userId = %s", (user_id,))
     user = cursor.fetchone()
     if not user:
         return HttpResponse(status=400)
 
     # verify that game code is valid + fetch game details
-    game_code = request.POST.get("game_code")
     cursor.execute("SELECT * FROM Games WHERE gameCode = %s", (game_code,))
     game = cursor.fetchone()
     if not game:
