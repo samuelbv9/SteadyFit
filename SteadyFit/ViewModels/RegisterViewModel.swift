@@ -76,7 +76,7 @@ class RegisterViewModel: ObservableObject {
         // Prepare JSON data
         let userData: [String: Any] = [
             "user_id": uid,
-            "email": email
+            "username": email
         ]
         
         do {
