@@ -18,7 +18,7 @@ CREATE TABLE Games (
 );
 
 CREATE TABLE GameParticipants (
-    gameCode            VARCHAR(20) NOT NULL,
+    gameCode            VARCHAR(20) NOT NULL, 
     userId              VARCHAR(255) NOT NULL,
     amountGained        DECIMAL(10, 2) DEFAULT 0,
     amountLost          DECIMAL(10, 2) DEFAULT 0,
