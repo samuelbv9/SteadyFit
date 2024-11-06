@@ -18,16 +18,16 @@ CREATE TABLE Games (
 );
 
 CREATE TABLE GameParticipants (
-    gameCode            VARCHAR(20) NOT NULL, 
-    userId              VARCHAR(255) NOT NULL,
-    amountGained        DECIMAL(10, 2) DEFAULT 0,
-    amountLost          DECIMAL(10, 2) DEFAULT 0,
-    balance             DECIMAL(10, 2) GENERATED ALWAYS AS (amountGained - amountLost) STORED,
-    totalDistance       DECIMAL(10, 2) DEFAULT 0,
-    weekDistance        DECIMAL(10, 2) DEFAULT 0,
+    gameCode             VARCHAR(20) NOT NULL, 
+    userId               VARCHAR(255) NOT NULL,
+    amountGained         DECIMAL(10, 2) DEFAULT 0,
+    amountLost           DECIMAL(10, 2) DEFAULT 0,
+    balance              DECIMAL(10, 2) GENERATED ALWAYS AS (amountGained - amountLost) STORED,
+    totalDistance        DECIMAL(10, 2) DEFAULT 0,
+    weekDistance         DECIMAL(10, 2) DEFAULT 0,
     weekDistanceGoal    DECIMAL(10, 2) DEFAULT 0,
-    totalFrequency      INTEGER DEFAULT 0,
-    weekFrequency       INTEGER DEFAULT 0,
+    totalFrequency       INTEGER DEFAULT 0,
+    weekFrequency        INTEGER DEFAULT 0,
     weekFrequencyGoal   INTEGER DEFAULT 0
     PRIMARY KEY (gameCode, userId),
     FOREIGN KEY (gameCode) REFERENCES Games(gameCode) ON DELETE CASCADE,

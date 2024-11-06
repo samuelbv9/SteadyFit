@@ -231,10 +231,15 @@ def create_game(request):
                     duration, adaptive_goals, start_date))
 
     # Set current user as player of this game
-    cursor.execute("INSERT INTO GameParticipants (gameCode, userId) VALUES (%s, %s)",
-                   (game_code, user_id))
+    if distance is not None:
+        distance = round(distance / duration, 2)
+    if frequency is not None:
+        frequency = round(frequency / duration, 2)
+    cursor.execute("INSERT INTO GameParticipants (gameCode, userId, weekDistanceGoal, weekFrequencyGoal) VALUES (%s, %s, %s, %s)",
+                   (game_code, user_id, distance, frequency))
+    
+    connection.commit()
 
-    # should we return some type of confirmation details or the game code so the frontend has some feedback?
     return JsonResponse({
                         "done": game_code, # used for testing
                     })
@@ -271,8 +276,16 @@ def join_game(request):
         return HttpResponse(status=404)
 
     # add user to GameParticipants with default values
-    cursor.execute("INSERT INTO GameParticipants (gameCode, userId) VALUES (%s, %s)",
-                   (game_code, user_id))
+    frequency = game[3]
+    distance = game[4]
+    duration = game[5]
+    if distance is not None:
+        distance = round(distance / duration, 2)
+    if frequency is not None:
+        frequency = round(frequency / duration, 2)
+    cursor.execute("INSERT INTO GameParticipants (gameCode, userId, weekDistanceGoal, weekFrequencyGoal) VALUES (%s, %s, %s, %s)",
+                   (game_code, user_id, distance, frequency))
+    connection.commit()
 
     return JsonResponse({
                         "game_code": game_code,
@@ -318,6 +331,8 @@ def add_workout(request):
                    totalFrequency = totalFrequency + 1 \
                    WHERE gameCode = %s AND userId = %s;",
                    (distance, distance, game_code, user_id))
+
+    connection.commit()
 
     return JsonResponse({
         "activity_type": activity_type,
@@ -438,6 +453,8 @@ def create_user(request):
                    (user_id, username))
     cursor.execute("INSERT INTO UserEloRatings (userId) VALUES (%s)", (user_id,))
 
+    connection.commit()
+
     return JsonResponse({
                         "done": user_id,
                     })
@@ -492,7 +509,6 @@ def create_user(request):
 #             if os.path.exists(challege_file_loc):
 #                 challenge = elo.deserialize_challenge_from_csv(challege_file_loc)
 #             else:
-#                 # Initialize with common swimming distances (meters) and target times (seconds)
 #                 challenge = elo.create_challenge(
 #                     challenge_settings['name'],
 #                     challenge_settings['default_vars']
