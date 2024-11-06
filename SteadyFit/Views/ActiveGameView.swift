@@ -60,6 +60,8 @@ struct ActiveGameView: View {
                 .kerning(-0.6) // Decreases letter spacing
             }
             .padding(.top, 20)
+            .padding(.bottom, 10)
+            .frame(width: 322, alignment: .leading)
             
             Spacer()
             
@@ -68,6 +70,7 @@ struct ActiveGameView: View {
                     .font(.custom("Poppins-Bold", size: 20))
                     .kerning(-0.6) // Decreases letter spacing
                     .frame(maxWidth: 320, alignment: .leading)
+                    .padding(.bottom, -5)
                 
                 ZStack {
                     RoundedRectangle(cornerRadius: 8)
@@ -101,6 +104,7 @@ struct ActiveGameView: View {
                         Button {
                             // Action on press
                             // action()
+                            // SAM HERE A FUNCTION GOES. MAKE IT IN THE VIEWMODEL AND PUT HERE
                         } label: {
                             ZStack {
                                 RoundedRectangle(cornerRadius: 0)
@@ -134,10 +138,20 @@ struct ActiveGameView: View {
                 Text("Participants")
                     .font(.custom("Poppins-Bold", size: 20))
                     .kerning(-0.6) // Decreases letter spacing
-                Text("Profile Icons Here (clickable?)")
-                    .font(.custom("Poppins-Bold", size: 20))
-                    .kerning(-0.6) // Decreases letter spacing
+                    .frame(width: 320, alignment: .leading)
+                HStack {
+                    Image("profile-example")
+                        .frame(width: 45, height: 45)
+                        .padding(.top, -10)
+                    Image("profile-example")
+                        .frame(width: 45, height: 45)
+                        .padding(.top, -10)
+                }
+                .frame(width: 322, alignment: .leading)
             }
+            .frame(width: 322)
+            .padding(.top, 10)
+            .padding(.bottom, 10)
             
             Spacer()
             
@@ -145,6 +159,7 @@ struct ActiveGameView: View {
                 Text("Overall Statistics")
                     .font(.custom("Poppins-Bold", size: 20))
                     .kerning(-0.6) // Decreases letter spacing
+                    .padding(.bottom, -5)
                 HStack{
                     // Circle completion percent pie chart
                     VStack{
@@ -253,10 +268,10 @@ struct ActiveGameView: View {
                 .padding(.leading, 20)
                 .frame(width: 212)
             }
+            .padding(.bottom, 10)
             
             Spacer()
             NavBarView(viewIndex: 4)
-                .padding(.bottom, -10)
         }
         //.frame(maxHeight: .infinity, alignment: .top)
         .frame(width: 350)

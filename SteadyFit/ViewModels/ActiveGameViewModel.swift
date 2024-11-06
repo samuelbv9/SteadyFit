@@ -12,6 +12,7 @@ import Combine
 class ActiveGameViewModel: ObservableObject {
     @Published var gameData: GameData?
     @Published var errorMessage: String?
+    // Add a isLoading bool for no user visable data updating
     
     func fetchCurrentGame(userId: String, gameCode: String) async throws -> GameData {
         // http://52.200.16.208/goal/?game_code=NODqAbjW&user_id=8503f31c-8c1f-45eb-a7dd-180095aad816
