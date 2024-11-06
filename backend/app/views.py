@@ -458,12 +458,16 @@ def weekly_update():
 
         # if a week has passed, do updates
         if weeks_elapsed > last_updated:
-            # Perform your update logic here (e.g., increment totals, adjust balance, etc.)
-            # Example: increment totalFrequency or totalDistance
-            new_total_distance = total_distance + calculate_distance(user_id, game_code)  # Implement your own logic
-            new_total_frequency = total_frequency + calculate_frequency(user_id, game_code)  # Implement your own logic
+            # call elo function to update users elo score for game's exercise type 
+            # call elo function to update users goal if game is adaptive
+
+            # update weekDistance, weekFrequency to be 0 for each user in game
             
-            # Update the database with the new stats
+
+
+            # update amountGained and amountLost
+            
+            # update the database with the new stats
             update_query = '''
                 UPDATE GameParticipants
                 SET totalDistance = %s, totalFrequency = %s

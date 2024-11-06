@@ -1,5 +1,5 @@
 CREATE TABLE Users (
-    userId       UUID PRIMARY KEY,
+    userId       VARCHAR(255) PRIMARY KEY,
     email        VARCHAR(255) NOT NULL DEFAULT 'default@example.com',    
     name         VARCHAR(255)
 );
@@ -19,7 +19,7 @@ CREATE TABLE Games (
 
 CREATE TABLE GameParticipants (
     gameCode       VARCHAR(20) NOT NULL,
-    userId         UUID NOT NULL,
+    userId         VARCHAR(255) NOT NULL,
     totalDistance  DECIMAL(10, 2) DEFAULT 0,
     totalFrequency INTEGER DEFAULT 0,
     amountGained   DECIMAL(10, 2) DEFAULT 0,
@@ -34,7 +34,7 @@ CREATE TABLE GameParticipants (
 
 CREATE TABLE Activities (
     gameCode       VARCHAR(20) NOT NULL,
-    userId         UUID NOT NULL,
+    userId         VARCHAR(255) NOT NULL,
     activity       VARCHAR(20) NOT NULL,
     distance       DECIMAL(10, 2) DEFAULT 0,
     duration       INTEGER DEFAULT 0,
@@ -45,7 +45,7 @@ CREATE TABLE Activities (
 );
 
 CREATE TABLE UserEloRatings (
-    userId UUID NOT NULL,
+    userId      VARCHAR(255) NOT NULL,
     walkingElo  INT DEFAULT 1200,
     runningElo  INT DEFAULT 1200,
     swimmingElo INT DEFAULT 1200,
