@@ -360,10 +360,12 @@ def last_upload(request):
         return HttpResponse(status=404)
 
     cursor.execute("SELECT timestamp FROM Activities WHERE gameCode = %s AND userId = %s ORDER BY timestamp DESC LIMIT 1", (game_code, user_id))
-    timestamp = cursor.fetchall()
-    return JsonResponse({
-        "timestamp": timestamp
-    })
+    timestamp_result = cursor.fetchone()
+    if timestamp_result:  # Check if a timestamp was found
+        timestamp = timestamp_result[0]  # Extract the timestamp from the tuple
+        return JsonResponse({"timestamp": timestamp})
+    else:
+        return JsonResponse({"timestamp": None})  # Return None if no timestamp found
 
 
 @csrf_exempt
