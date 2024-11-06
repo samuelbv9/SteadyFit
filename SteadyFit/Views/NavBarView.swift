@@ -36,8 +36,9 @@ struct NavBarView: View {
                     Image("vert-line")
                         .padding(.bottom, 35)
                     
-                    Image(viewIndex == 1 ?
-                          "plus-blue-hd" : "plus-hd")
+                    NavigationLink(destination: JoinGameView().navigationBarBackButtonHidden(true)) {
+                        Image(viewIndex == 1 ?
+                              "plus-blue-hd" : "plus-hd")
                         .resizable()
                         .padding(5)
                         .background(
@@ -48,6 +49,7 @@ struct NavBarView: View {
                         .padding(.trailing, 20)
                         .padding(.leading, 20)
                         .frame(width: 80, height: 75)
+                    }
                     
                     Image("vert-line")
                         .padding(.bottom, 35)

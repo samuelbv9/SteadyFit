@@ -1,15 +1,15 @@
 //
-//  ActiveGameView.swift
+//  GameCompletedView.swift
 //  SteadyFit
 //
-//  Created by Brenden Saur on 11/1/24.
+//  Created by Brenden Saur on 11/5/24.
 //
 
 import SwiftUI
 import Foundation
 import Charts
 
-struct ActiveGameView: View {
+struct GameCompletedView: View {
     @StateObject private var viewModel = ActiveGameViewModel()
     
     var body: some View {
@@ -41,103 +41,11 @@ struct ActiveGameView: View {
 
             let gameData = viewModel.gameData
             
-            HStack { // Game title and back button
-                Button {
-                    // Action on press
-                    // action()
-                } label: {
-                    ZStack {
-                        RoundedRectangle(cornerRadius: 40)
-                            .foregroundColor(Color.deepBlue)
-                            .frame(height: 30)
-                            .frame(width: 35)
-                        Text("<")
-                            .foregroundColor(Color.white)
-                    }
-                }
-                Text(gameData?.exerciseType.capitalized ?? "no game data")
+            
+            Text("Game Completed")
                 .font(.custom("Poppins-Bold", size: 30))
                 .kerning(-0.6) // Decreases letter spacing
-            }
-            .padding(.top, 20)
-            
-            Spacer()
-            
-            VStack { // Your adaptive goal
-                Text("Your Adaptive Goal")
-                    .font(.custom("Poppins-Bold", size: 20))
-                    .kerning(-0.6) // Decreases letter spacing
-                    .frame(maxWidth: 320, alignment: .leading)
-                
-                ZStack {
-                    RoundedRectangle(cornerRadius: 8)
-                        .stroke(Color.deepBlue, lineWidth: 2)
-                        .frame(height: 150)
-                        .frame(width:322)
-                    VStack{
-                        HStack {
-                            Text("Distance") // This will need to change based on game
-                                .font(.custom("Poppins-Bold", size: 20))
-                                .kerning(-0.3) // Decreases letter spacing
-                                //.frame(maxWidth: 300, alignment: .leading)
-                                .padding(.leading, 20)
-                            Spacer()
-                            Text("\(gameData?.totalDistance ?? "err") units")
-                                .padding(.trailing, 30)
-                                .font(.custom("Poppins-Regular", size: 20))
-                                .kerning(-0.3)
-                        }
-                        HStack {
-                            Text("Current Progress") // This will need to change based on game
-                                .font(.custom("Poppins-Bold", size: 20))
-                                .kerning(-0.3) // Decreases letter spacing
-                                .padding(.leading, 20)
-                            Spacer()
-                            Text("\(gameData?.currentDistance ?? "err") units")
-                                .padding(.trailing, 30)
-                                .font(.custom("Poppins-Regular", size: 20))
-                                .kerning(-0.3)
-                        }
-                        Button {
-                            // Action on press
-                            // action()
-                        } label: {
-                            ZStack {
-                                RoundedRectangle(cornerRadius: 0)
-                                    .foregroundColor(Color.deepBlue)
-                                    .frame(height: 50)
-                                    .frame(width: 322)
-                                    .clipShape(RoundedCorner(radius: 8, corners: [.bottomLeft, .bottomRight]))
-                                HStack {
-                                    Text("Upload & Verify Workout")
-                                        .foregroundColor(Color.white)
-                                        .padding(.leading, 20)
-                                        .font(.custom("Poppins-SemiBold", size: 15))
-                                        .kerning(-0.3)
-                                    Spacer()
-                                    Image("check-white")
-                                        .padding(.trailing, 20)
-                                    
-                                }
-                                
-                            }
-                        }
-                        .padding(.bottom, -25)
-                    }
-                    .frame(width: 322, height: 150)
-                }
-            }
-            
-            Spacer()
-            
-            VStack { // PARTICIPANTS
-                Text("Participants")
-                    .font(.custom("Poppins-Bold", size: 20))
-                    .kerning(-0.6) // Decreases letter spacing
-                Text("Profile Icons Here (clickable?)")
-                    .font(.custom("Poppins-Bold", size: 20))
-                    .kerning(-0.6) // Decreases letter spacing
-            }
+                .padding(.top, 20)
             
             Spacer()
             
@@ -269,60 +177,60 @@ struct ActiveGameView: View {
 }
 
 #Preview {
-    ActiveGameView()
+    GameCompletedView()
 }
 
-struct RoundedCorner: Shape {
-    var radius: CGFloat = .infinity
-    var corners: UIRectCorner = .allCorners
-
-    func path(in rect: CGRect) -> Path {
-        let path = UIBezierPath(roundedRect: rect, byRoundingCorners: corners, cornerRadii: CGSize(width: radius, height: radius))
-        return Path(path.cgPath)
-    }
-}
-
-struct CustomCircle: Shape {
-    var trimTo: CGFloat = 1
-    var rotation: Double = 0
-    var lineWidth: CGFloat = 1
-
-    func path(in rect: CGRect) -> Path {
-        var path = Path()
-        path.addArc(center: CGPoint(x: rect.midX, y: rect.midY),
-                    radius: min(rect.width, rect.height) / 2,
-                    startAngle: .degrees(0),
-                    endAngle: .degrees(360),
-                    clockwise: false)
-        return path
-            .trimmedPath(from: 0, to: trimTo)
-            .strokedPath(StrokeStyle(lineWidth: lineWidth, lineCap: .round, lineJoin: .round))
-            .applying(CGAffineTransform(rotationAngle: 90.0))
-    }
-}
-
-extension Color {
-    static func customColor(for index: Int) -> Color {
-        switch index {
-        case 0:
-            return .deepBlue
-        case 1:
-            return .darkGray
-        // Add more cases as needed
-        default:
-            return .gray
-        }
-    }
-    
-    static func customColor2(for index: Int) -> Color {
-        switch index {
-        case 0:
-            return .steadyBlue
-        case 1:
-            return .lightGray
-        // Add more cases as needed
-        default:
-            return .gray
-        }
-    }
-}
+//struct RoundedCorner: Shape {
+//    var radius: CGFloat = .infinity
+//    var corners: UIRectCorner = .allCorners
+//
+//    func path(in rect: CGRect) -> Path {
+//        let path = UIBezierPath(roundedRect: rect, byRoundingCorners: corners, cornerRadii: CGSize(width: radius, height: radius))
+//        return Path(path.cgPath)
+//    }
+//}
+//
+//struct CustomCircle: Shape {
+//    var trimTo: CGFloat = 1
+//    var rotation: Double = 0
+//    var lineWidth: CGFloat = 1
+//
+//    func path(in rect: CGRect) -> Path {
+//        var path = Path()
+//        path.addArc(center: CGPoint(x: rect.midX, y: rect.midY),
+//                    radius: min(rect.width, rect.height) / 2,
+//                    startAngle: .degrees(0),
+//                    endAngle: .degrees(360),
+//                    clockwise: false)
+//        return path
+//            .trimmedPath(from: 0, to: trimTo)
+//            .strokedPath(StrokeStyle(lineWidth: lineWidth, lineCap: .round, lineJoin: .round))
+//            .applying(CGAffineTransform(rotationAngle: 90.0))
+//    }
+//}
+//
+//extension Color {
+//    static func customColor(for index: Int) -> Color {
+//        switch index {
+//        case 0:
+//            return .deepBlue
+//        case 1:
+//            return .darkGray
+//        // Add more cases as needed
+//        default:
+//            return .gray
+//        }
+//    }
+//    
+//    static func customColor2(for index: Int) -> Color {
+//        switch index {
+//        case 0:
+//            return .steadyBlue
+//        case 1:
+//            return .lightGray
+//        // Add more cases as needed
+//        default:
+//            return .gray
+//        }
+//    }
+//}
