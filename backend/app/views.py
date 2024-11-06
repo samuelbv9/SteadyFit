@@ -543,7 +543,7 @@ def weekly_update():
                 SET isActive = FALSE
                 WHERE gameCode = %s
                 '''
-            cursor.execute(query, (game_code, ))
+        cursor.execute(query, (game_code, ))
 
     # commit db changes
     connection.commit()
