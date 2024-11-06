@@ -23,19 +23,75 @@ struct Game {
     }
 }
 
-struct userProgress {
-    var currentDistance: Double
-    var currentFrequency: Int
-    var totalDistance: Double
-    var totalFrequency: Int
-}
 
 final class GamesStore {
     static let shared = GamesStore()
     private(set) var activeGames = [Game]()
     private(set) var pastGames = [Game]()
-    
+    private var isRetrieving = false
+    private let synchronized = DispatchQueue(label: "synchronized", qos: .background)
     let serverUrl = "http://52.200.16.208/"
+    
+    func getBetBalances(_ gameCode: String) {
+        // serial retrievals
+        var proceed = false
+        synchronized.sync {
+            if !self.isRetrieving {
+                proceed = true
+                self.isRetrieving = true
+            }
+        }
+        guard proceed else {
+            return
+        }
+
+        guard let apiUrl = URL(string: "\(serverUrl)bet_details/?game_code=\(gameCode)") else {
+            print("bet_details: Bad URL")
+            return
+        }
+        print(apiUrl)
+        
+        DispatchQueue.global(qos: .background).async {
+            var request = URLRequest(url: apiUrl)
+            request.setValue("application/json; charset=utf-8", forHTTPHeaderField: "Accept") // expect response in JSON
+            request.httpMethod = "GET"
+
+            URLSession.shared.dataTask(with: request) { data, response, error in
+                defer { // allow subsequent retrieval
+                    self.synchronized.async {
+                        self.isRetrieving = false
+                    }
+                }
+                guard let data = data, error == nil else {
+                    print("getBetBalances: NETWORKING ERROR")
+                    return
+                }
+                if let httpStatus = response as? HTTPURLResponse, httpStatus.statusCode != 200 {
+                    print("getBetBalances: HTTP STATUS: \(httpStatus.statusCode)")
+                    return
+                }
+                
+                guard let jsonObj = try? JSONSerialization.jsonObject(with: data) as? [[String: Any]] else {
+                    print("getBetBalances: failed JSON deserialization")
+                    return
+                }
+                
+                var balances: [String: Double] = [:]
+
+                for entry in jsonObj {
+                    if let userId = entry["userId"] as? String {
+                        // Ensure balance is a Double, even if it's a String in JSON
+                        if let balanceString = entry["balance"] as? String, let balance = Double(balanceString) {
+                            balances[userId] = balance
+                        }
+                    }
+                }
+                print("yasss??? \(balances)")
+                
+            }.resume()
+        }
+        
+    }
     
     func postGame(_ game: UserData) {
         // Create a Date object (current date)
