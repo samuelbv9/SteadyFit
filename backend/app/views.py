@@ -257,7 +257,7 @@ def join_game(request):
             "user_id", "game_code"
         ]
     )
-    
+
     # verify that user id is valid
     cursor.execute("SELECT * FROM Users WHERE userId = %s", (user_id,))
     user = cursor.fetchone()
@@ -527,7 +527,7 @@ def weekly_update():
                     '''
                     cursor.execute(query, (new_amount_lost, game_code, user_id))
 
-                else if user_id in winners:
+                elif user_id in winners:
                     new_amount_gained = amount_gained + split_amount
                     query = '''
                         UPDATE GameParticipants
