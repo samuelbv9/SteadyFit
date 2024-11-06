@@ -452,7 +452,6 @@ def weekly_update():
     cursor.execute(query)
     games = cursor.fetchall()
 
-    # iterate through the games and check if a week has passed since startDate
     for game in games:
         game_code, start_date, last_updated, bet_amount, duration, adaptive_goals = game
         
@@ -461,6 +460,7 @@ def weekly_update():
 
         # if a week has passed, do updates
         if weeks_elapsed > last_updated:
+            # change game's last updated week # to current week #
             new_last_updated = last_updated + 1
             query = '''
                     UPDATE Games
@@ -468,9 +468,6 @@ def weekly_update():
                     WHERE gameCode = %s
                     ''' 
             cursor.execute(query, (new_last_updated, game_code))
-
-            # call elo function to update users elo score for game's exercise type 
-            # call elo function to update users goal if game is adaptive
 
             # get all users in each game 
             query = ''' SELECT GP.userId, GP.weekDistanceGoal, GP.weekFrequencyGoal, GP.weekDistance, GP.weekFrequency, GP.amountGained, GP.amountLost
@@ -486,14 +483,16 @@ def weekly_update():
                 losers = []
                 winners = []
 
-                # get info to update amountGained and amountLost later
+                # get all winners and all losers for updating amountGained and amountLost later
+                # cant do it now bc we need all winners, all losers for calculations
                 if week_distance < week_distance_goal or week_frequency < week_freq_goal:
                     losers.append(user_id)
                 else:
                     winners.append(user_id)
 
-                # use elo function to update user's elo score based on this week's stats
-                
+                # call elo function to update users elo score for game's exercise type using user's week stats
+                # use elo function to update a user's goal if the game is adaptive
+
                 # update weekDistance, weekFrequency to be 0 for each user in game
                 query = '''
                     UPDATE GameParticipants
@@ -502,15 +501,13 @@ def weekly_update():
                 '''
                 cursor.execute(query, (game_code, user_id))
 
-                # use elo function to update a user's goal if the game is adaptive
-
 
 
             # use winners and losers to update balances for each player in each game
-            # rounding isn't perfect, should probably fix
+            # rounding isn't perfect (shown in example), should probably fix
             weekly_amount = round(bet_amount / duration, 2) # 250 / 4 = 62.5
             split_amount = round(len(losers) * weekly_amount, 2) # 62.5 * 3 = 187.5
-            split_amount = round(split_amount / len(winners), 2) # 187.5 / 4 = 46.875 = 46.88 (46.88 * 4 = 187.52 (PROBLEM))
+            split_amount = round(split_amount / len(winners), 2) # 187.5 / 4 = 46.875 = 46.88 ------> (46.88 * 4 = 187.52) ------> 187.52 > original split_amount (187.5)
 
             for p in participants:
                 user_id = p[0]
@@ -533,6 +530,8 @@ def weekly_update():
                         WHERE gameCode = %s AND userId = %s
                     '''
                     cursor.execute(query, (new_amount_gained, game_code, user_id))
+    
+    # check if the game has ended, update to not active if so
     if weeks_elapsed >= duration:
         query = '''
                 UPDATE Games
@@ -541,13 +540,14 @@ def weekly_update():
                 '''
             cursor.execute(query, (game_code, ))
 
+    # commit db changes
     connection.commit()
 
 
 # scheduler = BackgroundScheduler()
 
 # # schedule to run at the end of everyday
-# scheduler.add_job(job, 'interval', days=1, start_date='2024-11-06 23:59:59')
+# scheduler.add_job(job, 'interval', days=1, start_date='2024-11-06 23:59:00')
 # scheduler.start()
 
 # try:
