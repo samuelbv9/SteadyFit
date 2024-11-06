@@ -257,11 +257,13 @@ def join_game(request):
     cursor = connection.cursor()
 
     json_data = json.loads(request.body)
-    user_id, game_code = (
-        json_data.get(key) for key in [
-            "user_id", "game_code"
-        ]
-    )
+
+    user_id = json_data.get("user_id")
+    game_code = json_data.get("game_code")
+
+    if not user_id or not game_code:
+        return JsonResponse({"error": "Invalid or missing user_id/game_code"}, status=400)
+
 
     # verify that user id is valid
     cursor.execute("SELECT * FROM Users WHERE userId = %s", (user_id,))
@@ -283,9 +285,17 @@ def join_game(request):
         distance = round(distance / duration, 2)
     if frequency is not None:
         frequency = round(frequency / duration, 2)
-    cursor.execute("INSERT INTO GameParticipants (gameCode, userId, weekDistanceGoal, weekFrequencyGoal) VALUES (%s, %s, %s, %s)",
-                   (game_code, user_id, distance, frequency))
-    connection.commit()
+        
+    try:
+        cursor.execute("""
+            INSERT INTO GameParticipants 
+            (gameCode, userId, weekDistanceGoal, weekFrequencyGoal) 
+            VALUES (%s, %s, %s, %s)
+            """, 
+            (game_code, user_id, distance, frequency))
+        connection.commit()
+    except Exception as e:
+        return JsonResponse({"error": str(e)}, status=500)
 
     return JsonResponse({
                         "game_code": game_code,
