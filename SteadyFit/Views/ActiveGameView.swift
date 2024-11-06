@@ -8,9 +8,17 @@
 import SwiftUI
 import Foundation
 import Charts
+import HealthKit
 
 struct ActiveGameView: View {
     @StateObject private var viewModel = ActiveGameViewModel()
+    
+    //initialize instance of class HealthStore
+    private var healthStore: HealthStore?
+    
+    init() {
+        healthStore = HealthStore()
+    }
     
     var body: some View {
         let data = [ // This will be for the circle chart
@@ -99,8 +107,44 @@ struct ActiveGameView: View {
                                 .kerning(-0.3)
                         }
                         Button {
-                            // Action on press
-                            // action()
+                            if let healthStore = healthStore {
+                                //check if we have permmission to use metrics and if not request permission
+                                healthStore.requestAuthorization { success in
+                                    if success {
+                                        healthStore.calculateWorkouts { workouts in
+                                            if let workouts = workouts {
+                                                //update UI
+                                                for workout in workouts {
+                                                    // 1. Report Activity Type
+                                                    let activityType = workout.workoutActivityType.name
+                                                    
+                                                    // 2. Report Duration in Minutes
+                                                    let durationInMinutes = workout.duration / 60
+                                                    
+                                                    // 3. Report Distance (if available)
+                                                    var finalDistance : Double? = nil
+                                                    if let distance = workout.totalDistance {
+                                                        if workout.workoutActivityType == .swimming {
+                                                            finalDistance = distance.doubleValue(for: HKUnit.yard())
+                                                        }
+                                                        else {
+                                                            finalDistance = distance.doubleValue(for: HKUnit.mile())
+                                                        }
+                                                    }
+                                                   
+                                                    //Send this data to DB
+                                                    print("activityType: ", activityType)
+                                                    print("duration: ", durationInMinutes)
+                                                    print("distance: ", finalDistance ?? "nil")
+                                                   
+                                                    //SEND TO DB HERE
+                                                    healthStore.sendActivityToDB(activityType: activityType, durationInMinutes: Int(durationInMinutes), distanceText: finalDistance)
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
                         } label: {
                             ZStack {
                                 RoundedRectangle(cornerRadius: 0)
@@ -323,6 +367,20 @@ extension Color {
         // Add more cases as needed
         default:
             return .gray
+        }
+    }
+}
+
+// Helper extension for workout activity type names
+extension HKWorkoutActivityType {
+    var name: String {
+        switch self {
+        case .running: return "Running"
+        case .walking: return "Walking"
+        case .cycling: return "Cycling"
+        case .swimming: return "Swimming"
+        case .traditionalStrengthTraining: return "Weightlifting"
+        default: return "Other Activity"
         }
     }
 }
