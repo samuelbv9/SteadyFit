@@ -271,7 +271,7 @@ def join_game(request):
                         "user_id": user_id
                     })
 
-
+@csrf_exempt
 def add_workout(request):
     """
     Adds a completed workout to a user's workout list
@@ -282,37 +282,39 @@ def add_workout(request):
         return HttpResponse(status=404)
 
     cursor = connection.cursor()
+    json_data = json.loads(request.body)
+
+    user_id, game_code, activity_type, distance, duration = (
+        json_data.get(key) for key in [
+            "user_id", "game_code", "activity_type",
+            "distance", "duration"
+        ]
+    )
 
     # verify that user id is valid
-    user_id = request.GET.get("user_id")
     cursor.execute("SELECT * FROM Users WHERE userId = %s", (user_id,))
     user = cursor.fetchone()
     if not user:
         return HttpResponse(status=400)
 
     # verify that game code is valid + fetch game details
-    game_code = request.GET.get("game_code")
     cursor.execute("SELECT exerciseType FROM Games WHERE gameCode = %s", (game_code,))
     exerciseType = cursor.fetchone()
     if not exerciseType:
-        return HttpResponse(status=404)
-
-    activity_type = request.GET.get("activity_type")
-    distance = request.GET.get("distance")
-    duration = request.GET.get("duration")
+        return HttpResponse(status=400)
 
     current_timestamp = timezone.now()
 
-    cursor.execute("UPDATE GameParticipants \
-                   SET weekDistance = weekDistance + %s, \
-                   weekFrequency = weekFrequency + 1 \
-                   totalDistance = totalDistance + %s, \
-                   totalFrequency = totalFrequency + 1 \
-                   WHERE gameCode = %s AND userId = %s;",
-                   (distance, distance, game_code, user_id))
+#    cursor.execute("UPDATE GameParticipants \
+#                   SET weekDistance = weekDistance + %s, \
+#                   weekFrequency = weekFrequency + 1 \
+#                   totalDistance = totalDistance + %s, \
+#                   totalFrequency = totalFrequency + 1 \
+#                   WHERE gameCode = %s AND userId = %s;",
+#                   (distance, distance, game_code, user_id))
 
     # verify activity type is the same as game_type
-    if activity_type == exerciseType:
+    if activity_type == exerciseType[0]:
         cursor.execute("INSERT INTO Activities (gameCode, userId, activity, distance, duration, timestamp) \
                         VALUES (%s, %s, %s, %s, %s, %s)",
                         (game_code, user_id, activity_type, distance, duration, current_timestamp))
@@ -324,9 +326,13 @@ def add_workout(request):
         })
     else:
         return JsonResponse({
-            "error": "uploaded wrong activity so nothing was done"
+            "error": "uploaded wrong activity so nothing was done",
+            "activityUploaded": activity_type,
+            "exerciseType": exerciseType[0]
         })
 
+
+@csrf_exempt
 def last_upload(request):
     """
     Get timestamp for last time workout was uploaded in certain game
@@ -360,7 +366,7 @@ def last_upload(request):
     })
 
 
-
+@csrf_exempt
 def goal_status(request):
     """
     Gets the progress of a user towards their goal in a certain game.
