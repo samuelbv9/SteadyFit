@@ -443,110 +443,110 @@ def create_user(request):
                     })
 
 
-def weekly_update():
-    # get the current date
-    current_date = datetime.now().date()
+# def weekly_update():
+#     # get the current date
+#     current_date = datetime.now().date()
 
-    # get all active games
-    cursor = connection.cursor()
-    query = '''
-        SELECT G.gameCode, G.startDate, G.lastUpdated, G.betAmount, G.duration, G.adaptiveGoals
-        FROM Games G
-        WHERE G.isActive = TRUE
-    '''
-    cursor.execute(query)
-    games = cursor.fetchall()
+#     # get all active games
+#     cursor = connection.cursor()
+#     query = '''
+#         SELECT G.gameCode, G.startDate, G.lastUpdated, G.betAmount, G.duration, G.adaptiveGoals
+#         FROM Games G
+#         WHERE G.isActive = TRUE
+#     '''
+#     cursor.execute(query)
+#     games = cursor.fetchall()
 
-    for game in games:
-        game_code, start_date, last_updated, bet_amount, duration, adaptive_goals = game
+#     for game in games:
+#         game_code, start_date, last_updated, bet_amount, duration, adaptive_goals = game
         
-        # check if a week has passed
-        weeks_elapsed = (current_date - start_date).days // 7
+#         # check if a week has passed
+#         weeks_elapsed = (current_date - start_date).days // 7
 
-        # if a week has passed, do updates
-        if weeks_elapsed > last_updated:
-            # change game's last updated week # to current week #
-            new_last_updated = last_updated + 1
-            query = '''
-                    UPDATE Games
-                    SET lastUpdated = %s
-                    WHERE gameCode = %s
-                    ''' 
-            cursor.execute(query, (new_last_updated, game_code))
+#         # if a week has passed, do updates
+#         if weeks_elapsed > last_updated:
+#             # change game's last updated week # to current week #
+#             new_last_updated = last_updated + 1
+#             query = '''
+#                     UPDATE Games
+#                     SET lastUpdated = %s
+#                     WHERE gameCode = %s
+#                     ''' 
+#             cursor.execute(query, (new_last_updated, game_code))
 
-            # get all users in each game 
-            query = ''' SELECT GP.userId, GP.weekDistanceGoal, GP.weekFrequencyGoal, GP.weekDistance, GP.weekFrequency, GP.amountGained, GP.amountLost
-                        FROM GameParticipants GP
-                        WHERE GP.gameCode = %s
-                    '''
-            cursor.execute(query, (game_code,))
-            participants = cursor.fetchall()
-
-
-            for p in participants:
-                user_id, week_distance_goal, week_freq_goal, week_distance, week_frequency, amount_gained, amount_lost = p
-                losers = []
-                winners = []
-
-                # get all winners and all losers for updating amountGained and amountLost later
-                # cant do it now bc we need all winners, all losers for calculations
-                if week_distance < week_distance_goal or week_frequency < week_freq_goal:
-                    losers.append(user_id)
-                else:
-                    winners.append(user_id)
-
-                # call elo function to update users elo score for game's exercise type using user's week stats
-                # use elo function to update a user's goal if the game is adaptive
-
-                # update weekDistance, weekFrequency to be 0 for each user in game
-                query = '''
-                    UPDATE GameParticipants
-                    SET weekDistance = 0, weekFrequency = 0
-                    WHERE gameCode = %s AND userId = %s
-                '''
-                cursor.execute(query, (game_code, user_id))
+#             # get all users in each game 
+#             query = ''' SELECT GP.userId, GP.weekDistanceGoal, GP.weekFrequencyGoal, GP.weekDistance, GP.weekFrequency, GP.amountGained, GP.amountLost
+#                         FROM GameParticipants GP
+#                         WHERE GP.gameCode = %s
+#                     '''
+#             cursor.execute(query, (game_code,))
+#             participants = cursor.fetchall()
 
 
+#             for p in participants:
+#                 user_id, week_distance_goal, week_freq_goal, week_distance, week_frequency, amount_gained, amount_lost = p
+#                 losers = []
+#                 winners = []
 
-            # use winners and losers to update balances for each player in each game
-            # rounding isn't perfect (shown in example), should probably fix
-            weekly_amount = round(bet_amount / duration, 2) # 250 / 4 = 62.5
-            split_amount = round(len(losers) * weekly_amount, 2) # 62.5 * 3 = 187.5
-            split_amount = round(split_amount / len(winners), 2) # 187.5 / 4 = 46.875 = 46.88 ------> (46.88 * 4 = 187.52) ------> 187.52 > original split_amount (187.5)
+#                 # get all winners and all losers for updating amountGained and amountLost later
+#                 # cant do it now bc we need all winners, all losers for calculations
+#                 if week_distance < week_distance_goal or week_frequency < week_freq_goal:
+#                     losers.append(user_id)
+#                 else:
+#                     winners.append(user_id)
 
-            for p in participants:
-                user_id = p[0]
-                amount_gained = p[5]
-                amount_lost = p[6]
-                if user_id in losers:
-                    new_amount_lost = amount_lost + weekly_amount
-                    query = '''
-                        UPDATE GameParticipants
-                        SET amountLost = %s
-                        WHERE gameCode = %s AND userId = %s
-                    '''
-                    cursor.execute(query, (new_amount_lost, game_code, user_id))
+#                 # call elo function to update users elo score for game's exercise type using user's week stats
+#                 # use elo function to update a user's goal if the game is adaptive
 
-                elif user_id in winners:
-                    new_amount_gained = amount_gained + split_amount
-                    query = '''
-                        UPDATE GameParticipants
-                        SET amountGained = %s
-                        WHERE gameCode = %s AND userId = %s
-                    '''
-                    cursor.execute(query, (new_amount_gained, game_code, user_id))
+#                 # update weekDistance, weekFrequency to be 0 for each user in game
+#                 query = '''
+#                     UPDATE GameParticipants
+#                     SET weekDistance = 0, weekFrequency = 0
+#                     WHERE gameCode = %s AND userId = %s
+#                 '''
+#                 cursor.execute(query, (game_code, user_id))
+
+
+
+#             # use winners and losers to update balances for each player in each game
+#             # rounding isn't perfect (shown in example), should probably fix
+#             weekly_amount = round(bet_amount / duration, 2) # 250 / 4 = 62.5
+#             split_amount = round(len(losers) * weekly_amount, 2) # 62.5 * 3 = 187.5
+#             split_amount = round(split_amount / len(winners), 2) # 187.5 / 4 = 46.875 = 46.88 ------> (46.88 * 4 = 187.52) ------> 187.52 > original split_amount (187.5)
+
+#             for p in participants:
+#                 user_id = p[0]
+#                 amount_gained = p[5]
+#                 amount_lost = p[6]
+#                 if user_id in losers:
+#                     new_amount_lost = amount_lost + weekly_amount
+#                     query = '''
+#                         UPDATE GameParticipants
+#                         SET amountLost = %s
+#                         WHERE gameCode = %s AND userId = %s
+#                     '''
+#                     cursor.execute(query, (new_amount_lost, game_code, user_id))
+
+#                 elif user_id in winners:
+#                     new_amount_gained = amount_gained + split_amount
+#                     query = '''
+#                         UPDATE GameParticipants
+#                         SET amountGained = %s
+#                         WHERE gameCode = %s AND userId = %s
+#                     '''
+#                     cursor.execute(query, (new_amount_gained, game_code, user_id))
     
-    # check if the game has ended, update to not active if so
-    if weeks_elapsed >= duration:
-        query = '''
-                UPDATE Games
-                SET isActive = FALSE
-                WHERE gameCode = %s
-                '''
-        cursor.execute(query, (game_code, ))
+#     # check if the game has ended, update to not active if so
+#     if weeks_elapsed >= duration:
+#         query = '''
+#                 UPDATE Games
+#                 SET isActive = FALSE
+#                 WHERE gameCode = %s
+#                 '''
+#         cursor.execute(query, (game_code, ))
 
-    # commit db changes
-    connection.commit()
+#     # commit db changes
+#     connection.commit()
 
 
 # scheduler = BackgroundScheduler()
