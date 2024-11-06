@@ -41,6 +41,34 @@ class Challenge:
             if not (min_val <= value <= max_val):
                 return False
         return True
+    
+    def bound_values(self, challenge_values: Tuple) -> Tuple:
+        """
+        Takes a tuple of challenge values and returns a new tuple with values bounded within their limits.
+        If a value is None, it keeps it as None.
+        
+        Args:
+            challenge_values (Tuple): Tuple of challenge values to bound
+            
+        Returns:
+            Tuple: New tuple with bounded values
+        """
+        bounded_values = []
+        
+        for value, (var_name, (min_val, max_val)) in zip(
+            challenge_values, 
+            self.limits.items()
+        ):
+            # If value is None, keep it as None
+            if value is None:
+                bounded_values.append(None)
+                continue
+                
+            # Bound the value between min and max
+            bounded_value = max(min_val, min(value, max_val))
+            bounded_values.append(bounded_value)
+            
+        return tuple(bounded_values)
 
     def get_elo(self, challenge_values: Tuple) -> float:
         if not self.check_limits(challenge_values):

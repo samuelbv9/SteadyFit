@@ -442,6 +442,10 @@ def create_user(request):
                         "done": user_id,
                     })
 
+# # from elo import Challenge, serialize_challenge_to_csv, deserialize_challenge_from_csv, create_challenge, compare_elo
+# from steadyfit.adaptive.elo import elo  # import correctly !!!
+# import os
+# from django.conf import settings
 
 # def weekly_update():
 #     # get the current date
@@ -450,7 +454,7 @@ def create_user(request):
 #     # get all active games
 #     cursor = connection.cursor()
 #     query = '''
-#         SELECT G.gameCode, G.startDate, G.lastUpdated, G.betAmount, G.duration, G.adaptiveGoals
+#         SELECT G.gameCode, G.startDate, G.lastUpdated, G.betAmount, G.duration, G.adaptiveGoals, G.exerciseType
 #         FROM Games G
 #         WHERE G.isActive = TRUE
 #     '''
@@ -458,7 +462,7 @@ def create_user(request):
 #     games = cursor.fetchall()
 
 #     for game in games:
-#         game_code, start_date, last_updated, bet_amount, duration, adaptive_goals = game
+#         game_code, start_date, last_updated, bet_amount, duration, adaptive_goals, exercise_type = game
         
 #         # check if a week has passed
 #         weeks_elapsed = (current_date - start_date).days // 7
@@ -482,11 +486,22 @@ def create_user(request):
 #             cursor.execute(query, (game_code,))
 #             participants = cursor.fetchall()
 
+#             challenge_settings = settings.challenge[exercise_type]
+#             challege_file_loc = challenge_settings['file']
 
+#             if os.path.exists(challege_file_loc):
+#                 challenge = elo.deserialize_challenge_from_csv(challege_file_loc)
+#             else:
+#                 # Initialize with common swimming distances (meters) and target times (seconds)
+#                 challenge = elo.create_challenge(
+#                     challenge_settings['name'],
+#                     challenge_settings['default_vars']
+#                 )
+                
+#             losers = []
+#             winners = []
 #             for p in participants:
 #                 user_id, week_distance_goal, week_freq_goal, week_distance, week_frequency, amount_gained, amount_lost = p
-#                 losers = []
-#                 winners = []
 
 #                 # get all winners and all losers for updating amountGained and amountLost later
 #                 # cant do it now bc we need all winners, all losers for calculations
@@ -496,7 +511,47 @@ def create_user(request):
 #                     winners.append(user_id)
 
 #                 # call elo function to update users elo score for game's exercise type using user's week stats
+#                 elo_type = exercise_type + "Elo"
+#                 query = ''' SELECT %s
+#                     FROM UserEloRatings 
+#                     WHERE userId = %s
+#                 '''
+#                 cursor.execute(query, (elo_type, user_id))
+#                 elo_score = cursor.fetchone()[0]
+
+#                 bounded_values = challenge.bound_values(
+#                     challenge_settings['get_challenge_tuple'](week_distance, week_frequency)
+#                 )
+#                 # for i in bounded_values:
+#                 #     if i is None:
+#                 #         continue
+#                 #         # don't run compare elo
+
+#                 new_elo, _ = challenge.compare_elo(
+#                     player_elo=elo_score,
+#                     challenge=bounded_values,
+#                     outcome= 1.0 if not (week_distance < week_distance_goal or week_frequency < week_freq_goal) else 0.0
+#                 )
+
+#                 query = '''
+#                     UPDATE UserEloRatings
+#                     SET %s = %s 
+#                     WHERE userId = %s
+#                 '''
+#                 cursor.execute(query, (elo_type, new_elo, user_id))
+                
 #                 # use elo function to update a user's goal if the game is adaptive
+#                 if adaptive_goals:
+#                     new_challenges = challenge.get_nearest_challenges(new_elo)
+#                     best_challenge = new_challenges[0]
+#                     challenge_params = best_challenge[1]
+#                     g_t = challenge_settings['get_generic_tuple'](challenge_params)
+#                     query = '''
+#                         UPDATE GameParticipants
+#                         SET weekDistanceGoal = %s, weekFrequencyGoal = %s
+#                         WHERE gameCode = %s AND userId = %s
+#                     '''
+#                     cursor.execute(query, (g_t[0], g_t[1], game_code, user_id))
 
 #                 # update weekDistance, weekFrequency to be 0 for each user in game
 #                 query = '''
