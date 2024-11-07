@@ -108,14 +108,17 @@ def past_games(request):
     Request must contain: user_id
 
     Response format:
-    [
-        {
-            "exerciseType": string,
-            "duration": int,
-            "betAmount": float,
-            "completed": string
-        }, ...
-    ]
+    {
+        "past_games":
+            [
+                {
+                    "exerciseType": string,
+                    "duration": int,
+                    "betAmount": float,
+                    "completed": string
+                }, ...
+            ]
+    }
     """
     if request.method != 'GET':
         return HttpResponse(status=404)
@@ -146,8 +149,7 @@ def past_games(request):
             "completed": time_completed
         })
 
-    # TODO: edit response so it's in key-value format
-    return JsonResponse(result, safe=False) # listed starting with most recently finished
+    return JsonResponse({"past_games": result}) # listed starting with most recently finished
 
 @csrf_exempt
 def active_games(request):
@@ -556,12 +558,15 @@ def bet_details(request):
     Request must contain game_code.
 
     Response format:
-    [
-        {
-            "userId": string,
-            "balance": float
-        }, ...
-    ]
+    {
+        bet_details: 
+            [
+                {
+                    "userId": string,
+                    "balance": float
+                }, ...
+            ]
+    }
     """
     if request.method != 'GET':
         return HttpResponse(status=404)
@@ -579,8 +584,7 @@ def bet_details(request):
         for row in participants
     ]
 
-    # TODO: update this so response is in key-value format
-    return JsonResponse(response_data, safe=False)  # safe = false : not returning dict
+    return JsonResponse({"bet_details": response_data}, safe=False)  # safe = false : not returning dict
 
 
 @csrf_exempt
