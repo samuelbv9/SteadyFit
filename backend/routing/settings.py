@@ -156,7 +156,7 @@ challenges = {
         "get_challenge_tuple": lambda d, f: (d,),
         "get_generic_tuple": lambda d: (d, None)
     },
-    "strength_training": {
+    "strengthTraining": {
         "file": "strength_challenge.csv",
         "name": "Strength Training Challenge",
         "default_vars": {
