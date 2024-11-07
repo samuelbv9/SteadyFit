@@ -563,7 +563,9 @@ def bet_details(request):
             [
                 {
                     "userId": string,
-                    "balance": float
+                    "balance": float,
+                    "amountGained": float,
+                    "amountLost": float
                 }, ...
             ]
     }
@@ -577,14 +579,19 @@ def bet_details(request):
     if not game_code:
         return HttpResponse(status=400)
 
-    cursor.execute("SELECT userId, balance FROM GameParticipants WHERE gameCode = %s", (game_code,))
+    cursor.execute("SELECT userId, balance, amountGained, amountLost FROM GameParticipants WHERE gameCode = %s", (game_code,))
     participants = cursor.fetchall()
     response_data = [
-        {"userId": row[0], "balance": row[1]}
+        {
+            "userId": row[0], 
+            "balance": row[1],
+            "amountGained": row[2],
+            "amountLost": row[3]
+        }
         for row in participants
     ]
 
-    return JsonResponse({"bet_details": response_data}, safe=False)  # safe = false : not returning dict
+    return JsonResponse({"bet_details": response_data})
 
 
 @csrf_exempt
