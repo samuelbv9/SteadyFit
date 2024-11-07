@@ -64,8 +64,9 @@ def user_details(request):
 
     Response format:
     {
-        "username": string,
-        "user_id": string
+        "user_id": string,
+        "email": string,  # this is the main identifier for the user, name is not as relevant
+        "name": string,
     }
     """
     if request.method != 'GET':
@@ -78,10 +79,11 @@ def user_details(request):
         return JsonResponse(status=400)
 
     cursor.execute("SELECT * FROM Users WHERE userId = %s", (user_id,))
-    username = cursor.fetchone()[1]
+    user_info = cursor.fetchone()
     return JsonResponse({
-                        "username": username,
-                        "user_id": user_id
+                        "user_id": user_id,
+                        "email": user_info[1],
+                        "name": user_info[2]
                     })
 
 def time_ago(time):
