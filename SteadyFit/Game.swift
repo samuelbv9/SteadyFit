@@ -16,13 +16,18 @@ struct Game {
     var duration: Int
     var adaptiveGoals: Bool
     var startDate: Date
-    
+
     // easy comparison
     static func ==(lhs: Game, rhs: Game) -> Bool {
         lhs.gameCode == rhs.gameCode
     }
 }
 
+struct UserProgress: Decodable {
+    var currentDistance: String?
+    var currentFrequency: Int?
+    var currentBalance: Double
+}
 
 final class GamesStore {
     static let shared = GamesStore()
@@ -91,6 +96,46 @@ final class GamesStore {
             }.resume()
         }
         
+    }
+    
+    func joinGame(_ gameCode: String) {
+        
+        let jsonObj: [String: Any?] = [
+            "user_id": "7e79c620-42c2-4b9b-96f1-d01f6012a4b8",
+            "game_code": gameCode
+        ]
+
+        guard let jsonData = try? JSONSerialization.data(withJSONObject: jsonObj) else {
+           print("joinGame: jsonData serialization error")
+           return
+       }
+
+       guard let apiUrl = URL(string: "\(serverUrl)join_game/") else {
+           print("joinGame: Bad URL")
+           return
+       }
+
+       DispatchQueue.global(qos: .background).async {
+           var request = URLRequest(url: apiUrl)
+           request.setValue("application/json; charset=utf-8", forHTTPHeaderField: "Content-Type")
+           request.httpMethod = "POST"
+           request.httpBody = jsonData
+
+           URLSession.shared.dataTask(with: request) { data, response, error in
+               guard let _ = data, error == nil else {
+                   print("joinGame: NETWORKING ERROR")
+                   return
+               }
+               if let httpStatus = response as? HTTPURLResponse {
+                   if httpStatus.statusCode != 200 {
+                       print("joinGame: HTTP STATUS: \(httpStatus.statusCode)")
+                       return
+                   } else {
+                       print("Game joined successfully")
+                   }
+               }
+           }.resume()
+       }
     }
     
     func postGame(_ game: UserData) {
