@@ -3,6 +3,9 @@ from django.db import connection
 from django.views.decorators.csrf import csrf_exempt
 from django.utils import timezone
 from datetime import timedelta
+# from apscheduler.schedulers.background import BackgroundScheduler
+from datetime import datetime
+import time
 import json
 import random
 import string
@@ -228,10 +231,15 @@ def create_game(request):
                     duration, adaptive_goals, start_date))
 
     # Set current user as player of this game
-    cursor.execute("INSERT INTO GameParticipants (gameCode, userId) VALUES (%s, %s)",
-                   (game_code, user_id))
+    if distance is not None:
+        distance = round(distance / duration, 2)
+    if frequency is not None:
+        frequency = round(frequency / duration, 2)
+    cursor.execute("INSERT INTO GameParticipants (gameCode, userId, weekDistanceGoal, weekFrequencyGoal) VALUES (%s, %s, %s, %s)",
+                   (game_code, user_id, distance, frequency))
+    
+    connection.commit()
 
-    # should we return some type of confirmation details or the game code so the frontend has some feedback?
     return JsonResponse({
                         "done": game_code, # used for testing
                     })
@@ -248,23 +256,46 @@ def join_game(request):
 
     cursor = connection.cursor()
 
+    json_data = json.loads(request.body)
+
+    user_id = json_data.get("user_id")
+    game_code = json_data.get("game_code")
+
+    if not user_id or not game_code:
+        return JsonResponse({"error": "Invalid or missing user_id/game_code"}, status=400)
+
+
     # verify that user id is valid
-    user_id = request.POST.get("user_id")
     cursor.execute("SELECT * FROM Users WHERE userId = %s", (user_id,))
     user = cursor.fetchone()
     if not user:
         return HttpResponse(status=400)
 
     # verify that game code is valid + fetch game details
-    game_code = request.POST.get("game_code")
     cursor.execute("SELECT * FROM Games WHERE gameCode = %s", (game_code,))
     game = cursor.fetchone()
     if not game:
         return HttpResponse(status=404)
 
     # add user to GameParticipants with default values
-    cursor.execute("INSERT INTO GameParticipants (gameCode, userId) VALUES (%s, %s)",
-                   (game_code, user_id))
+    frequency = game[3]
+    distance = game[4]
+    duration = game[5]
+    if distance is not None:
+        distance = round(distance / duration, 2)
+    if frequency is not None:
+        frequency = round(frequency / duration, 2)
+        
+    try:
+        cursor.execute("""
+            INSERT INTO GameParticipants 
+            (gameCode, userId, weekDistanceGoal, weekFrequencyGoal) 
+            VALUES (%s, %s, %s, %s)
+            """, 
+            (game_code, user_id, distance, frequency))
+        connection.commit()
+    except Exception as e:
+        return JsonResponse({"error": str(e)}, status=500)
 
     return JsonResponse({
                         "game_code": game_code,
@@ -331,6 +362,13 @@ def add_workout(request):
             "exerciseType": exerciseType[0]
         })
 
+    connection.commit()
+
+    return JsonResponse({
+        "activity_type": activity_type,
+        "distance": distance,
+        "duration": duration
+    })
 
 @csrf_exempt
 def last_upload(request):
@@ -454,77 +492,181 @@ def create_user(request):
                    (user_id, username))
     cursor.execute("INSERT INTO UserEloRatings (userId) VALUES (%s)", (user_id,))
 
+    connection.commit()
+
     return JsonResponse({
                         "done": user_id,
                     })
 
-def get_activity_type(request):
-    """
-    Gets activity_type for a certain game
+# # from elo import Challenge, serialize_challenge_to_csv, deserialize_challenge_from_csv, create_challenge, compare_elo
+# from steadyfit.adaptive.elo import elo  # import correctly !!!
+# import os
+# from django.conf import settings
 
-    Request must contain: game_code
-    """
-    if request.method != 'GET':
-        return HttpResponse(status=404)
+# def weekly_update():
+#     # get the current date
+#     current_date = datetime.now().date()
 
-    # Use query parameters for GET requests
-    game_code = request.GET.get("game_code")
+#     # get all active games
+#     cursor = connection.cursor()
+#     query = '''
+#         SELECT G.gameCode, G.startDate, G.lastUpdated, G.betAmount, G.duration, G.adaptiveGoals, G.exerciseType
+#         FROM Games G
+#         WHERE G.isActive = TRUE
+#     '''
+#     cursor.execute(query)
+#     games = cursor.fetchall()
 
-    if not game_code:
-        return HttpResponse(status=400)
-    
-    cursor = connection.cursor()
-    cursor.execute("SELECT exerciseType FROM Games WHERE gamecode = %s", (game_code,))
-    result = cursor.fetchone()
-    
-    if result is None:
-        return HttpResponse(status=404)
-
-    # Fetch the exercise_type from result tuple
-    exercise_type = result[0] if result else None
-
-    return JsonResponse({
-        "exercise_type" : exercise_type
-    })
-
-#def weekly_update():
-    # get the current date
-#    current_date = datetime.now().date()
-
-    # get all active games
-#    cursor = connection.cursor()
-#    query = '''
-#        SELECT G.gameCode, G.startDate
-#        FROM Games G
-#        WHERE G.isActive = TRUE
-#    '''
-#    cursor.execute(query)
-#    games = cursor.fetchall()
-
-    # iterate through the games and check if a week has passed since startDate
-#    for game in games:
-#        game_code, start_date, last_updated = game
+#     for game in games:
+#         game_code, start_date, last_updated, bet_amount, duration, adaptive_goals, exercise_type = game
         
-        # check if a week has passed
-#        weeks_elapsed = (current_date - start_date).days // 7
+#         # check if a week has passed
+#         weeks_elapsed = (current_date - start_date).days // 7
 
-        # if a week has passed, do updates
-#        if weeks_elapsed > last_updated:
-            # Perform your update logic here (e.g., increment totals, adjust balance, etc.)
-            # Example: increment totalFrequency or totalDistance
-#            new_total_distance = total_distance + calculate_distance(user_id, game_code)  # Implement your own logic
-#            new_total_frequency = total_frequency + calculate_frequency(user_id, game_code)  # Implement your own logic
-            
-            # Update the database with the new stats
-#            update_query = '''
-#                UPDATE GameParticipants
-#                SET totalDistance = %s, totalFrequency = %s
-#                WHERE gameCode = %s AND userId = %s
-#            '''
-#            cursor.execute(update_query, [new_total_distance, new_total_frequency, game_code, user_id])
+#         # if a week has passed, do updates
+#         if weeks_elapsed > last_updated:
+#             # change game's last updated week # to current week #
+#             new_last_updated = last_updated + 1
+#             query = '''
+#                     UPDATE Games
+#                     SET lastUpdated = %s
+#                     WHERE gameCode = %s
+#                     ''' 
+#             cursor.execute(query, (new_last_updated, game_code))
+
+#             # get all users in each game 
+#             query = ''' SELECT GP.userId, GP.weekDistanceGoal, GP.weekFrequencyGoal, GP.weekDistance, GP.weekFrequency, GP.amountGained, GP.amountLost
+#                         FROM GameParticipants GP
+#                         WHERE GP.gameCode = %s
+#                     '''
+#             cursor.execute(query, (game_code,))
+#             participants = cursor.fetchall()
+
+#             challenge_settings = settings.challenge[exercise_type]
+#             challege_file_loc = challenge_settings['file']
+
+#             if os.path.exists(challege_file_loc):
+#                 challenge = elo.deserialize_challenge_from_csv(challege_file_loc)
+#             else:
+#                 challenge = elo.create_challenge(
+#                     challenge_settings['name'],
+#                     challenge_settings['default_vars']
+#                 )
+                
+#             losers = []
+#             winners = []
+#             for p in participants:
+#                 user_id, week_distance_goal, week_freq_goal, week_distance, week_frequency, amount_gained, amount_lost = p
+
+#                 # get all winners and all losers for updating amountGained and amountLost later
+#                 # cant do it now bc we need all winners, all losers for calculations
+#                 if week_distance < week_distance_goal or week_frequency < week_freq_goal:
+#                     losers.append(user_id)
+#                 else:
+#                     winners.append(user_id)
+
+#                 # call elo function to update users elo score for game's exercise type using user's week stats
+#                 elo_type = exercise_type + "Elo"
+#                 query = ''' SELECT %s
+#                     FROM UserEloRatings 
+#                     WHERE userId = %s
+#                 '''
+#                 cursor.execute(query, (elo_type, user_id))
+#                 elo_score = cursor.fetchone()[0]
+
+#                 bounded_values = challenge.bound_values(
+#                     challenge_settings['get_challenge_tuple'](week_distance, week_frequency)
+#                 )
+#                 # for i in bounded_values:
+#                 #     if i is None:
+#                 #         continue
+#                 #         # don't run compare elo
+
+#                 new_elo, _ = challenge.compare_elo(
+#                     player_elo=elo_score,
+#                     challenge=bounded_values,
+#                     outcome= 1.0 if not (week_distance < week_distance_goal or week_frequency < week_freq_goal) else 0.0
+#                 )
+
+#                 query = '''
+#                     UPDATE UserEloRatings
+#                     SET %s = %s 
+#                     WHERE userId = %s
+#                 '''
+#                 cursor.execute(query, (elo_type, new_elo, user_id))
+                
+#                 # use elo function to update a user's goal if the game is adaptive
+#                 if adaptive_goals:
+#                     new_challenges = challenge.get_nearest_challenges(new_elo)
+#                     best_challenge = new_challenges[0]
+#                     challenge_params = best_challenge[1]
+#                     g_t = challenge_settings['get_generic_tuple'](challenge_params)
+#                     query = '''
+#                         UPDATE GameParticipants
+#                         SET weekDistanceGoal = %s, weekFrequencyGoal = %s
+#                         WHERE gameCode = %s AND userId = %s
+#                     '''
+#                     cursor.execute(query, (g_t[0], g_t[1], game_code, user_id))
+
+#                 # update weekDistance, weekFrequency to be 0 for each user in game
+#                 query = '''
+#                     UPDATE GameParticipants
+#                     SET weekDistance = 0, weekFrequency = 0
+#                     WHERE gameCode = %s AND userId = %s
+#                 '''
+#                 cursor.execute(query, (game_code, user_id))
+
+
+
+#             # use winners and losers to update balances for each player in each game
+#             # rounding isn't perfect (shown in example), should probably fix
+#             weekly_amount = round(bet_amount / duration, 2) # 250 / 4 = 62.5
+#             split_amount = round(len(losers) * weekly_amount, 2) # 62.5 * 3 = 187.5
+#             split_amount = round(split_amount / len(winners), 2) # 187.5 / 4 = 46.875 = 46.88 ------> (46.88 * 4 = 187.52) ------> 187.52 > original split_amount (187.5)
+
+#             for p in participants:
+#                 user_id = p[0]
+#                 amount_gained = p[5]
+#                 amount_lost = p[6]
+#                 if user_id in losers:
+#                     new_amount_lost = amount_lost + weekly_amount
+#                     query = '''
+#                         UPDATE GameParticipants
+#                         SET amountLost = %s
+#                         WHERE gameCode = %s AND userId = %s
+#                     '''
+#                     cursor.execute(query, (new_amount_lost, game_code, user_id))
+
+#                 elif user_id in winners:
+#                     new_amount_gained = amount_gained + split_amount
+#                     query = '''
+#                         UPDATE GameParticipants
+#                         SET amountGained = %s
+#                         WHERE gameCode = %s AND userId = %s
+#                     '''
+#                     cursor.execute(query, (new_amount_gained, game_code, user_id))
     
-#    connection.commit()
+#     # check if the game has ended, update to not active if so
+#     if weeks_elapsed >= duration:
+#         query = '''
+#                 UPDATE Games
+#                 SET isActive = FALSE
+#                 WHERE gameCode = %s
+#                 '''
+#         cursor.execute(query, (game_code, ))
 
-#while True:
-#    weekly_update()
-#    time.sleep(86400)  
+#     # commit db changes
+#     connection.commit()
+
+
+# scheduler = BackgroundScheduler()
+
+# # schedule to run at the end of everyday
+# scheduler.add_job(job, 'interval', days=1, start_date='2024-11-06 23:59:00')
+# scheduler.start()
+
+# try:
+#     while True:
+#         time.sleep(60)  # Sleep to keep the scheduler running
+# except (KeyboardInterrupt, SystemExit):
+#     scheduler.shutdown()
