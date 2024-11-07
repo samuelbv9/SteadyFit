@@ -47,7 +47,7 @@ struct CreateGameView: View {
                         }
                         
                         HStack {
-                            if userData.selectedExerciseOption == "Strength Training" {
+                            if userData.selectedExerciseOption == "strengthTraining" {
                                 VStack(alignment: .leading) {
                                     Text("Frequency:")
                                         .padding(.bottom, 2)
@@ -119,21 +119,21 @@ struct CreateGameWagerView: View {
     @Environment(\.presentationMode) var presentationMode
     @ObservedObject var userData: UserData
     
-    private var perWeek: Int {
+    private var perWeek: Double {
         if let wager = userData.wagerInt, let duration = userData.durationInt, duration != 0 {
-            return wager / duration
+            return ((Double(wager) / Double(duration)) * 100).rounded() / 100
         } else {
             print("Error: Either wagerInt or durationInt is nil, or durationInt is zero.")
             return 0
         }
     }
     
-    private var perWorkout: Int {
+    private var perWorkout: Double {
         if let wager = userData.wagerInt, let duration = userData.durationInt, duration != 0 {
             if let frequency = userData.frequencyInt, frequency != 0 {
-                return wager / (duration * frequency)
+                return ((Double(wager) / Double(duration * frequency)) * 100).rounded() / 100
             } else if let distance = userData.distanceInt, distance != 0 {
-                return wager / (duration * distance)
+                return ((Double(wager) / Double(duration * distance)) * 100).rounded() / 100
             } else {
                 print("Error: frequencyInt and distanceInt are both nil or zero.")
                 return 0
@@ -163,8 +163,8 @@ struct CreateGameWagerView: View {
                     VStack(alignment: .leading) {
                         Text("Bet Size:")
                         NumberInputField(inputText: $userData.wagerStr, outputInt: $userData.wagerInt)
-                        Text("Per week: \(perWeek)")
-                        Text("Per workout: \(perWorkout)")
+                        Text("Per week: $\(String(format: "%.2f", perWeek))")
+                        Text("Per mile or session: $\(String(format: "%.2f", perWorkout))")
                     }
                 }
                 .padding(.top, 20)
@@ -213,6 +213,7 @@ struct CreateGameWagerView: View {
         .onTapGesture {
             hideKeyboard()
         }
+        .navigationBarBackButtonHidden(true)
     }
 }
 
