@@ -21,9 +21,11 @@ def goal(request):
     {
         "exerciseType": float
         "currentDistance": float # may be null
-        "currentFrequency": float # may be null
+        "currentFrequency": int # may be null
         "totalDistance": float # may be null
         "totalFrequency": float # may be null
+        "weekDistanceGoal": float
+        "weekFrequencyGoal": int
     }
     """
     if request.method != 'GET':
@@ -37,7 +39,7 @@ def goal(request):
 
     cursor = connection.cursor()
 
-    cursor.execute("SELECT totalDistance, totalFrequency FROM GameParticipants WHERE gameCode = %s AND userId = %s", (game_code, user_id))
+    cursor.execute("SELECT totalDistance, totalFrequency, weekDistanceGoal, weekFrequencyGoal FROM GameParticipants WHERE gameCode = %s AND userId = %s", (game_code, user_id))
     goal = cursor.fetchone()
 
     cursor.execute("SELECT exerciseType, frequency, distance FROM Games WHERE gameCode = %s", (game_code,))
@@ -48,7 +50,9 @@ def goal(request):
                         "currentDistance": goal[0], # may be null
                         "currentFrequency": goal[1], # may be null
                         "totalDistance": gameInfo[2], # may be null
-                        "totalFrequency": gameInfo[1] # may be null
+                        "totalFrequency": gameInfo[1], # may be null
+                        "weekDistanceGoal": goal[2],
+                        "weekFrequencyGoal": goal[3]
                     }
     # for testing, inserted users, games, into db for (freq and distance) (only freq) (only distance)
     # when tested, returned null in the appropriate places
@@ -129,7 +133,7 @@ def past_games(request):
 
     cursor = connection.cursor()
     query = '''
-        SELECT G.exerciseType, G.duration, G.betAmount, G.startDate
+        SELECT G.gameCode, G.exerciseType, G.duration, G.betAmount, G.startDate
         FROM Games G
         JOIN GameParticipants GP ON G.gameCode = GP.gameCode
         WHERE GP.userId = %s AND G.isActive = FALSE
@@ -140,9 +144,10 @@ def past_games(request):
 
     result = []
     for game in games:
-        exercise_type, duration, bet_amount, start_date = game
+        game_code, exercise_type, duration, bet_amount, start_date = game
         time_completed = time_ago(start_date)
         result.append({
+            "gameCode": game_code,
             "exerciseType": exercise_type,
             "duration": duration,
             "betAmount": float(bet_amount),
@@ -159,12 +164,16 @@ def active_games(request):
     Request must contain: user_id
 
     Response format:
-    {
-        "exerciseType": string,
-        "duration": int,
-        "betAmount": float,
-        "startDate": YYYY-MM-DD
-    }
+    [
+        "active_games":
+            {
+                "gameCode": string,
+                "exerciseType": string,
+                "duration": int,
+                "betAmount": float,
+                "startDate": YYYY-MM-DD
+            }, ...
+    ]
     """
     if request.method != 'GET':
         return HttpResponse(status=404)
@@ -176,7 +185,7 @@ def active_games(request):
         return JsonResponse(status=400)
     
     query = '''
-        SELECT G.exerciseType, G.duration, G.betAmount, G.startDate
+        SELECT G.gameCode, G.exerciseType, G.duration, G.betAmount, G.startDate
         FROM Games G
         JOIN GameParticipants GP ON G.gameCode = GP.gameCode
         WHERE GP.userId = %s AND G.isActive = TRUE
@@ -187,13 +196,16 @@ def active_games(request):
 
     result = []
     for game in games:
-        exercise_type, duration, bet_amount, start_date = game
+        game_code, exercise_type, duration, bet_amount, start_date = game
         result.append({
+            "gameCode": game_code,
             "exerciseType": exercise_type,
             "duration": duration,
             "betAmount": float(bet_amount),
             "startDate": start_date
         })
+
+        return JsonResponse({"active_games": result})
 
 @csrf_exempt 
 def game_details(request):
@@ -430,13 +442,13 @@ def add_workout(request):
 
     current_timestamp = timezone.now()
 
-#    cursor.execute("UPDATE GameParticipants \
-#                   SET weekDistance = weekDistance + %s, \
-#                   weekFrequency = weekFrequency + 1 \
-#                   totalDistance = totalDistance + %s, \
-#                   totalFrequency = totalFrequency + 1 \
-#                   WHERE gameCode = %s AND userId = %s;",
-#                   (distance, distance, game_code, user_id))
+    cursor.execute("UPDATE GameParticipants \
+                   SET weekDistance = weekDistance + %s, \
+                   weekFrequency = weekFrequency + 1, \
+                   totalDistance = totalDistance + %s, \
+                   totalFrequency = totalFrequency + 1 \
+                   WHERE gameCode = %s AND userId = %s;",
+                   (distance, distance, game_code, user_id))
 
     # verify activity type is the same as game_type
     if activity_type == exerciseType[0]:
