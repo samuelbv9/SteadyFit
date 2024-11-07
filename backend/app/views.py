@@ -129,7 +129,7 @@ def past_games(request):
 
     cursor = connection.cursor()
     query = '''
-        SELECT G.exerciseType, G.duration, G.betAmount, G.startDate
+        SELECT G.gameCode, G.exerciseType, G.duration, G.betAmount, G.startDate
         FROM Games G
         JOIN GameParticipants GP ON G.gameCode = GP.gameCode
         WHERE GP.userId = %s AND G.isActive = FALSE
@@ -140,9 +140,10 @@ def past_games(request):
 
     result = []
     for game in games:
-        exercise_type, duration, bet_amount, start_date = game
+        game_code, exercise_type, duration, bet_amount, start_date = game
         time_completed = time_ago(start_date)
         result.append({
+            "gameCode": game_code,
             "exerciseType": exercise_type,
             "duration": duration,
             "betAmount": float(bet_amount),
@@ -162,6 +163,7 @@ def active_games(request):
     [
         "active_games":
             {
+                "gameCode": string,
                 "exerciseType": string,
                 "duration": int,
                 "betAmount": float,
@@ -179,7 +181,7 @@ def active_games(request):
         return JsonResponse(status=400)
     
     query = '''
-        SELECT G.exerciseType, G.duration, G.betAmount, G.startDate
+        SELECT G.gameCode, G.exerciseType, G.duration, G.betAmount, G.startDate
         FROM Games G
         JOIN GameParticipants GP ON G.gameCode = GP.gameCode
         WHERE GP.userId = %s AND G.isActive = TRUE
@@ -190,8 +192,9 @@ def active_games(request):
 
     result = []
     for game in games:
-        exercise_type, duration, bet_amount, start_date = game
+        game_code, exercise_type, duration, bet_amount, start_date = game
         result.append({
+            "gameCode": game_code,
             "exerciseType": exercise_type,
             "duration": duration,
             "betAmount": float(bet_amount),
