@@ -501,11 +501,11 @@ def last_upload(request):
     if not user:
         return HttpResponse(status=400)
 
-    # verify that game code is valid + fetch game details
+    # verify that game code is valid + fetch start date for game
     game_code = request.GET.get("game_code")
-    cursor.execute("SELECT isActive FROM Games WHERE gameCode = %s", (game_code,))
-    game = cursor.fetchone()
-    if not game:
+    cursor.execute("SELECT startDate FROM Games WHERE gameCode = %s", (game_code,))
+    startDate = cursor.fetchone()
+    if not startDate:
         return HttpResponse(status=404)
 
     cursor.execute("SELECT timestamp FROM Activities WHERE gameCode = %s AND userId = %s ORDER BY timestamp DESC LIMIT 1", (game_code, user_id))
@@ -514,7 +514,7 @@ def last_upload(request):
         timestamp = timestamp_result[0]  # Extract the timestamp from the tuple
         return JsonResponse({"timestamp": timestamp})
     else:
-        return JsonResponse({"timestamp": None})  # Return None if no timestamp found
+        return JsonResponse({"timestamp": startDate})  # Return game start date if no timestamp is found
 
 
 @csrf_exempt
