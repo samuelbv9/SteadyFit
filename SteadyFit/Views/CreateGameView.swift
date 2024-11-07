@@ -6,109 +6,219 @@
 //
 
 import SwiftUI
+import Combine
 
+class UserData: ObservableObject {
+    @Published var selectedExerciseOption: String = "Choose an exercise"
+    @Published var frequencyStr: String = ""
+    @Published var frequencyInt: Int? = nil
+    @Published var durationStr: String = ""
+    @Published var durationInt: Int? = nil
+    @Published var distanceStr: String = ""
+    @Published var distanceInt: Int? = nil
+    @Published var adaptiveGoalsChecked: Bool = false
+    @Published var wagerStr: String = ""
+    @Published var wagerInt: Int? = 0
+}
 struct CreateGameView: View {
-    @State private var selectedExerciseOption = "Choose an exercise"
-    @State private var selectedFrequencyUnitOption = "unit"
-    @State private var selectedDurationUnitOption = "unit"
-    @State private var frequencyStr: String = ""
-    @State private var frequencyInt: Int? = nil
-    @State private var durationStr: String = ""
-    @State private var durationInt: Int? = nil
-    @State private var adaptiveGoalsChecked: Bool = false
+    @StateObject var userData = UserData()
+    let exerciseOptions = ["Choose an exercise", "Swimming", "Running", "Walking", "Strength Training", "Cycling"]
     
-    let exerciseOptions = ["Choose an exercise", "Swimming", "Running/Walking", "Strength Training"]
-    let timeUnits = ["unit", "day(s)", "week(s)", "month(s)"]
-    
-
     var body: some View {
-        VStack {
-            /// HEADER
-            Text("SteadyFit")
-                .font(.largeTitle)
-                .fontWeight(.bold)
-                .foregroundColor(.white)
-                .frame(maxWidth: .infinity)
-                .padding()
-                .background(Color(red: 0.5215686275, green: 0.7725490196, blue: 0.9529411765))
+        NavigationView {
+            ZStack { // Wrap in ZStack to detect taps outside of text fields
+                VStack {
+                    HeaderView()
+                    VStack(alignment: .leading) {
+                        VStack(alignment: .leading) {
+                            Text("GOAL SETTING")
+                                .font(.subheadline)
+                                .fontWeight(.heavy)
+                                .foregroundColor(Color.gray)
+                            Text("Create a Game")
+                                .font(.largeTitle)
+                                .fontWeight(.semibold)
+                        }
+                        .padding(.bottom, 20)
+                        
+                        HStack {
+                            Text("Type of Exercise:")
+                            Spacer()
+                            DropdownPicker(selection: $userData.selectedExerciseOption, options: exerciseOptions)
+                        }
+                        
+                        HStack {
+                            if userData.selectedExerciseOption == "Strength Training" {
+                                VStack(alignment: .leading) {
+                                    Text("Frequency:")
+                                        .padding(.bottom, 2)
+                                    HStack {
+                                        NumberInputField(inputText: $userData.frequencyStr, outputInt: $userData.frequencyInt)
+                                        Text("session(s) / week")
+                                    }
+                                }
+                            } else {
+                                Text("Distance: ")
+                                Spacer()
+                                NumberInputField(inputText: $userData.distanceStr, outputInt: $userData.distanceInt)
+                                Text("mile(s) / week")
+                            }
+                        }
+                        
+                        HStack {
+                            Text("Challenge Duration: ")
+                            Spacer()
+                            NumberInputField(inputText: $userData.durationStr, outputInt: $userData.durationInt)
+                                .frame(width: 100)
+                            Text("week(s)")
+                        }
+                        
+                        CheckboxView(isChecked: $userData.adaptiveGoalsChecked, checkboxText: "Enable Adaptive Goals")
+                    }
+                    .padding(.top, 20.0)
+                    Spacer()
+                    
+                    VStack(spacing: 0) {
+                        NavigationLink(destination: CreateGameWagerView(userData: userData)) {
+                            HStack {
+                                Text("Next")
+                                    .fontWeight(.medium)
+                                    .foregroundColor(.white)
+                                Spacer()
+                                Image(systemName: "arrow.right")
+                                    .resizable()
+                                    .frame(width: 25, height: 25)
+                                    .foregroundColor(.white)
+                                    .padding()
+                            }
+                            .padding(20)
+                            .frame(width: 400, height: 80)
+                            .background(Color.deepBlue)
+                        }
+                        NavBarView(viewIndex: 1)
+                    }
+                }
+                .frame(width: 350)
+                .ignoresSafeArea()
+            }
+            .contentShape(Rectangle()) // Make the whole ZStack tappable
+            .onTapGesture {
+                hideKeyboard()
+            }
+        }
+    }
+}
 
-            Spacer().frame(height: 30)
+// Helper function to dismiss the keyboard
+extension View {
+    func hideKeyboard() {
+        UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
+    }
+}
 
-            /// MAIN CONTENT
-            VStack(alignment: .leading) {
-                Text("GOAL SETTING")
-                    .font(.subheadline)
-                Text("Create a Game")
-                    .font(.largeTitle)
-                    .fontWeight(.semibold)
+struct CreateGameWagerView: View {
+    @Environment(\.presentationMode) var presentationMode
+    @ObservedObject var userData: UserData
+    
+    private var perWeek: Int {
+        if let wager = userData.wagerInt, let duration = userData.durationInt, duration != 0 {
+            return wager / duration
+        } else {
+            print("Error: Either wagerInt or durationInt is nil, or durationInt is zero.")
+            return 0
+        }
+    }
+    
+    private var perWorkout: Int {
+        if let wager = userData.wagerInt, let duration = userData.durationInt, duration != 0 {
+            if let frequency = userData.frequencyInt, frequency != 0 {
+                return wager / (duration * frequency)
+            } else if let distance = userData.distanceInt, distance != 0 {
+                return wager / (duration * distance)
+            } else {
+                print("Error: frequencyInt and distanceInt are both nil or zero.")
+                return 0
+            }
+        } else {
+            print("Error: Either wagerInt or durationInt is nil, or durationInt is zero.")
+            return 0
+        }
+    }
+    
+    var body: some View {
+        ZStack { // Wrap in ZStack to detect taps outside of text fields
+            VStack {
+                HeaderView()
+                VStack(alignment: .leading) {
+                    VStack(alignment: .leading) {
+                        Text("WAGER AMOUNT")
+                            .font(.subheadline)
+                            .fontWeight(.heavy)
+                            .foregroundColor(Color.gray)
+                        Text("Create a Game")
+                            .font(.largeTitle)
+                            .fontWeight(.semibold)
+                    }
+                    .padding(.bottom, 20)
+                    
+                    VStack(alignment: .leading) {
+                        Text("Bet Size:")
+                        NumberInputField(inputText: $userData.wagerStr, outputInt: $userData.wagerInt)
+                        Text("Per week: \(perWeek)")
+                        Text("Per workout: \(perWorkout)")
+                    }
+                }
+                .padding(.top, 20)
+                Spacer()
                 
-                /// TYPE OF EXERCISE
-                HStack {
-                    Text("Type of Exercise:")
-                    Spacer()
-                    Picker("Select an option", selection: $selectedExerciseOption) {
-                        ForEach(exerciseOptions, id: \.self) { option in
-                            Text(option)
+                VStack(spacing: 0) {
+                    HStack {
+                        Button(action: {
+                            self.presentationMode.wrappedValue.dismiss()
+                        }) {
+                            Image(systemName: "arrow.left")
+                                .resizable()
+                                .frame(width: 25, height: 25)
+                                .foregroundColor(.white)
+                                .padding()
+                            Text("Back")
+                                .fontWeight(.medium)
+                                .foregroundColor(.white)
+                        }
+                        Spacer()
+                        Button(action: {
+                            GamesStore.shared.postGame(userData)
+                        }) {
+                            HStack {
+                                Text("Publish")
+                                    .fontWeight(.medium)
+                                    .foregroundColor(.white)
+                                Image(systemName: "arrow.right")
+                                    .resizable()
+                                    .frame(width: 25, height: 25)
+                                    .foregroundColor(.white)
+                                    .padding()
+                            }
                         }
                     }
-                    .pickerStyle(MenuPickerStyle())
-                }
-                /// FREQUENCY OF EXERCISE
-                HStack {
-                    Text("Frequency:")
-                    Spacer()
-                    TextField("Enter an integer", text: $frequencyStr)
-                        .keyboardType(.numberPad)
-                                        .textFieldStyle(RoundedBorderTextFieldStyle())
-                                        .padding()
-                                        .onChange(of: frequencyStr) { newValue in
-                                            if let number = Int(newValue) {
-                                                frequencyInt = number
-                                            } else {
-                                                frequencyInt = nil
-                                            }
-                                        }
-                    Spacer()
-                    Text("/")
-                    Spacer()
-                    Picker("Select an option", selection: $selectedFrequencyUnitOption) {
-                        ForEach(timeUnits, id: \.self) { option in
-                            Text(option)
-                        }
-                    }
-                }
-                /// CHALLENGE DURATION
-                HStack {
-                    Text("Challenge Duration: ")
-                    Spacer()
-                    TextField("Enter an integer", text: $durationStr)
-                        .keyboardType(.numberPad)
-                                        .textFieldStyle(RoundedBorderTextFieldStyle())
-                                        .padding()
-                                        .onChange(of: durationStr) { newValue in
-                                            if let number = Int(newValue) {
-                                                durationInt = number
-                                            } else {
-                                                durationInt = nil
-                                            }
-                                        }
-                    Spacer()
-                    Picker("Select an option", selection: $selectedDurationUnitOption) {
-                        ForEach(timeUnits, id: \.self) { option in
-                            Text(option)
-                        }
-                    }
+                    .padding(20)
+                    .frame(width: 400, height: 80)
+                    .background(Color.deepBlue)
+                    NavBarView(viewIndex: 1)
                 }
             }
-            .padding(.horizontal)
-            .padding(.bottom, 20)
+            .frame(width: 350)
+            .ignoresSafeArea()
         }
-        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
+        .contentShape(Rectangle()) // Make the whole ZStack tappable
+        .onTapGesture {
+            hideKeyboard()
+        }
     }
 }
 
 #Preview {
-    CreateGameView()
+//    CreateGameFriendsView(userData: UserData())
+//    CreateGameView()
+//    CreateGameFriendsView(userData: UserData())
 }
-
-// red: 133, 197, 243
