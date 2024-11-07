@@ -68,6 +68,8 @@ struct ActiveGameView: View {
                 .kerning(-0.6) // Decreases letter spacing
             }
             .padding(.top, 20)
+            .padding(.bottom, 10)
+            .frame(width: 322, alignment: .leading)
             
             Spacer()
             
@@ -76,6 +78,7 @@ struct ActiveGameView: View {
                     .font(.custom("Poppins-Bold", size: 20))
                     .kerning(-0.6) // Decreases letter spacing
                     .frame(maxWidth: 320, alignment: .leading)
+                    .padding(.bottom, -5)
                 
                 ZStack {
                     RoundedRectangle(cornerRadius: 8)
@@ -107,44 +110,9 @@ struct ActiveGameView: View {
                                 .kerning(-0.3)
                         }
                         Button {
-                            if let healthStore = healthStore {
-                                //check if we have permmission to use metrics and if not request permission
-                                healthStore.requestAuthorization { success in
-                                    if success {
-                                        healthStore.calculateWorkouts { workouts in
-                                            if let workouts = workouts {
-                                                //update UI
-                                                for workout in workouts {
-                                                    // 1. Report Activity Type
-                                                    let activityType = workout.workoutActivityType.name
-                                                    
-                                                    // 2. Report Duration in Minutes
-                                                    let durationInMinutes = workout.duration / 60
-                                                    
-                                                    // 3. Report Distance (if available)
-                                                    var finalDistance : Double? = nil
-                                                    if let distance = workout.totalDistance {
-                                                        if workout.workoutActivityType == .swimming {
-                                                            finalDistance = distance.doubleValue(for: HKUnit.yard())
-                                                        }
-                                                        else {
-                                                            finalDistance = distance.doubleValue(for: HKUnit.mile())
-                                                        }
-                                                    }
-                                                   
-                                                    //Send this data to DB
-                                                    print("activityType: ", activityType)
-                                                    print("duration: ", durationInMinutes)
-                                                    print("distance: ", finalDistance ?? "nil")
-                                                   
-                                                    //SEND TO DB HERE
-                                                    healthStore.sendActivityToDB(activityType: activityType, durationInMinutes: Int(durationInMinutes), distanceText: finalDistance)
-                                                }
-                                            }
-                                        }
-                                    }
-                                }
-                            }
+                            // Action on press
+                            // action()
+                            // SAM HERE A FUNCTION GOES. MAKE IT IN THE VIEWMODEL AND PUT HERE
                         } label: {
                             ZStack {
                                 RoundedRectangle(cornerRadius: 0)
@@ -178,10 +146,20 @@ struct ActiveGameView: View {
                 Text("Participants")
                     .font(.custom("Poppins-Bold", size: 20))
                     .kerning(-0.6) // Decreases letter spacing
-                Text("Profile Icons Here (clickable?)")
-                    .font(.custom("Poppins-Bold", size: 20))
-                    .kerning(-0.6) // Decreases letter spacing
+                    .frame(width: 320, alignment: .leading)
+                HStack {
+                    Image("profile-example")
+                        .frame(width: 45, height: 45)
+                        .padding(.top, -10)
+                    Image("profile-example")
+                        .frame(width: 45, height: 45)
+                        .padding(.top, -10)
+                }
+                .frame(width: 322, alignment: .leading)
             }
+            .frame(width: 322)
+            .padding(.top, 10)
+            .padding(.bottom, 10)
             
             Spacer()
             
@@ -189,6 +167,7 @@ struct ActiveGameView: View {
                 Text("Overall Statistics")
                     .font(.custom("Poppins-Bold", size: 20))
                     .kerning(-0.6) // Decreases letter spacing
+                    .padding(.bottom, -5)
                 HStack{
                     // Circle completion percent pie chart
                     VStack{
@@ -297,10 +276,10 @@ struct ActiveGameView: View {
                 .padding(.leading, 20)
                 .frame(width: 212)
             }
+            .padding(.bottom, 10)
             
             Spacer()
             NavBarView(viewIndex: 4)
-                .padding(.bottom, -10)
         }
         //.frame(maxHeight: .infinity, alignment: .top)
         .frame(width: 350)
