@@ -3,25 +3,34 @@ from django.db import connection
 from django.views.decorators.csrf import csrf_exempt
 from django.utils import timezone
 from datetime import timedelta
+# from apscheduler.schedulers.background import BackgroundScheduler
+from datetime import datetime
+import time
 import json
 import random
 import string
 
+@csrf_exempt
 def goal(request):
     """
     Fetches goal details for the current game
 
     Request must contain: user_id, game_code
+
+    Response format:
+    {
+        "exerciseType": float
+        "currentDistance": float # may be null
+        "currentFrequency": int # may be null
+        "totalDistance": float # may be null
+        "totalFrequency": float # may be null
+        "weekDistanceGoal": float
+        "weekFrequencyGoal": int
+    }
     """
     if request.method != 'GET':
         return HttpResponse(status=404)
 
-    # # approach #1
-    # json_data = json.loads(request.body)
-    # game_code = json_data["game_code"]
-    # user_id = json_data["user_id"]
-
-    # approach 2
     game_code = request.GET.get("game_code")
     user_id = request.GET.get("user_id")
 
@@ -30,7 +39,7 @@ def goal(request):
 
     cursor = connection.cursor()
 
-    cursor.execute("SELECT totalDistance, totalFrequency FROM GameParticipants WHERE gameCode = %s AND userId = %s", (game_code, user_id))
+    cursor.execute("SELECT totalDistance, totalFrequency, weekDistanceGoal, weekFrequencyGoal FROM GameParticipants WHERE gameCode = %s AND userId = %s", (game_code, user_id))
     goal = cursor.fetchone()
 
     cursor.execute("SELECT exerciseType, frequency, distance FROM Games WHERE gameCode = %s", (game_code,))
@@ -41,23 +50,45 @@ def goal(request):
                         "currentDistance": goal[0], # may be null
                         "currentFrequency": goal[1], # may be null
                         "totalDistance": gameInfo[2], # may be null
-                        "totalFrequency": gameInfo[1] # may be null
+                        "totalFrequency": gameInfo[1], # may be null
+                        "weekDistanceGoal": goal[2],
+                        "weekFrequencyGoal": goal[3]
                     }
     # for testing, inserted users, games, into db for (freq and distance) (only freq) (only distance)
     # when tested, returned null in the appropriate places
 
     return JsonResponse(response_data)
 
+@csrf_exempt
 def user_details(request):
     """
     Gets details related to a particular user.
+
+    Request must contain: user_id
+
+    Response format:
+    {
+        "user_id": string,
+        "email": string,  # this is the main identifier for the user, name is not as relevant
+        "name": string,
+    }
     """
     if request.method != 'GET':
         return HttpResponse(status=404)
 
     cursor = connection.cursor()
 
-    pass
+    user_id = request.GET.get('user_id')
+    if not user_id:
+        return JsonResponse(status=400)
+
+    cursor.execute("SELECT * FROM Users WHERE userId = %s", (user_id,))
+    user_info = cursor.fetchone()
+    return JsonResponse({
+                        "user_id": user_id,
+                        "email": user_info[1],
+                        "name": user_info[2]
+                    })
 
 def time_ago(time):
     now = timezone.now()
@@ -73,22 +104,36 @@ def time_ago(time):
     else:
         return "just now"
 
+@csrf_exempt
 def past_games(request):
     """
     Fetches past games for a user
 
     Request must contain: user_id
+
+    Response format:
+    {
+        "past_games":
+            [
+                {
+                    "exerciseType": string,
+                    "duration": int,
+                    "betAmount": float,
+                    "completed": string
+                }, ...
+            ]
+    }
     """
     if request.method != 'GET':
         return HttpResponse(status=404)
 
-    user_id = request.GET.get('userId')
+    user_id = request.GET.get('user_id')
     if not user_id:
         return JsonResponse(status=400)
 
     cursor = connection.cursor()
     query = '''
-        SELECT G.exerciseType, G.duration, G.betAmount, G.startDate
+        SELECT G.gameCode, G.exerciseType, G.duration, G.betAmount, G.startDate
         FROM Games G
         JOIN GameParticipants GP ON G.gameCode = GP.gameCode
         WHERE GP.userId = %s AND G.isActive = FALSE
@@ -99,31 +144,108 @@ def past_games(request):
 
     result = []
     for game in games:
-        exercise_type, duration, bet_amount, start_date = game
+        game_code, exercise_type, duration, bet_amount, start_date = game
         time_completed = time_ago(start_date)
         result.append({
+            "gameCode": game_code,
             "exerciseType": exercise_type,
             "duration": duration,
             "betAmount": float(bet_amount),
             "completed": time_completed
         })
 
-    return JsonResponse(result, safe=False) # listed starting with most recently finished
+    return JsonResponse({"past_games": result}) # listed starting with most recently finished
 
+@csrf_exempt
 def active_games(request):
+    """
+    Fetches current games for a user
+
+    Request must contain: user_id
+
+    Response format:
+    [
+        "active_games":
+            {
+                "gameCode": string,
+                "exerciseType": string,
+                "duration": int,
+                "betAmount": float,
+                "startDate": YYYY-MM-DD
+            }, ...
+    ]
+    """
     if request.method != 'GET':
         return HttpResponse(status=404)
 
     cursor = connection.cursor()
 
-    pass
+    user_id = request.GET.get('user_id')
+    if not user_id:
+        return JsonResponse(status=400)
+    
+    query = '''
+        SELECT G.gameCode, G.exerciseType, G.duration, G.betAmount, G.startDate
+        FROM Games G
+        JOIN GameParticipants GP ON G.gameCode = GP.gameCode
+        WHERE GP.userId = %s AND G.isActive = TRUE
+        ORDER BY G.startDate DESC;
+    '''
+    cursor.execute(query, (user_id,))
+    games = cursor.fetchall()
 
-# @csrf_exempt
+    result = []
+    for game in games:
+        game_code, exercise_type, duration, bet_amount, start_date = game
+        result.append({
+            "gameCode": game_code,
+            "exerciseType": exercise_type,
+            "duration": duration,
+            "betAmount": float(bet_amount),
+            "startDate": start_date
+        })
+
+        return JsonResponse({"active_games": result})
+
+@csrf_exempt 
 def game_details(request):
     """
     Gets all details for a specific game and its participants given a game code.
 
     Request must contain: game code
+
+    Response format:
+    {
+        "gameData": 
+            {
+                gameCode: string,
+                betAmount: float,
+                exerciseType: string,
+                frequency: int,
+                distance: float,
+                duration: int,
+                adaptiveGoals: bool,
+                startDate: YYYY-MM-DD,
+                lastUpdated: int,
+                isActive: boolean
+            }
+        "participantsData":
+            [
+                {
+                        gameCode: string, 
+                        userId: string,
+                        amountGained: float,
+                        amountLost: float,
+                        balance: float, (amountGained - amountLost),
+                        totalDistance: float,
+                        weekDistance: float,
+                        weekDistanceGoal: float,
+                        totalFrequency: int,
+                        weekFrequency: int,
+                        weekFrequencyGoal: int
+                }, ...
+            ]
+    }
     """
     if request.method != 'GET':
         return HttpResponse(status=404)
@@ -149,8 +271,7 @@ def game_details(request):
     return JsonResponse(response_data)
 
 
-# @csrf_exempt
-# needed for testing with curl
+@csrf_exempt
 def create_game(request):
     """
     Creates a new game and adds the current user to the game.
@@ -159,6 +280,11 @@ def create_game(request):
     frequency, distance, duration, adaptive_goals, start_date
 
     frequncy, distance may be null
+
+    Response format:
+    {
+        "done": string (this is the game code, we did it this way for testing but lmk if smth else is more useful)
+    }
     """
     if request.method != 'POST':
         return HttpResponse(status=404)
@@ -192,83 +318,157 @@ def create_game(request):
                     duration, adaptive_goals, start_date))
 
     # Set current user as player of this game
-    cursor.execute("INSERT INTO GameParticipants (gameCode, userId) VALUES (%s, %s)",
-                   (game_code, user_id))
+    if distance is not None:
+        distance = round(distance / duration, 2)
+    if frequency is not None:
+        frequency = round(frequency / duration, 2)
+    cursor.execute("INSERT INTO GameParticipants (gameCode, userId, weekDistanceGoal, weekFrequencyGoal) VALUES (%s, %s, %s, %s)",
+                   (game_code, user_id, distance, frequency))
+    
+    connection.commit()
 
-    # should we return some type of confirmation details or the game code so the frontend has some feedback?
     return JsonResponse({
                         "done": game_code, # used for testing
                     })
 
-# @csrf_exempt
+@csrf_exempt
 def join_game(request):
     """
     Adds a user to a game with a valid game code.
 
     Request must contain: user ID, game code
+
+    Response format:
+    {
+        "game_code": string,
+        "user_id": string
+    }
     """
     if request.method != 'POST':
         return HttpResponse(status=404)
 
     cursor = connection.cursor()
 
+    json_data = json.loads(request.body)
+
+    user_id = json_data.get("user_id")
+    game_code = json_data.get("game_code")
+
+    if not user_id or not game_code:
+        return JsonResponse({"error": "Invalid or missing user_id/game_code"}, status=400)
+
+
     # verify that user id is valid
-    user_id = request.POST.get("user_id")
     cursor.execute("SELECT * FROM Users WHERE userId = %s", (user_id,))
     user = cursor.fetchone()
     if not user:
         return HttpResponse(status=400)
 
     # verify that game code is valid + fetch game details
-    game_code = request.POST.get("game_code")
     cursor.execute("SELECT * FROM Games WHERE gameCode = %s", (game_code,))
     game = cursor.fetchone()
     if not game:
         return HttpResponse(status=404)
 
     # add user to GameParticipants with default values
-    cursor.execute("INSERT INTO GameParticipants (gameCode, userId) VALUES (%s, %s)",
-                   (game_code, user_id))
+    frequency = game[3]
+    distance = game[4]
+    duration = game[5]
+    if distance is not None:
+        distance = round(distance / duration, 2)
+    if frequency is not None:
+        frequency = round(frequency / duration, 2)
+        
+    try:
+        cursor.execute("""
+            INSERT INTO GameParticipants 
+            (gameCode, userId, weekDistanceGoal, weekFrequencyGoal) 
+            VALUES (%s, %s, %s, %s)
+            """, 
+            (game_code, user_id, distance, frequency))
+        connection.commit()
+    except Exception as e:
+        return JsonResponse({"error": str(e)}, status=500)
 
     return JsonResponse({
                         "game_code": game_code,
                         "user_id": user_id
                     })
 
-
+@csrf_exempt
 def add_workout(request):
     """
     Adds a completed workout to a user's workout list
 
     Request must contain: user ID, Game code, Activity Type, Distance, Duration
+
+    Response format:
+    {
+        "activity_type": string,
+        "distance": float,
+        "duration": int
+    }
+    OR, if there is an error:
+    {
+        "error": "uploaded wrong activity so nothing was done",
+        "activityUploaded": string,
+        "exerciseType": string
+    }
     """
     if request.method != 'POST':
         return HttpResponse(status=404)
 
     cursor = connection.cursor()
+    json_data = json.loads(request.body)
+
+    user_id, game_code, activity_type, distance, duration = (
+        json_data.get(key) for key in [
+            "user_id", "game_code", "activity_type",
+            "distance", "duration"
+        ]
+    )
 
     # verify that user id is valid
-    user_id = request.GET.get("user_id")
     cursor.execute("SELECT * FROM Users WHERE userId = %s", (user_id,))
     user = cursor.fetchone()
     if not user:
         return HttpResponse(status=400)
 
     # verify that game code is valid + fetch game details
-    game_code = request.GET.get("game_code")
-    cursor.execute("SELECT isActive FROM Games WHERE gameCode = %s", (game_code,))
-    game = cursor.fetchone()
-    if not game:
-        return HttpResponse(status=404)
-
-    activity_type = request.GET.get("activity_type")
-    distance = request.GET.get("distance")
-    duration = request.GET.get("duration")
+    cursor.execute("SELECT exerciseType FROM Games WHERE gameCode = %s", (game_code,))
+    exerciseType = cursor.fetchone()
+    if not exerciseType:
+        return HttpResponse(status=400)
 
     current_timestamp = timezone.now()
 
-    cursor.execute("INSERT INTO Activities (gameCode, userId, activity, distance, duration, timestamp) \
-                    VALUES (%s, %s, %s, %s, %s, %s)", (game_code, user_id, activity_type, distance, duration, current_timestamp))
+    cursor.execute("UPDATE GameParticipants \
+                   SET weekDistance = weekDistance + %s, \
+                   weekFrequency = weekFrequency + 1, \
+                   totalDistance = totalDistance + %s, \
+                   totalFrequency = totalFrequency + 1 \
+                   WHERE gameCode = %s AND userId = %s;",
+                   (distance, distance, game_code, user_id))
+
+    # verify activity type is the same as game_type
+    if activity_type == exerciseType[0]:
+        cursor.execute("INSERT INTO Activities (gameCode, userId, activity, distance, duration, timestamp) \
+                        VALUES (%s, %s, %s, %s, %s, %s)",
+                        (game_code, user_id, activity_type, distance, duration, current_timestamp))
+
+        return JsonResponse({
+            "activity_type": activity_type,
+            "distance": distance,
+            "duration": duration
+        })
+    else:
+        return JsonResponse({
+            "error": "uploaded wrong activity so nothing was done",
+            "activityUploaded": activity_type,
+            "exerciseType": exerciseType[0]
+        })
+
+    connection.commit()
 
     return JsonResponse({
         "activity_type": activity_type,
@@ -276,11 +476,17 @@ def add_workout(request):
         "duration": duration
     })
 
+@csrf_exempt
 def last_upload(request):
     """
     Get timestamp for last time workout was uploaded in certain game
 
     Request must contain: userID, gameCode
+
+    Response format:
+    {
+        "timestamp": timestamp
+    }
     """
 
     if request.method != 'GET':
@@ -303,46 +509,339 @@ def last_upload(request):
         return HttpResponse(status=404)
 
     cursor.execute("SELECT timestamp FROM Activities WHERE gameCode = %s AND userId = %s ORDER BY timestamp DESC LIMIT 1", (game_code, user_id))
-    timestamp = cursor.fetchall()
-    return JsonResponse({
-        "timestamp": timestamp
-    })
+    timestamp_result = cursor.fetchone()
+    if timestamp_result:  # Check if a timestamp was found
+        timestamp = timestamp_result[0]  # Extract the timestamp from the tuple
+        return JsonResponse({"timestamp": timestamp})
+    else:
+        return JsonResponse({"timestamp": None})  # Return None if no timestamp found
 
 
-
+@csrf_exempt
 def goal_status(request):
-    if request.method != 'POST':
-        return HttpResponse(status=404)
-
-    cursor = connection.cursor()
-
-    pass
-
-def bet_details(request):
     """
-    Shows current status for all bets in a game.
-    Request must contain game_code.
+    Gets the progress of a user towards their goal in a certain game.
+
+    Request must contain: user ID, game code
+
+    Response format:
+    {
+        "totalExpectedDistance": float,
+        "totalCompletedDistance": float,
+        "totalExpectedFrequency": int,
+        "totalCompletedFrequency": int,
+        "weeklyExpectedDistance": float,
+        "weeklyCompletedDistance": float,
+        "weeklyExpectedFrequency": int,
+        "weeklyCompletedFrequency": int
+    }
     """
     if request.method != 'GET':
         return HttpResponse(status=404)
 
     cursor = connection.cursor()
-    # json_data = json.loads(request.body)
-    # game_code = json_data["game_code"]
+    user_id = request.GET.get("user_id")
+    game_code = request.GET.get("game_code")
 
-    # approach 2
+    cursor.execute("SELECT * FROM Games WHERE gameCode = %s", (game_code,))
+    game = cursor.fetchone()
+
+    cursor.execute("SELECT * FROM GameParticipants WHERE gameCode = %s AND userId = %s", (game_code, user_id))
+    goal = cursor.fetchone()
+
+    weekly_distance = game[4] / game[5]
+
+    return JsonResponse({
+        "totalExpectedDistance": game[4],
+        "totalCompletedDistance": goal[2],
+        "totalExpectedFrequency": game[3],
+        "totalCompletedFrequency": goal[3],
+        "weeklyExpectedDistance": weekly_distance,
+        "weeklyCompletedDistance": goal[7],
+        "weeklyExpectedFrequency": game[3],
+        "weeklyCompletedFrequency": goal[8]
+    })
+
+
+@csrf_exempt
+def bet_details(request):
+    """
+    Shows current status for all bets in a game.
+    Request must contain game_code.
+
+    Response format:
+    {
+        bet_details: 
+            [
+                {
+                    "userId": string,
+                    "balance": float,
+                    "amountGained": float,
+                    "amountLost": float
+                }, ...
+            ]
+    }
+    """
+    if request.method != 'GET':
+        return HttpResponse(status=404)
+
+    cursor = connection.cursor()
     game_code = request.GET.get("game_code")
 
     if not game_code:
         return HttpResponse(status=400)
 
-    cursor.execute("SELECT userId, balance FROM GameParticipants WHERE gameCode = %s", (game_code,))
+    cursor.execute("SELECT userId, balance, amountGained, amountLost FROM GameParticipants WHERE gameCode = %s", (game_code,))
     participants = cursor.fetchall()
     response_data = [
-        {"userId": row[0], "balance": row[1]}
+        {
+            "userId": row[0], 
+            "balance": row[1],
+            "amountGained": row[2],
+            "amountLost": row[3]
+        }
         for row in participants
     ]
 
-    return JsonResponse(response_data, safe=False)  # safe = false : not returning dict
+    return JsonResponse({"bet_details": response_data})
 
-# need to add a create user endpoint
+
+@csrf_exempt
+def create_user(request):
+    """
+    Gets user ID from firebase and pushes to postgresql db. Adds user to ELO table
+    and initializes their scores.
+
+    Request must contain: email, user_id
+
+    Response format:
+    {
+        "done": string (this is the user id, we did it this way for testing but lmk if smth else is more useful)
+    }
+    """
+    if request.method != 'POST':
+        return HttpResponse(status=404)
+
+    json_data = json.loads(request.body)
+
+    user_id, username = (
+        json_data.get(key) for key in [
+            "user_id", "username"
+        ]
+    )
+
+    if not username or not user_id:
+        return HttpResponse(status=400)
+
+    cursor = connection.cursor()
+    cursor.execute("INSERT INTO Users (userID, email) VALUES (%s, %s)",
+                   (user_id, username))
+    cursor.execute("INSERT INTO UserEloRatings (userId) VALUES (%s)", (user_id,))
+
+    connection.commit()
+
+    return JsonResponse({
+                        "done": user_id,
+                    })
+
+def get_activity_type(request):
+    """
+    Gets activity_type for a certain game
+    Request must contain: game_code
+
+    Response format:
+    {
+        "exercise_type": string
+    }
+    """
+    if request.method != 'GET':
+        return HttpResponse(status=404)
+    # Use query parameters for GET requests
+    game_code = request.GET.get("game_code")
+    if not game_code:
+        return HttpResponse(status=400)
+    
+    cursor = connection.cursor()
+    cursor.execute("SELECT exerciseType FROM Games WHERE gamecode = %s", (game_code,))
+    result = cursor.fetchone()
+    
+    if result is None:
+        return HttpResponse(status=404)
+    # Fetch the exercise_type from result tuple
+    exercise_type = result[0] if result else None
+    return JsonResponse({
+        "exercise_type" : exercise_type
+    })
+
+# # from elo import Challenge, serialize_challenge_to_csv, deserialize_challenge_from_csv, create_challenge, compare_elo
+# from steadyfit.adaptive.elo import elo  # import correctly !!!
+# import os
+# from django.conf import settings
+
+# def weekly_update():
+#     # get the current date
+#     current_date = datetime.now().date()
+
+#     # get all active games
+#     cursor = connection.cursor()
+#     query = '''
+#         SELECT G.gameCode, G.startDate, G.lastUpdated, G.betAmount, G.duration, G.adaptiveGoals, G.exerciseType
+#         FROM Games G
+#         WHERE G.isActive = TRUE
+#     '''
+#     cursor.execute(query)
+#     games = cursor.fetchall()
+
+#     for game in games:
+#         game_code, start_date, last_updated, bet_amount, duration, adaptive_goals, exercise_type = game
+        
+#         # check if a week has passed
+#         weeks_elapsed = (current_date - start_date).days // 7
+
+#         # if a week has passed, do updates
+#         if weeks_elapsed > last_updated:
+#             # change game's last updated week # to current week #
+#             new_last_updated = last_updated + 1
+#             query = '''
+#                     UPDATE Games
+#                     SET lastUpdated = %s
+#                     WHERE gameCode = %s
+#                     ''' 
+#             cursor.execute(query, (new_last_updated, game_code))
+
+#             # get all users in each game 
+#             query = ''' SELECT GP.userId, GP.weekDistanceGoal, GP.weekFrequencyGoal, GP.weekDistance, GP.weekFrequency, GP.amountGained, GP.amountLost
+#                         FROM GameParticipants GP
+#                         WHERE GP.gameCode = %s
+#                     '''
+#             cursor.execute(query, (game_code,))
+#             participants = cursor.fetchall()
+
+#             challenge_settings = settings.challenge[exercise_type]
+#             challege_file_loc = challenge_settings['file']
+
+#             if os.path.exists(challege_file_loc):
+#                 challenge = elo.deserialize_challenge_from_csv(challege_file_loc)
+#             else:
+#                 challenge = elo.create_challenge(
+#                     challenge_settings['name'],
+#                     challenge_settings['default_vars']
+#                 )
+                
+#             losers = []
+#             winners = []
+#             for p in participants:
+#                 user_id, week_distance_goal, week_freq_goal, week_distance, week_frequency, amount_gained, amount_lost = p
+
+#                 # get all winners and all losers for updating amountGained and amountLost later
+#                 # cant do it now bc we need all winners, all losers for calculations
+#                 if week_distance < week_distance_goal or week_frequency < week_freq_goal:
+#                     losers.append(user_id)
+#                 else:
+#                     winners.append(user_id)
+
+#                 # call elo function to update users elo score for game's exercise type using user's week stats
+#                 elo_type = exercise_type + "Elo"
+#                 query = ''' SELECT %s
+#                     FROM UserEloRatings 
+#                     WHERE userId = %s
+#                 '''
+#                 cursor.execute(query, (elo_type, user_id))
+#                 elo_score = cursor.fetchone()[0]
+
+#                 bounded_values = challenge.bound_values(
+#                     challenge_settings['get_challenge_tuple'](week_distance, week_frequency)
+#                 )
+#                 # for i in bounded_values:
+#                 #     if i is None:
+#                 #         continue
+#                 #         # don't run compare elo
+
+#                 new_elo, _ = challenge.compare_elo(
+#                     player_elo=elo_score,
+#                     challenge=bounded_values,
+#                     outcome= 1.0 if not (week_distance < week_distance_goal or week_frequency < week_freq_goal) else 0.0
+#                 )
+
+#                 query = '''
+#                     UPDATE UserEloRatings
+#                     SET %s = %s 
+#                     WHERE userId = %s
+#                 '''
+#                 cursor.execute(query, (elo_type, new_elo, user_id))
+                
+#                 # use elo function to update a user's goal if the game is adaptive
+#                 if adaptive_goals:
+#                     new_challenges = challenge.get_nearest_challenges(new_elo)
+#                     best_challenge = new_challenges[0]
+#                     challenge_params = best_challenge[1]
+#                     g_t = challenge_settings['get_generic_tuple'](challenge_params)
+#                     query = '''
+#                         UPDATE GameParticipants
+#                         SET weekDistanceGoal = %s, weekFrequencyGoal = %s
+#                         WHERE gameCode = %s AND userId = %s
+#                     '''
+#                     cursor.execute(query, (g_t[0], g_t[1], game_code, user_id))
+
+#                 # update weekDistance, weekFrequency to be 0 for each user in game
+#                 query = '''
+#                     UPDATE GameParticipants
+#                     SET weekDistance = 0, weekFrequency = 0
+#                     WHERE gameCode = %s AND userId = %s
+#                 '''
+#                 cursor.execute(query, (game_code, user_id))
+
+
+
+#             # use winners and losers to update balances for each player in each game
+#             # rounding isn't perfect (shown in example), should probably fix
+#             weekly_amount = round(bet_amount / duration, 2) # 250 / 4 = 62.5
+#             split_amount = round(len(losers) * weekly_amount, 2) # 62.5 * 3 = 187.5
+#             split_amount = round(split_amount / len(winners), 2) # 187.5 / 4 = 46.875 = 46.88 ------> (46.88 * 4 = 187.52) ------> 187.52 > original split_amount (187.5)
+
+#             for p in participants:
+#                 user_id = p[0]
+#                 amount_gained = p[5]
+#                 amount_lost = p[6]
+#                 if user_id in losers:
+#                     new_amount_lost = amount_lost + weekly_amount
+#                     query = '''
+#                         UPDATE GameParticipants
+#                         SET amountLost = %s
+#                         WHERE gameCode = %s AND userId = %s
+#                     '''
+#                     cursor.execute(query, (new_amount_lost, game_code, user_id))
+
+#                 elif user_id in winners:
+#                     new_amount_gained = amount_gained + split_amount
+#                     query = '''
+#                         UPDATE GameParticipants
+#                         SET amountGained = %s
+#                         WHERE gameCode = %s AND userId = %s
+#                     '''
+#                     cursor.execute(query, (new_amount_gained, game_code, user_id))
+    
+#     # check if the game has ended, update to not active if so
+#     if weeks_elapsed >= duration:
+#         query = '''
+#                 UPDATE Games
+#                 SET isActive = FALSE
+#                 WHERE gameCode = %s
+#                 '''
+#         cursor.execute(query, (game_code, ))
+
+#     # commit db changes
+#     connection.commit()
+
+
+# scheduler = BackgroundScheduler()
+
+# # schedule to run at the end of everyday
+# scheduler.add_job(job, 'interval', days=1, start_date='2024-11-06 23:59:00')
+# scheduler.start()
+
+# try:
+#     while True:
+#         time.sleep(60)  # Sleep to keep the scheduler running
+# except (KeyboardInterrupt, SystemExit):
+#     scheduler.shutdown()

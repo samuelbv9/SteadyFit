@@ -8,9 +8,17 @@
 import SwiftUI
 import Foundation
 import Charts
+import HealthKit
 
 struct ActiveGameView: View {
     @StateObject private var viewModel = ActiveGameViewModel()
+    
+    //initialize instance of class HealthStore
+    private var healthStore: HealthStore?
+    
+    init() {
+        healthStore = HealthStore()
+    }
     
     var body: some View {
         let data = [ // This will be for the circle chart
@@ -338,6 +346,20 @@ extension Color {
         // Add more cases as needed
         default:
             return .gray
+        }
+    }
+}
+
+// Helper extension for workout activity type names
+extension HKWorkoutActivityType {
+    var name: String {
+        switch self {
+        case .running: return "Running"
+        case .walking: return "Walking"
+        case .cycling: return "Cycling"
+        case .swimming: return "Swimming"
+        case .traditionalStrengthTraining: return "Weightlifting"
+        default: return "Other Activity"
         }
     }
 }
