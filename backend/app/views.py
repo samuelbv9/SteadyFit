@@ -673,8 +673,7 @@ def get_activity_type(request):
         "exercise_type" : exercise_type
     })
 
-# # from elo import Challenge, serialize_challenge_to_csv, deserialize_challenge_from_csv, create_challenge, compare_elo
-# from steadyfit.adaptive.elo import elo  # import correctly !!!
+# # add inits to adaptive directory to be able to import correctly !!!
 # import os
 # from django.conf import settings
 
@@ -717,7 +716,8 @@ def get_activity_type(request):
 #             cursor.execute(query, (game_code,))
 #             participants = cursor.fetchall()
 
-#             challenge_settings = settings.challenge[exercise_type]
+#             # get challenge data if already exists, else create challenge 
+#             challenge_settings = settings.challenges[exercise_type]
 #             challege_file_loc = challenge_settings['file']
 
 #             if os.path.exists(challege_file_loc):
@@ -728,8 +728,10 @@ def get_activity_type(request):
 #                     challenge_settings['default_vars']
 #                 )
                 
+#             # store the winners and losers of each game for this week
 #             losers = []
 #             winners = []
+
 #             for p in participants:
 #                 user_id, week_distance_goal, week_freq_goal, week_distance, week_frequency, amount_gained, amount_lost = p
 
@@ -740,7 +742,7 @@ def get_activity_type(request):
 #                 else:
 #                     winners.append(user_id)
 
-#                 # call elo function to update users elo score for game's exercise type using user's week stats
+#                 # get user's elo score for this exercise type
 #                 elo_type = exercise_type + "Elo"
 #                 query = ''' SELECT %s
 #                     FROM UserEloRatings 
@@ -757,12 +759,14 @@ def get_activity_type(request):
 #                 #         continue
 #                 #         # don't run compare elo
 
+#                 # call elo function to get user's new elo score using this weeks data
 #                 new_elo, _ = challenge.compare_elo(
 #                     player_elo=elo_score,
 #                     challenge=bounded_values,
 #                     outcome= 1.0 if not (week_distance < week_distance_goal or week_frequency < week_freq_goal) else 0.0
 #                 )
 
+#                 # update user's elo score in db 
 #                 query = '''
 #                     UPDATE UserEloRatings
 #                     SET %s = %s 
@@ -770,6 +774,7 @@ def get_activity_type(request):
 #                 '''
 #                 cursor.execute(query, (elo_type, new_elo, user_id))
                 
+
 #                 # use elo function to update a user's goal if the game is adaptive
 #                 if adaptive_goals:
 #                     new_challenges = challenge.get_nearest_challenges(new_elo)
@@ -790,7 +795,9 @@ def get_activity_type(request):
 #                     WHERE gameCode = %s AND userId = %s
 #                 '''
 #                 cursor.execute(query, (game_code, user_id))
-
+        
+#         # add updates to challenge to csv file
+#         elo.serialize_challenge_to_csv(challenge, challege_file_loc)
 
 
 #             # use winners and losers to update balances for each player in each game
@@ -821,6 +828,7 @@ def get_activity_type(request):
 #                     '''
 #                     cursor.execute(query, (new_amount_gained, game_code, user_id))
     
+    
 #     # check if the game has ended, update to not active if so
 #     if weeks_elapsed >= duration:
 #         query = '''
@@ -834,14 +842,14 @@ def get_activity_type(request):
 #     connection.commit()
 
 
-# scheduler = BackgroundScheduler()
+# # scheduler = BackgroundScheduler()
 
-# # schedule to run at the end of everyday
-# scheduler.add_job(job, 'interval', days=1, start_date='2024-11-06 23:59:00')
-# scheduler.start()
+# # # schedule to run at the end of everyday
+# # scheduler.add_job(job, 'interval', days=1, start_date='2024-11-06 23:59:00')
+# # scheduler.start()
 
-# try:
-#     while True:
-#         time.sleep(60)  # Sleep to keep the scheduler running
-# except (KeyboardInterrupt, SystemExit):
-#     scheduler.shutdown()
+# # try:
+# #     while True:
+# #         time.sleep(60)  # Sleep to keep the scheduler running
+# # except (KeyboardInterrupt, SystemExit):
+# #     scheduler.shutdown()
