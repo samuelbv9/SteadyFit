@@ -159,12 +159,15 @@ def active_games(request):
     Request must contain: user_id
 
     Response format:
-    {
-        "exerciseType": string,
-        "duration": int,
-        "betAmount": float,
-        "startDate": YYYY-MM-DD
-    }
+    [
+        "active_games":
+            {
+                "exerciseType": string,
+                "duration": int,
+                "betAmount": float,
+                "startDate": YYYY-MM-DD
+            }, ...
+    ]
     """
     if request.method != 'GET':
         return HttpResponse(status=404)
@@ -194,6 +197,8 @@ def active_games(request):
             "betAmount": float(bet_amount),
             "startDate": start_date
         })
+
+        return JsonResponse({"active_games": result})
 
 @csrf_exempt 
 def game_details(request):
