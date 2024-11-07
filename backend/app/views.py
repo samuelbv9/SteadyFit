@@ -16,6 +16,15 @@ def goal(request):
     Fetches goal details for the current game
 
     Request must contain: user_id, game_code
+
+    Response format:
+    {
+        "exerciseType": float
+        "currentDistance": float # may be null
+        "currentFrequency": float # may be null
+        "totalDistance": float # may be null
+        "totalFrequency": float # may be null
+    }
     """
     if request.method != 'GET':
         return HttpResponse(status=404)
@@ -52,6 +61,12 @@ def user_details(request):
     Gets details related to a particular user.
 
     Request must contain: user_id
+
+    Response format:
+    {
+        "username": string,
+        "user_id": string
+    }
     """
     if request.method != 'GET':
         return HttpResponse(status=404)
@@ -89,6 +104,16 @@ def past_games(request):
     Fetches past games for a user
 
     Request must contain: user_id
+
+    Response format:
+    [
+        {
+            "exerciseType": string,
+            "duration": int,
+            "betAmount": float,
+            "completed": string
+        }, ...
+    ]
     """
     if request.method != 'GET':
         return HttpResponse(status=404)
@@ -119,6 +144,7 @@ def past_games(request):
             "completed": time_completed
         })
 
+    # TODO: edit response so it's in key-value format
     return JsonResponse(result, safe=False) # listed starting with most recently finished
 
 @csrf_exempt
@@ -127,6 +153,14 @@ def active_games(request):
     Fetches current games for a user
 
     Request must contain: user_id
+
+    Response format:
+    {
+        "exerciseType": string,
+        "duration": int,
+        "betAmount": float,
+        "startDate": YYYY-MM-DD
+    }
     """
     if request.method != 'GET':
         return HttpResponse(status=404)
@@ -163,6 +197,39 @@ def game_details(request):
     Gets all details for a specific game and its participants given a game code.
 
     Request must contain: game code
+
+    Response format:
+    {
+        "gameData": 
+            {
+                gameCode: string,
+                betAmount: float,
+                exerciseType: string,
+                frequency: int,
+                distance: float,
+                duration: int,
+                adaptiveGoals: bool,
+                startDate: YYYY-MM-DD,
+                lastUpdated: int,
+                isActive: boolean
+            }
+        "participantsData":
+            [
+                {
+                        gameCode: string, 
+                        userId: string,
+                        amountGained: float,
+                        amountLost: float,
+                        balance: float, (amountGained - amountLost),
+                        totalDistance: float,
+                        weekDistance: float,
+                        weekDistanceGoal: float,
+                        totalFrequency: int,
+                        weekFrequency: int,
+                        weekFrequencyGoal: int
+                }, ...
+            ]
+    }
     """
     if request.method != 'GET':
         return HttpResponse(status=404)
@@ -189,7 +256,6 @@ def game_details(request):
 
 
 @csrf_exempt
-# needed for testing with curl
 def create_game(request):
     """
     Creates a new game and adds the current user to the game.
@@ -198,6 +264,11 @@ def create_game(request):
     frequency, distance, duration, adaptive_goals, start_date
 
     frequncy, distance may be null
+
+    Response format:
+    {
+        "done": string (this is the game code, we did it this way for testing but lmk if smth else is more useful)
+    }
     """
     if request.method != 'POST':
         return HttpResponse(status=404)
@@ -250,6 +321,12 @@ def join_game(request):
     Adds a user to a game with a valid game code.
 
     Request must contain: user ID, game code
+
+    Response format:
+    {
+        "game_code": string,
+        "user_id": string
+    }
     """
     if request.method != 'POST':
         return HttpResponse(status=404)
@@ -308,6 +385,19 @@ def add_workout(request):
     Adds a completed workout to a user's workout list
 
     Request must contain: user ID, Game code, Activity Type, Distance, Duration
+
+    Response format:
+    {
+        "activity_type": string,
+        "distance": float,
+        "duration": int
+    }
+    OR, if there is an error:
+    {
+        "error": "uploaded wrong activity so nothing was done",
+        "activityUploaded": string,
+        "exerciseType": string
+    }
     """
     if request.method != 'POST':
         return HttpResponse(status=404)
@@ -376,6 +466,11 @@ def last_upload(request):
     Get timestamp for last time workout was uploaded in certain game
 
     Request must contain: userID, gameCode
+
+    Response format:
+    {
+        "timestamp": timestamp
+    }
     """
 
     if request.method != 'GET':
@@ -412,6 +507,18 @@ def goal_status(request):
     Gets the progress of a user towards their goal in a certain game.
 
     Request must contain: user ID, game code
+
+    Response format:
+    {
+        "totalExpectedDistance": float,
+        "totalCompletedDistance": float,
+        "totalExpectedFrequency": int,
+        "totalCompletedFrequency": int,
+        "weeklyExpectedDistance": float,
+        "weeklyCompletedDistance": float,
+        "weeklyExpectedFrequency": int,
+        "weeklyCompletedFrequency": int
+    }
     """
     if request.method != 'GET':
         return HttpResponse(status=404)
@@ -445,6 +552,14 @@ def bet_details(request):
     """
     Shows current status for all bets in a game.
     Request must contain game_code.
+
+    Response format:
+    [
+        {
+            "userId": string,
+            "balance": float
+        }, ...
+    ]
     """
     if request.method != 'GET':
         return HttpResponse(status=404)
@@ -462,6 +577,7 @@ def bet_details(request):
         for row in participants
     ]
 
+    # TODO: update this so response is in key-value format
     return JsonResponse(response_data, safe=False)  # safe = false : not returning dict
 
 
@@ -472,6 +588,11 @@ def create_user(request):
     and initializes their scores.
 
     Request must contain: email, user_id
+
+    Response format:
+    {
+        "done": string (this is the user id, we did it this way for testing but lmk if smth else is more useful)
+    }
     """
     if request.method != 'POST':
         return HttpResponse(status=404)
@@ -502,6 +623,11 @@ def get_activity_type(request):
     """
     Gets activity_type for a certain game
     Request must contain: game_code
+
+    Response format:
+    {
+        "exercise_type": string
+    }
     """
     if request.method != 'GET':
         return HttpResponse(status=404)
