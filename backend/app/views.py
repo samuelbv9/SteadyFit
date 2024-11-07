@@ -21,9 +21,11 @@ def goal(request):
     {
         "exerciseType": float
         "currentDistance": float # may be null
-        "currentFrequency": float # may be null
+        "currentFrequency": int # may be null
         "totalDistance": float # may be null
         "totalFrequency": float # may be null
+        "weekDistanceGoal": float
+        "weekFrequencyGoal": int
     }
     """
     if request.method != 'GET':
@@ -37,7 +39,7 @@ def goal(request):
 
     cursor = connection.cursor()
 
-    cursor.execute("SELECT totalDistance, totalFrequency FROM GameParticipants WHERE gameCode = %s AND userId = %s", (game_code, user_id))
+    cursor.execute("SELECT totalDistance, totalFrequency, weekDistanceGoal, weekFrequencyGoal FROM GameParticipants WHERE gameCode = %s AND userId = %s", (game_code, user_id))
     goal = cursor.fetchone()
 
     cursor.execute("SELECT exerciseType, frequency, distance FROM Games WHERE gameCode = %s", (game_code,))
@@ -48,7 +50,9 @@ def goal(request):
                         "currentDistance": goal[0], # may be null
                         "currentFrequency": goal[1], # may be null
                         "totalDistance": gameInfo[2], # may be null
-                        "totalFrequency": gameInfo[1] # may be null
+                        "totalFrequency": gameInfo[1], # may be null
+                        "weekDistanceGoal": goal[2],
+                        "weekFrequencyGoal": goal[3]
                     }
     # for testing, inserted users, games, into db for (freq and distance) (only freq) (only distance)
     # when tested, returned null in the appropriate places
