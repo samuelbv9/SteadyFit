@@ -28,10 +28,18 @@ class RegisterViewModel: ObservableObject {
                 print("FAILED REGISTER!!")
                 print(error!.localizedDescription)
             }
-            else {
-                print("Registered")
+            guard let uid = result?.user.uid else {
+                DispatchQueue.main.async {
+                    print("Failed to retrieve user UID.")
+                }
+                return
             }
             
+            // Successfully registered
+            print("Registered with UID: \(uid)")
+            
+            //SEND UUID and username TO DB
+            self.sendUserDataToDatabase(uid: uid, email: self.email)
         }
     }
     
@@ -55,4 +63,43 @@ class RegisterViewModel: ObservableObject {
         
         return true
     }
+    
+    // Sends the user's UID and email to API
+    func sendUserDataToDatabase(uid: String, email: String) {
+        // Define the API endpoint and request
+        guard let url = URL(string: "https://52.200.16.208/create_user/") else { return }
+        
+        var request = URLRequest(url: url)
+        request.httpMethod = "POST"
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        
+        // Prepare JSON data
+        let userData: [String: Any] = [
+            "user_id": uid,
+            "username": email
+        ]
+        
+        do {
+            request.httpBody = try JSONSerialization.data(withJSONObject: userData, options: [])
+        } catch {
+            print("Failed to encode user data: \(error.localizedDescription)")
+            return
+        }
+        
+        URLSession.shared.dataTask(with: request) { data, response, error in
+            if let error = error {
+                print("Failed to send user data to database: \(error.localizedDescription)")
+            }
+            
+            // Check if there is data in the response
+            guard let response = response else {
+                print("No data received from the server.")
+                return
+            }
+            
+            print(response)
+            
+        }.resume()
+    }
+
 }
