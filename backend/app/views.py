@@ -171,7 +171,11 @@ def active_games(request):
                 "exerciseType": string,
                 "duration": int,
                 "betAmount": float,
-                "startDate": YYYY-MM-DD
+                "startDate": YYYY-MM-DD,
+                "weekDistance": float,
+                "weekDistanceGoal": float,
+                "weekFrequency": int,
+                "weekDistanceGoal": int
             }, ...
     ]
     """
@@ -185,7 +189,7 @@ def active_games(request):
         return JsonResponse(status=400)
     
     query = '''
-        SELECT G.gameCode, G.exerciseType, G.duration, G.betAmount, G.startDate
+        SELECT G.gameCode, G.exerciseType, G.duration, G.betAmount, G.startDate, GP.weekDistance, GP.weekDistanceGoal, GP.weekFrequency, GP.weekFrequencyGoal
         FROM Games G
         JOIN GameParticipants GP ON G.gameCode = GP.gameCode
         WHERE GP.userId = %s AND G.isActive = TRUE
@@ -196,13 +200,17 @@ def active_games(request):
 
     result = []
     for game in games:
-        game_code, exercise_type, duration, bet_amount, start_date = game
+        game_code, exercise_type, duration, bet_amount, start_date, weekDistance, weekDistanceGoal, weekFrequency, weekFrequencyGoal = game
         result.append({
             "gameCode": game_code,
             "exerciseType": exercise_type,
             "duration": duration,
             "betAmount": float(bet_amount),
-            "startDate": start_date
+            "startDate": start_date,
+            "weekDistance": float(weekDistance),
+            "weekDistanceGoal": float(weekDistanceGoal),
+            "weekFrequency": weekFrequency,
+            "weekFrequencyGoal": weekFrequencyGoal
         })
 
         return JsonResponse({"active_games": result})
