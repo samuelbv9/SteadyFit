@@ -18,6 +18,8 @@ struct HomeView: View {
                 HeaderView()
                 Spacer()
                 
+                GameCard(exerciseType: "Running", goal: 10, currentProgress: 8.75, healthStore: viewModel.healthStore)
+                
                 GeometryReader { geometry in
                     VStack {
                         VStack {
