@@ -213,7 +213,7 @@ def active_games(request):
             "weekFrequencyGoal": weekFrequencyGoal
         })
 
-        return JsonResponse({"active_games": result})
+    return JsonResponse({"active_games": result})
 
 @csrf_exempt 
 def game_details(request):
