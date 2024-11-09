@@ -17,8 +17,8 @@ struct SteadyFitApp: App {
     
     var body: some Scene {
         WindowGroup {
-//            ContentView()
-            TestingView()
+            ContentView()
+            //TestingView()
             //CreateGameView()
         }
     }

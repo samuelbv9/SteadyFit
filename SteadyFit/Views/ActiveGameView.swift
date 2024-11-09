@@ -8,6 +8,8 @@
 import SwiftUI
 import Foundation
 import Charts
+import Firebase
+import FirebaseAuth
 import HealthKit
 
 struct ActiveGameView: View {
@@ -323,7 +325,7 @@ struct ActiveGameView: View {
         .ignoresSafeArea()
         .edgesIgnoringSafeArea(.bottom)
         .onAppear {
-            viewModel.loadCurrentGame(userId: "8503f31c-8c1f-45eb-a7dd-180095aad816", gameCode: "NODqAbjW")
+            viewModel.loadCurrentGame(userId: Auth.auth().currentUser?.uid ?? "", gameCode: "NODqAbjW")
         }
     }
 }
