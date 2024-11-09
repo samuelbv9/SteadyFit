@@ -171,7 +171,11 @@ def active_games(request):
                 "exerciseType": string,
                 "duration": int,
                 "betAmount": float,
-                "startDate": YYYY-MM-DD
+                "startDate": YYYY-MM-DD,
+                "weekDistance": float,
+                "weekDistanceGoal": float,
+                "weekFrequency": int,
+                "weekDistanceGoal": int
             }, ...
     ]
     """
@@ -185,7 +189,7 @@ def active_games(request):
         return JsonResponse(status=400)
     
     query = '''
-        SELECT G.gameCode, G.exerciseType, G.duration, G.betAmount, G.startDate
+        SELECT G.gameCode, G.exerciseType, G.duration, G.betAmount, G.startDate, GP.weekDistance, GP.weekDistanceGoal, GP.weekFrequency, GP.weekFrequencyGoal
         FROM Games G
         JOIN GameParticipants GP ON G.gameCode = GP.gameCode
         WHERE GP.userId = %s AND G.isActive = TRUE
@@ -196,13 +200,17 @@ def active_games(request):
 
     result = []
     for game in games:
-        game_code, exercise_type, duration, bet_amount, start_date = game
+        game_code, exercise_type, duration, bet_amount, start_date, weekDistance, weekDistanceGoal, weekFrequency, weekFrequencyGoal = game
         result.append({
             "gameCode": game_code,
             "exerciseType": exercise_type,
             "duration": duration,
             "betAmount": float(bet_amount),
-            "startDate": start_date
+            "startDate": start_date,
+            "weekDistance": float(weekDistance),
+            "weekDistanceGoal": float(weekDistanceGoal),
+            "weekFrequency": weekFrequency,
+            "weekFrequencyGoal": weekFrequencyGoal
         })
 
         return JsonResponse({"active_games": result})
@@ -501,11 +509,11 @@ def last_upload(request):
     if not user:
         return HttpResponse(status=400)
 
-    # verify that game code is valid + fetch game details
+    # verify that game code is valid + fetch start date for game
     game_code = request.GET.get("game_code")
-    cursor.execute("SELECT isActive FROM Games WHERE gameCode = %s", (game_code,))
-    game = cursor.fetchone()
-    if not game:
+    cursor.execute("SELECT startDate FROM Games WHERE gameCode = %s", (game_code,))
+    startDate = cursor.fetchone()
+    if not startDate:
         return HttpResponse(status=404)
 
     cursor.execute("SELECT timestamp FROM Activities WHERE gameCode = %s AND userId = %s ORDER BY timestamp DESC LIMIT 1", (game_code, user_id))
@@ -514,7 +522,7 @@ def last_upload(request):
         timestamp = timestamp_result[0]  # Extract the timestamp from the tuple
         return JsonResponse({"timestamp": timestamp})
     else:
-        return JsonResponse({"timestamp": None})  # Return None if no timestamp found
+        return JsonResponse({"timestamp": startDate})  # Return game start date if no timestamp is found
 
 
 @csrf_exempt

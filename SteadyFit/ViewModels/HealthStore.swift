@@ -7,6 +7,7 @@
 
 import Foundation
 import HealthKit
+import FirebaseAuth
 
 class HealthStore {
     
@@ -126,13 +127,13 @@ class HealthStore {
     }
     
     // This function is what actually calculates the relevant workouts
-    func calculateWorkouts(completion: @escaping ([HKWorkout]?) -> Void) {
+    func calculateWorkouts(gameCode: String, completion: @escaping ([HKWorkout]?) -> Void) {
         let workoutType = HKObjectType.workoutType()
         
-        // Hardcoded userID for now
-        let userId = "7e79c620-42c2-4b9b-96f1-d01f6012a4b8"
-        // Hardcoded gameCode for now
-        let gameCode = "FpcVHDwe"
+        guard let userId = Auth.auth().currentUser?.uid else {
+            print("No active user = error")
+            return
+        }
 
         // Fetch the last upload date
         fetchLastUploadDate(userId: userId, gameCode: gameCode) { lastUpload in
@@ -177,7 +178,7 @@ class HealthStore {
     }
     
     // This function sends a specific workout to the database
-    func sendActivityToDB(activityType: String, durationInMinutes: Int, distanceText: Double?) {
+    func sendActivityToDB(gameCode: String, activityType: String, durationInMinutes: Int, distanceText: Double?) {
         // Define the URL for the endpoint
         guard let url = URL(string: "https://52.200.16.208/add_workout/") else {
             print("Invalid URL")
@@ -189,9 +190,10 @@ class HealthStore {
         request.httpMethod = "POST"
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
                 
-        // Hardcoded user ID and game code for now
-        let userId = "7e79c620-42c2-4b9b-96f1-d01f6012a4b8"
-        let gameCode = "FpcVHDwe"
+        guard let userId = Auth.auth().currentUser?.uid else {
+            print("No active user = error")
+            return
+        }
                 
         // Prepare the data to be sent in JSON format
         var data: [String: Any] = [

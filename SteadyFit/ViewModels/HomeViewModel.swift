@@ -10,6 +10,10 @@ import Foundation
 import FirebaseAuth
 
 class HomeViewModel: ObservableObject {
-    // Tings here
+    //initialize instance of class HealthStore
+    var healthStore: HealthStore?
     
+    init() {
+        healthStore = HealthStore()
+    }
 }

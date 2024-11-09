@@ -112,9 +112,46 @@ struct ActiveGameView: View {
                                 .kerning(-0.3)
                         }
                         Button {
-                            // Action on press
-                            // action()
-                            // SAM HERE A FUNCTION GOES. MAKE IT IN THE VIEWMODEL AND PUT HERE
+                            if let healthStore = healthStore {
+                                //check if we have permmission to use metrics and if not request permission
+                                healthStore.requestAuthorization { success in
+                                    if success {
+                                        // CHANGE HARDCODED GAMECODE TO ACTUAL GAME
+                                        healthStore.calculateWorkouts(gameCode: "FpcVHDwe") { workouts in
+                                            if let workouts = workouts {
+                                                //update UI
+                                                for workout in workouts {
+                                                    // 1. Report Activity Type
+                                                    let activityType = workout.workoutActivityType.name
+                                                    
+                                                    // 2. Report Duration in Minutes
+                                                    let durationInMinutes = workout.duration / 60
+                                                    
+                                                    // 3. Report Distance (if available)
+                                                    var finalDistance : Double? = nil
+                                                    if let distance = workout.totalDistance {
+                                                        if workout.workoutActivityType == .swimming {
+                                                            finalDistance = distance.doubleValue(for: HKUnit.yard())
+                                                        }
+                                                        else {
+                                                            finalDistance = distance.doubleValue(for: HKUnit.mile())
+                                                        }
+                                                    }
+                                                   
+                                                    //Send this data to DB
+                                                    print("activityType: ", activityType)
+                                                    print("duration: ", durationInMinutes)
+                                                    print("distance: ", finalDistance ?? "nil")
+                                                   
+                                                    // CHANGE HARDCODED GAMECODE TO ACTUAL GAME
+                                                    //SEND TO DB HERE
+                                                    healthStore.sendActivityToDB(gameCode: "FpcVHDwe", activityType: activityType, durationInMinutes: Int(durationInMinutes), distanceText: finalDistance)
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
                         } label: {
                             ZStack {
                                 RoundedRectangle(cornerRadius: 0)
