@@ -21,6 +21,7 @@ class UserData: ObservableObject {
     @Published var wagerInt: Int? = 0
 }
 struct CreateGameView: View {
+    @Environment(\.presentationMode) var presentationMode
     @StateObject var userData = UserData()
     let exerciseOptions = ["Choose an exercise", "swimming", "running", "walking", "strengthTraining", "cycling"]
     var body: some View {
@@ -78,22 +79,34 @@ struct CreateGameView: View {
                     Spacer()
                     
                     VStack(spacing: 0) {
-                        NavigationLink(destination: CreateGameWagerView(userData: userData)) {
-                            HStack {
+                        HStack {
+                            Button(action: {
+                                self.presentationMode.wrappedValue.dismiss()
+                            }) {
+                                Image(systemName: "arrow.left")
+                                    .resizable()
+                                    .frame(width: 25, height: 25)
+                                    .foregroundColor(.white)
+                                    .padding()
+                                Text("Back")
+                                    .fontWeight(.medium)
+                                    .foregroundColor(.white)
+                            }
+                            Spacer()
+                            NavigationLink(destination: CreateGameWagerView(userData: userData)) {
                                 Text("Next")
                                     .fontWeight(.medium)
                                     .foregroundColor(.white)
-                                Spacer()
                                 Image(systemName: "arrow.right")
                                     .resizable()
                                     .frame(width: 25, height: 25)
                                     .foregroundColor(.white)
                                     .padding()
                             }
+                        }
                             .padding(20)
                             .frame(width: 400, height: 80)
                             .background(Color.deepBlue)
-                        }
                         NavBarView(viewIndex: 1)
                     }
                 }
@@ -105,6 +118,7 @@ struct CreateGameView: View {
                 hideKeyboard()
             }
         }
+        .navigationBarBackButtonHidden(true)
     }
 }
 

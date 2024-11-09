@@ -67,6 +67,7 @@ struct JoinGameView: View {
 
 
 struct JoinGamecode: View {
+    @Environment(\.presentationMode) var presentationMode
     @State private var userInputGameCode = ""
     @State private var userInputPassword = ""
     var body: some View {
@@ -87,10 +88,23 @@ struct JoinGamecode: View {
             VStack(spacing: 0) {
                 HStack() {
                     Button(action: {
+                        self.presentationMode.wrappedValue.dismiss()
+                    }) {
+                        Image(systemName: "arrow.left")
+                            .resizable()
+                            .frame(width: 25, height: 25)
+                            .foregroundColor(.white)
+                            .padding()
+                        Text("Back")
+                            .fontWeight(.medium)
+                            .foregroundColor(.white)
+                    }
+                    Spacer()
+                    Button(action: {
                         GamesStore.shared.joinGame(userInputGameCode)
                     }) {
                         HStack {
-                            Text("Publish")
+                            Text("Join Game")
                                 .fontWeight(.medium)
                                 .foregroundColor(.white)
                             Image(systemName: "arrow.right")
@@ -110,6 +124,7 @@ struct JoinGamecode: View {
         }
             .frame(width: 350)
             .ignoresSafeArea()
+            .navigationBarBackButtonHidden(true)
     }
 }
 

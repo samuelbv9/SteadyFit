@@ -37,17 +37,20 @@ struct TextInputField: View {
 struct NumberInputField: View {
     @Binding var inputText: String
     @Binding var outputInt: Int?
+
     var body: some View {
         TextField("Enter a number", text: $inputText)
             .keyboardType(.numberPad)
-                .textFieldStyle(RoundedBorderTextFieldStyle())
-                .onChange(of: inputText) { newValue in
-                                                if let number = Int(newValue) {
-                                                    outputInt = number
-                                                } else {
-                                                    outputInt = nil
-                                                }
-                                            }
+            .textFieldStyle(RoundedBorderTextFieldStyle())
+            .onChange(of: inputText) { newValue in
+                // Prevents users from entering non numeric input
+                inputText = newValue.filter { $0.isNumber }
+                if let number = Int(inputText) {
+                    outputInt = number
+                } else {
+                    outputInt = nil
+                }
+            }
     }
 }
 

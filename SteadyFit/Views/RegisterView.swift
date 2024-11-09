@@ -80,7 +80,7 @@ struct RegisterView: View {
                 
             }
             .frame(width: 350)
-        }
+        }.navigationBarBackButtonHidden(true)
     }
 }
 

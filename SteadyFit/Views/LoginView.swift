@@ -16,7 +16,6 @@ import FirebaseAuth
 
 struct LoginView: View {
     @StateObject var viewModel = LoginViewModel()
-
     var body: some View {
         NavigationView {
             VStack {
@@ -85,7 +84,7 @@ struct LoginView: View {
             }
             .frame(width: 350)
             .ignoresSafeArea()
-        }
+        }.navigationBarBackButtonHidden(true)
     }
 }
 
