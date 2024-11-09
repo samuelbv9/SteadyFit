@@ -205,7 +205,7 @@ def active_games(request):
             "startDate": start_date
         })
 
-        return JsonResponse(result, safe=False)
+    return JsonResponse({"active_games": result})
 
 @csrf_exempt 
 def game_details(request):
