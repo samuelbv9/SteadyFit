@@ -11,4 +11,5 @@ import FirebaseAuth
 
 class HomeViewModel: ObservableObject {
     // Tings here
+    
 }

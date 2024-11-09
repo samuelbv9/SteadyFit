@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import SwiftUI
 
 struct Game {
     var gameCode: String
@@ -13,8 +14,10 @@ struct Game {
     var exerciseType: String
     var frequency: Int?
     var distance: Double?
+    var frequencyGoal: Int?
+    var distanceGoal: Double?
     var duration: Int
-    var adaptiveGoals: Bool
+    var adaptiveGoals: Bool?
     var startDate: Date
 
     // easy comparison
@@ -36,6 +39,54 @@ final class GamesStore {
     private var isRetrieving = false
     private let synchronized = DispatchQueue(label: "synchronized", qos: .background)
     let serverUrl = "http://52.200.16.208/"
+    
+    func getActiveGames (userId: String) async {
+        guard let url = URL(string: "https://52.200.16.208/active_games/?user_id=\(userId)") else {
+            return
+        }
+        
+        do {
+            let (data, response) = try await URLSession.shared.data(from: url)
+            // Handle the data and response here
+            let responseDict = try? JSONSerialization.jsonObject(with: data, options: []) as? [String: Any]
+            print ("RESPONSE DICT: ", responseDict)
+            guard let activeGamesArray = responseDict?["active_games"] as? [[String: Any]] else {
+                return
+            }
+            print ("ACTIVE GAMES ARRAY: ", activeGamesArray)
+            
+            var tempGame: Game
+            
+            for game in activeGamesArray {
+                print("Game: ", game)
+                if let exerciseType = game["exerciseType"] as? String,
+                let gameCode = game["gameCode"] as? String {
+                    print("HERE")
+                    let weekFrequency = game["weekFrequency"] as? Int
+                    let weekFrequencyGoal = game["weekFrequencyGoal"] as? Int
+                    let weekDistance = game["weekDistance"] as? Double
+                    let weekDistanceGoal = game["weekDistanceGoal"] as? Double
+                    tempGame = Game(
+                        gameCode: gameCode,
+                        betAmount: 0.0, // Placeholder, replace with actual value if available
+                        exerciseType: exerciseType,
+                        frequency: weekFrequency, // Placeholder, replace with actual value if available
+                        distance: weekDistance, // Placeholder, replace with actual value if available
+                        frequencyGoal: weekFrequencyGoal,
+                        distanceGoal: weekDistanceGoal,
+                        duration: 0, // Placeholder, replace with actual value if available
+                        adaptiveGoals: nil, // Placeholder, replace with actual value if available
+                        startDate: Date() // Placeholder, replace with actual value if available
+                    )
+                    // Add tempGame to activeGames or handle it as needed
+                    activeGames.append(tempGame)
+                    print("ACTIVE GAMES: ", activeGames)
+                }
+            } // End of for loop 
+        } catch {
+            print("getActiveGames: NETWORKING ERROR - \(error.localizedDescription)")
+        }
+    }
     
     func getBetBalances(_ gameCode: String) {
         // serial retrievals

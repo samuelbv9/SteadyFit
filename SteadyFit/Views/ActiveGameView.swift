@@ -23,11 +23,6 @@ struct ActiveGameView: View {
     }
     
     var body: some View {
-        guard let userId = Auth.auth().currentUser?.uid else{
-            print ("No currentUser")
-            userId = "0"
-        }
-        
         let data = [ // This will be for the circle chart
             SleepDataPoint(
                 day: "Mon",
@@ -293,7 +288,7 @@ struct ActiveGameView: View {
         .ignoresSafeArea()
         .edgesIgnoringSafeArea(.bottom)
         .onAppear {
-            viewModel.loadCurrentGame(userId: userId, gameCode: "NODqAbjW")
+            viewModel.loadCurrentGame(userId: Auth.auth().currentUser?.uid ?? "", gameCode: "NODqAbjW")
         }
     }
 }

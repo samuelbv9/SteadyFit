@@ -7,6 +7,8 @@
 //  This is the Home Screen
 
 import SwiftUI
+import FirebaseAuth
+import Firebase
 
 struct HomeView: View {
     @State private var action: Int? = 0
@@ -21,10 +23,12 @@ struct HomeView: View {
                 GeometryReader { geometry in
                     VStack {
                         VStack {
-                            Text("Active Games")
+                            Text("Welcome")
                                 .font(.custom("Poppins-Bold", size: 30))
                                 .kerning(-0.6) // Decreases letter spacing
-                            
+                            Text("Upcoming Tasks")
+                                .font(.custom("Poppins-Bold", size: 20))
+                                .kerning(-0.6) // Decreases letter spacing
                             // Add your ActiveGames view or content here
                             // Will have different view for the games being shown here
                             NavigationLink(destination: ActiveGameView()) {
@@ -32,64 +36,6 @@ struct HomeView: View {
                             }
                         }
                         .frame(height: geometry.size.height * 2 / 3)
-        
-                                                
-                        
-                        VStack{
-                            Rectangle()
-                                .fill(Color.deepBlue)
-                                .frame(height: 2)
-                            
-                            Spacer()
-                            
-                            Button(action: {
-                                // Action can be left empty if navigation is the only purpose
-                            }) {
-                                NavigationLink(destination: CreateGameView()) {
-                                    HStack {
-                                        Text("Join a Game")
-                                            .foregroundColor(.white)
-                                            .font(.custom("Poppins-SemiBold", size: 15))
-                                            .kerning(-0.3) // Decreases letter spacing
-                                        Spacer()
-                                        Image(systemName: "chevron.right")
-                                            .foregroundColor(.white)
-                                    }
-                                    .padding()
-                                    .frame(maxWidth: .infinity)
-                                    .background(Color.deepBlue)
-                                    .cornerRadius(10)
-                                }
-                            }
-                            .padding(.bottom, 10)
-                            
-                            
-                            Button(action: {
-                                // Action can be left empty if navigation is the only purpose
-                            }) {
-                                NavigationLink(destination: CreateGameView()) {
-                                    HStack {
-                                        Text("Create a Game")
-                                            .foregroundColor(.deepBlue)
-                                            .font(.custom("Poppins-SemiBold", size: 15))
-                                            .kerning(-0.3) // Decreases letter spacing
-                                        Spacer()
-                                        Image(systemName: "chevron.right")
-                                            .foregroundColor(.deepBlue)
-                                    }
-                                    .padding()
-                                    .frame(maxWidth: .infinity)
-                                    .overlay(
-                                        RoundedRectangle(cornerRadius: 10)
-                                            .stroke(Color.deepBlue, lineWidth: 2)
-                                    )
-                                }
-                            }
-                            
-                            Spacer()
-                            
-                        }
-                        .frame(height: geometry.size.height * 1 / 3)
                     }
                 }
                 
@@ -98,6 +44,12 @@ struct HomeView: View {
             }
             .frame(width: 350)
             .ignoresSafeArea()
+            .onAppear {
+                Task {
+                    await GamesStore.shared.getActiveGames(userId: "8503f31c-8c1f-45eb-a7dd-180095aad816")
+                    // await GamesStore.shared.getActiveGames(userId: Auth.auth().currentUser?.uid ?? "0")
+                }
+            }
         }
     }
 }
