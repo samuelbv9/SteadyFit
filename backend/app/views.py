@@ -321,7 +321,7 @@ def create_game(request):
     # Add game to Games table
     cursor.execute("INSERT INTO Games (gameCode, betAmount, exerciseType, frequency, \
                    distance, duration, adaptiveGoals, startDate, password) \
-                   VALUES (%s, %s, %s, %s, %s, %s, %s, %s)",
+                   VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)",
                    (game_code, bet_amount, exercise_type, frequency, distance,
                     duration, adaptive_goals, start_date, password))
 
