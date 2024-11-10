@@ -673,16 +673,17 @@ def get_activity_type(request):
         "exercise_type" : exercise_type
     })
 
-from adaptive import elo
+from app import adaptive as elo
 import os
 from django.conf import settings
 
 
-def update_date():
+def update_date(request):
     test_date = datetime(2024, 10, 31)
     # test_date += timedelta(days=1)
     weekly_update(test_date)
-    
+    return HttpResponse("Date updated successfully")  
+
 
 def weekly_update(date):
     # get the current date
