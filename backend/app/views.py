@@ -673,7 +673,7 @@ def get_activity_type(request):
         "exercise_type" : exercise_type
     })
 
-from ..adaptive import elo
+from adaptive import elo
 import os
 from django.conf import settings
 
