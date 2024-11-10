@@ -369,7 +369,7 @@ def join_game(request):
     if password:
         cursor.execute("SELECT password FROM Games WHERE gameCode = %s", (game_code,))
         new_pass = cursor.fetchone()
-        if new_pass != password:
+        if new_pass[0] != password:
             return JsonResponse({"error": "Incorrect password"}, status=400)
 
 
