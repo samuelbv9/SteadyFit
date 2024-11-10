@@ -34,7 +34,7 @@ struct UserProgress: Decodable {
 
 final class GamesStore {
     static let shared = GamesStore()
-    @Published private(set) var activeGames = [Game]()
+    private(set) var activeGames = [Game]()
     private(set) var pastGames = [Game]()
     private var isRetrieving = false
     private let synchronized = DispatchQueue(label: "synchronized", qos: .background)
