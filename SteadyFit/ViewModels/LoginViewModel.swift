@@ -33,7 +33,7 @@ class LoginViewModel: ObservableObject {
             }
             else {
                 // LOGIN
-                print("Singed in")
+                print("Signed in")
             }
         }
     }

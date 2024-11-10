@@ -13,7 +13,6 @@ import Firebase
 struct HomeView: View {
     @State private var action: Int? = 0
     @StateObject var viewModel = HomeViewModel()
-    
     var body: some View {
         NavigationView {
             VStack {
@@ -38,6 +37,17 @@ struct HomeView: View {
                             }
                         }
                         .frame(height: geometry.size.height * 2 / 3)
+                       // let game = GamesStore.shared.activeGames[0] ?? nil
+//                        if game != nil{
+//                            VStack {
+//                                if game?.exerciseType == "Strength Training" {
+//                                    GameCard(exerciseType: game.exerciseType, goal: Double(game.frequencyGoal ?? 0), currentProgress: Double(game.frequency ?? 0), healthStore: viewModel.healthStore)
+//                                }
+//                                else {
+//                                    GameCard(exerciseType: game.exerciseType, goal: (game.distanceGoal ?? 0), currentProgress: (game.distance ?? 0), healthStore: viewModel.healthStore)
+//                                }
+//                            }
+//                        }
                     }
                 }
                 

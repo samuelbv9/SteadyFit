@@ -20,7 +20,7 @@ struct ContentView: View {
         if viewModel.isSignedIn {
             HomeView()
         } else {
-            LoginView()
+            //LaunchView()
         }
     }
             

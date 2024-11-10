@@ -10,10 +10,12 @@ import Foundation
 import FirebaseAuth
 
 class ProfileViewModel: ObservableObject {
+    @Published var isLoggedOut = false
     func logout() {
         do {
             try Auth.auth().signOut()
-            print("Singed Out")
+            print("Signed Out")
+            isLoggedOut = true
         }
         catch {
             print("Failed to sign out: \(error.localizedDescription)")

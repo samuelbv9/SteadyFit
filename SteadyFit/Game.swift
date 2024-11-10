@@ -32,61 +32,59 @@ struct UserProgress: Decodable {
     var currentBalance: Double
 }
 
-final class GamesStore {
+final class GamesStore: ObservableObject {
     static let shared = GamesStore()
-    private(set) var activeGames = [Game]()
-    private(set) var pastGames = [Game]()
+    @Published private(set) var activeGames: [Game] = []
+    @Published private(set) var pastGames: [Game] = []
     private var isRetrieving = false
     private let synchronized = DispatchQueue(label: "synchronized", qos: .background)
     let serverUrl = "http://52.200.16.208/"
     
-    func getActiveGames (userId: String) async {
-        guard let url = URL(string: "https://52.200.16.208/active_games/?user_id=\(userId)") else {
-            return
-        }
-        
-        do {
-            let (data, response) = try await URLSession.shared.data(from: url)
-            // Handle the data and response here
-            let responseDict = try? JSONSerialization.jsonObject(with: data, options: []) as? [String: Any]
-            print ("RESPONSE DICT: ", responseDict)
-            guard let activeGamesArray = responseDict?["active_games"] as? [[String: Any]] else {
-                return
-            }
-            print ("ACTIVE GAMES ARRAY: ", activeGamesArray)
-            
-            var tempGame: Game
-            
-            for game in activeGamesArray {
-                print("Game: ", game)
-                if let exerciseType = game["exerciseType"] as? String,
-                let gameCode = game["gameCode"] as? String {
-                    print("HERE")
-                    let weekFrequency = game["weekFrequency"] as? Int
-                    let weekFrequencyGoal = game["weekFrequencyGoal"] as? Int
-                    let weekDistance = game["weekDistance"] as? Double
-                    let weekDistanceGoal = game["weekDistanceGoal"] as? Double
-                    tempGame = Game(
-                        gameCode: gameCode,
-                        betAmount: 0.0, // Placeholder, replace with actual value if available
-                        exerciseType: exerciseType,
-                        frequency: weekFrequency, // Placeholder, replace with actual value if available
-                        distance: weekDistance, // Placeholder, replace with actual value if available
-                        frequencyGoal: weekFrequencyGoal,
-                        distanceGoal: weekDistanceGoal,
-                        duration: 0, // Placeholder, replace with actual value if available
-                        adaptiveGoals: nil, // Placeholder, replace with actual value if available
-                        startDate: Date() // Placeholder, replace with actual value if available
-                    )
-                    // Add tempGame to activeGames or handle it as needed
-                    activeGames.append(tempGame)
-                    print("ACTIVE GAMES: ", activeGames)
-                }
-            } // End of for loop 
-        } catch {
-            print("getActiveGames: NETWORKING ERROR - \(error.localizedDescription)")
-        }
-    }
+    func getActiveGames(userId: String) async {
+           guard let url = URL(string: "https://52.200.16.208/active_games/?user_id=\(userId)") else {
+               return
+           }
+           do {
+               let (data, _) = try await URLSession.shared.data(from: url)
+               let responseDict = try? JSONSerialization.jsonObject(with: data, options: []) as? [String: Any]
+               
+               guard let activeGamesArray = responseDict?["active_games"] as? [[String: Any]] else {
+                   return
+               }
+
+               var games: [Game] = []
+
+               for game in activeGamesArray {
+                   if let exerciseType = game["exerciseType"] as? String,
+                      let gameCode = game["gameCode"] as? String {
+                       let weekFrequency = game["weekFrequency"] as? Int
+                       let weekFrequencyGoal = game["weekFrequencyGoal"] as? Int
+                       let weekDistance = game["weekDistance"] as? Double
+                       let weekDistanceGoal = game["weekDistanceGoal"] as? Double
+                       
+                       let tempGame = Game(
+                           gameCode: gameCode,
+                           betAmount: 0.0,
+                           exerciseType: exerciseType,
+                           frequency: weekFrequency,
+                           distance: weekDistance,
+                           frequencyGoal: weekFrequencyGoal,
+                           distanceGoal: weekDistanceGoal,
+                           duration: 0,
+                           adaptiveGoals: nil,
+                           startDate: Date()
+                       )
+                       games.append(tempGame)
+                   }
+               }
+               // Update UI on main thread
+               DispatchQueue.main.async {
+                   self.activeGames = games
+               }
+           } catch {
+               print("Error fetching active games: \(error.localizedDescription)")
+           }
+       }
     
     func getBetBalances(_ gameCode: String) {
         // serial retrievals
