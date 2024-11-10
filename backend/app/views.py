@@ -4,7 +4,7 @@ from django.views.decorators.csrf import csrf_exempt
 from django.utils import timezone
 from datetime import timedelta
 # from apscheduler.schedulers.background import BackgroundScheduler
-from datetime import datetime
+from datetime import datetime, timedelta
 import time
 import json
 import random
@@ -673,183 +673,339 @@ def get_activity_type(request):
         "exercise_type" : exercise_type
     })
 
-# from ..adaptive import elo
-# import os
-# from django.conf import settings
+from ..adaptive import elo
+import os
+from django.conf import settings
 
-# def weekly_update():
-#     # get the current date
-#     current_date = datetime.now().date()
 
-#     # get all active games
-#     cursor = connection.cursor()
-#     query = '''
-#         SELECT G.gameCode, G.startDate, G.lastUpdated, G.betAmount, G.duration, G.adaptiveGoals, G.exerciseType
-#         FROM Games G
-#         WHERE G.isActive = TRUE
-#     '''
-#     cursor.execute(query)
-#     games = cursor.fetchall()
+def update_date():
+    test_date = datetime(2024, 10, 31)
+    # test_date += timedelta(days=1)
+    weekly_update(test_date)
+    
 
-#     for game in games:
-#         game_code, start_date, last_updated, bet_amount, duration, adaptive_goals, exercise_type = game
+def weekly_update(date):
+    # get the current date
+    # current_date = datetime.now().date()
+    current_date = date
+    
+    # get all active games
+    cursor = connection.cursor()
+    query = '''
+        SELECT G.gameCode, G.startDate, G.lastUpdated, G.betAmount, G.duration, G.adaptiveGoals, G.exerciseType
+        FROM Games G
+        WHERE G.isActive = TRUE
+    '''
+    cursor.execute(query)
+    games = cursor.fetchall()
+
+    for game in games:
+        game_code, start_date, last_updated, bet_amount, duration, adaptive_goals, exercise_type = game
         
-#         # check if a week has passed
-#         weeks_elapsed = (current_date - start_date).days // 7
+        # check if a week has passed
+        weeks_elapsed = (current_date - start_date).days // 7
 
-#         # if a week has passed, do updates
-#         if weeks_elapsed > last_updated:
-#             # change game's last updated week # to current week #
-#             new_last_updated = last_updated + 1
-#             query = '''
-#                     UPDATE Games
-#                     SET lastUpdated = %s
-#                     WHERE gameCode = %s
-#                     ''' 
-#             cursor.execute(query, (new_last_updated, game_code))
+        # if a week has passed, do updates
+        if weeks_elapsed > last_updated:
+            # change game's last updated week # to current week #
+            new_last_updated = last_updated + 1
+            query = '''
+                    UPDATE Games
+                    SET lastUpdated = %s
+                    WHERE gameCode = %s
+                    ''' 
+            cursor.execute(query, (new_last_updated, game_code))
 
-#             # get all users in each game 
-#             query = ''' SELECT GP.userId, GP.weekDistanceGoal, GP.weekFrequencyGoal, GP.weekDistance, GP.weekFrequency, GP.amountGained, GP.amountLost
-#                         FROM GameParticipants GP
-#                         WHERE GP.gameCode = %s
-#                     '''
-#             cursor.execute(query, (game_code,))
-#             participants = cursor.fetchall()
+            # get all users in each game 
+            query = ''' SELECT GP.userId, GP.weekDistanceGoal, GP.weekFrequencyGoal, GP.weekDistance, GP.weekFrequency, GP.amountGained, GP.amountLost
+                        FROM GameParticipants GP
+                        WHERE GP.gameCode = %s
+                    '''
+            cursor.execute(query, (game_code,))
+            participants = cursor.fetchall()
 
-#             # get challenge data if already exists, else create challenge 
-#             challenge_settings = settings.challenges[exercise_type]
-#             challege_file_loc = challenge_settings['file']
+            # get challenge data if already exists, else create challenge 
+            challenge_settings = settings.challenges[exercise_type]
+            challenge_file_loc = challenge_settings['file']
 
-#             if os.path.exists(challege_file_loc):
-#                 challenge = elo.deserialize_challenge_from_csv(challege_file_loc)
-#             else:
-#                 challenge = elo.create_challenge(
-#                     challenge_settings['name'],
-#                     challenge_settings['default_vars']
-#                 )
+            if os.path.exists(challenge_file_loc):
+                challenge = elo.deserialize_challenge_from_csv(challenge_file_loc)
+            else:
+                challenge = elo.create_challenge(
+                    challenge_settings['name'],
+                    challenge_settings['default_vars']
+                )
                 
-#             # store the winners and losers of each game for this week
-#             losers = []
-#             winners = []
+            # store the winners and losers of each game for this week
+            losers = []
+            winners = []
 
-#             for p in participants:
-#                 user_id, week_distance_goal, week_freq_goal, week_distance, week_frequency, amount_gained, amount_lost = p
+            for p in participants:
+                user_id, week_distance_goal, week_freq_goal, week_distance, week_frequency, amount_gained, amount_lost = p
 
-#                 # get all winners and all losers for updating amountGained and amountLost later
-#                 # cant do it now bc we need all winners, all losers for calculations
-#                 if week_distance < week_distance_goal or week_frequency < week_freq_goal:
-#                     losers.append(user_id)
-#                 else:
-#                     winners.append(user_id)
+                # get all winners and all losers for updating amountGained and amountLost later
+                # cant do it now bc we need all winners, all losers for calculations
+                if week_distance < week_distance_goal or week_frequency < week_freq_goal:
+                    losers.append(user_id)
+                else:
+                    winners.append(user_id)
 
-#                 # get user's elo score for this exercise type
-#                 elo_type = exercise_type + "Elo"
-#                 query = ''' SELECT %s
-#                     FROM UserEloRatings 
-#                     WHERE userId = %s
-#                 '''
-#                 cursor.execute(query, (elo_type, user_id))
-#                 elo_score = cursor.fetchone()[0]
+                # get user's elo score for this exercise type
+                elo_type = exercise_type + "Elo"
+                query = ''' SELECT %s
+                    FROM UserEloRatings 
+                    WHERE userId = %s
+                '''
+                cursor.execute(query, (elo_type, user_id))
+                elo_score = cursor.fetchone()[0]
 
-#                 bounded_values = challenge.bound_values(
-#                     challenge_settings['get_challenge_tuple'](week_distance, week_frequency)
-#                 )
-#                 # for i in bounded_values:
-#                 #     if i is None:
-#                 #         continue
-#                 #         # don't run compare elo
+                bounded_values = challenge.bound_values(
+                    challenge_settings['get_challenge_tuple'](week_distance, week_frequency)
+                )
+                # for i in bounded_values:
+                #     if i is None:
+                #         continue
+                #         # don't run compare elo
 
-#                 # call elo function to get user's new elo score using this weeks data
-#                 new_elo, _ = challenge.compare_elo(
-#                     player_elo=elo_score,
-#                     challenge=bounded_values,
-#                     outcome= 1.0 if not (week_distance < week_distance_goal or week_frequency < week_freq_goal) else 0.0
-#                 )
+                # call elo function to get user's new elo score using this weeks data
+                new_elo, _ = challenge.compare_elo(
+                    player_elo=elo_score,
+                    challenge=bounded_values,
+                    outcome= 1.0 if not (week_distance < week_distance_goal or week_frequency < week_freq_goal) else 0.0
+                )
 
-#                 # update user's elo score in db 
-#                 query = '''
-#                     UPDATE UserEloRatings
-#                     SET %s = %s 
-#                     WHERE userId = %s
-#                 '''
-#                 cursor.execute(query, (elo_type, new_elo, user_id))
+                # update user's elo score in db 
+                query = '''
+                    UPDATE UserEloRatings
+                    SET %s = %s 
+                    WHERE userId = %s
+                '''
+                cursor.execute(query, (elo_type, new_elo, user_id))
                 
 
-#                 # use elo function to update a user's goal if the game is adaptive
-#                 if adaptive_goals:
-#                     new_challenges = challenge.get_nearest_challenges(new_elo)
-#                     best_challenge = new_challenges[0]
-#                     challenge_params = best_challenge[1]
-#                     g_t = challenge_settings['get_generic_tuple'](challenge_params)
-#                     query = '''
-#                         UPDATE GameParticipants
-#                         SET weekDistanceGoal = %s, weekFrequencyGoal = %s
-#                         WHERE gameCode = %s AND userId = %s
-#                     '''
-#                     cursor.execute(query, (g_t[0], g_t[1], game_code, user_id))
+                # use elo function to update a user's goal if the game is adaptive
+                if adaptive_goals:
+                    new_challenges = challenge.get_nearest_challenges(new_elo)
+                    best_challenge = new_challenges[0]
+                    challenge_params = best_challenge[1]
+                    g_t = challenge_settings['get_generic_tuple'](challenge_params)
+                    query = '''
+                        UPDATE GameParticipants
+                        SET weekDistanceGoal = %s, weekFrequencyGoal = %s
+                        WHERE gameCode = %s AND userId = %s
+                    '''
+                    cursor.execute(query, (g_t[0], g_t[1], game_code, user_id))
 
-#                 # update weekDistance, weekFrequency to be 0 for each user in game
-#                 query = '''
-#                     UPDATE GameParticipants
-#                     SET weekDistance = 0, weekFrequency = 0
-#                     WHERE gameCode = %s AND userId = %s
-#                 '''
-#                 cursor.execute(query, (game_code, user_id))
+                # update weekDistance, weekFrequency to be 0 for each user in game
+                query = '''
+                    UPDATE GameParticipants
+                    SET weekDistance = 0, weekFrequency = 0
+                    WHERE gameCode = %s AND userId = %s
+                '''
+                cursor.execute(query, (game_code, user_id))
         
-#         # add updates to challenge to csv file
-#         elo.serialize_challenge_to_csv(challenge, challege_file_loc)
+            # add updates to challenge to csv file
+            elo.serialize_challenge_to_csv(challenge, challenge_file_loc)
 
 
-#             # use winners and losers to update balances for each player in each game
-#             # rounding isn't perfect (shown in example), should probably fix
-#             weekly_amount = round(bet_amount / duration, 2) # 250 / 4 = 62.5
-#             split_amount = round(len(losers) * weekly_amount, 2) # 62.5 * 3 = 187.5
-#             split_amount = round(split_amount / len(winners), 2) # 187.5 / 4 = 46.875 = 46.88 ------> (46.88 * 4 = 187.52) ------> 187.52 > original split_amount (187.5)
+            # use winners and losers to update balances for each player in each game
+            # rounding isn't perfect (shown in example), should probably fix
+            weekly_amount = round(bet_amount / duration, 2) # 250 / 4 = 62.5
+            split_amount = round(len(losers) * weekly_amount, 2) # 62.5 * 3 = 187.5
+            split_amount = round(split_amount / len(winners), 2) # 187.5 / 4 = 46.875 = 46.88 ------> (46.88 * 4 = 187.52) ------> 187.52 > original split_amount (187.5)
 
-#             for p in participants:
-#                 user_id = p[0]
-#                 amount_gained = p[5]
-#                 amount_lost = p[6]
-#                 if user_id in losers:
-#                     new_amount_lost = amount_lost + weekly_amount
-#                     query = '''
-#                         UPDATE GameParticipants
-#                         SET amountLost = %s
-#                         WHERE gameCode = %s AND userId = %s
-#                     '''
-#                     cursor.execute(query, (new_amount_lost, game_code, user_id))
+            for p in participants:
+                user_id = p[0]
+                amount_gained = p[5]
+                amount_lost = p[6]
+                if user_id in losers:
+                    new_amount_lost = amount_lost + weekly_amount
+                    query = '''
+                        UPDATE GameParticipants
+                        SET amountLost = %s
+                        WHERE gameCode = %s AND userId = %s
+                    '''
+                    cursor.execute(query, (new_amount_lost, game_code, user_id))
 
-#                 elif user_id in winners:
-#                     new_amount_gained = amount_gained + split_amount
-#                     query = '''
-#                         UPDATE GameParticipants
-#                         SET amountGained = %s
-#                         WHERE gameCode = %s AND userId = %s
-#                     '''
-#                     cursor.execute(query, (new_amount_gained, game_code, user_id))
+                elif user_id in winners:
+                    new_amount_gained = amount_gained + split_amount
+                    query = '''
+                        UPDATE GameParticipants
+                        SET amountGained = %s
+                        WHERE gameCode = %s AND userId = %s
+                    '''
+                    cursor.execute(query, (new_amount_gained, game_code, user_id))
     
     
-#     # check if the game has ended, update to not active if so
-#     if weeks_elapsed >= duration:
-#         query = '''
-#                 UPDATE Games
-#                 SET isActive = FALSE
-#                 WHERE gameCode = %s
-#                 '''
-#         cursor.execute(query, (game_code, ))
+        # check if the game has ended, update to not active if so
+        if weeks_elapsed >= duration:
+            query = '''
+                    UPDATE Games
+                    SET isActive = FALSE
+                    WHERE gameCode = %s
+                    '''
+            cursor.execute(query, (game_code, ))
 
-#     # commit db changes
-#     connection.commit()
+    # commit db changes
+    connection.commit()
 
 
-# # scheduler = BackgroundScheduler()
+#def update_caller():
+    
 
-# # # schedule to run at the end of everyday
-# # scheduler.add_job(job, 'interval', days=1, start_date='2024-11-06 23:59:00')
-# # scheduler.start()
+def update():
+    cursor = connection.cursor()
+    query = '''
+        SELECT G.gameCode, G.startDate, G.lastUpdated, G.betAmount, G.duration, G.adaptiveGoals, G.exerciseType
+        FROM Games G
+        WHERE G.isActive = TRUE
+    '''
+    cursor.execute(query)
+    games = cursor.fetchall()
 
-# # try:
-# #     while True:
-# #         time.sleep(60)  # Sleep to keep the scheduler running
-# # except (KeyboardInterrupt, SystemExit):
-# #     scheduler.shutdown()
+    for game in games:
+        game_code, start_date, last_updated, bet_amount, duration, adaptive_goals, exercise_type = game
+
+        # change game's last updated week # to current week #
+        new_last_updated = last_updated + 1
+        query = '''
+                UPDATE Games
+                SET lastUpdated = %s
+                WHERE gameCode = %s
+                ''' 
+        cursor.execute(query, (new_last_updated, game_code))
+
+        # get all users in each game 
+        query = ''' SELECT GP.userId, GP.weekDistanceGoal, GP.weekFrequencyGoal, GP.weekDistance, GP.weekFrequency, GP.amountGained, GP.amountLost
+                    FROM GameParticipants GP
+                    WHERE GP.gameCode = %s
+                '''
+        cursor.execute(query, (game_code,))
+        participants = cursor.fetchall()
+
+        # get challenge data if already exists, else create challenge 
+        challenge_settings = settings.challenges[exercise_type]
+        challenge_file_loc = challenge_settings['file']
+
+        if os.path.exists(challenge_file_loc):
+            challenge = elo.deserialize_challenge_from_csv(challenge_file_loc)
+        else:
+            challenge = elo.create_challenge(
+                challenge_settings['name'],
+                challenge_settings['default_vars']
+            )
+            
+        # store the winners and losers of each game for this week
+        losers = []
+        winners = []
+
+        for p in participants:
+            user_id, week_distance_goal, week_freq_goal, week_distance, week_frequency, amount_gained, amount_lost = p
+
+            # get all winners and all losers for updating amountGained and amountLost later
+            # cant do it now bc we need all winners, all losers for calculations
+            if week_distance < week_distance_goal or week_frequency < week_freq_goal:
+                losers.append(user_id)
+            else:
+                winners.append(user_id)
+
+            # get user's elo score for this exercise type
+            elo_type = exercise_type + "Elo"
+            query = ''' SELECT %s
+                FROM UserEloRatings 
+                WHERE userId = %s
+            '''
+            cursor.execute(query, (elo_type, user_id))
+            elo_score = cursor.fetchone()[0]
+
+            bounded_values = challenge.bound_values(
+                challenge_settings['get_challenge_tuple'](week_distance, week_frequency)
+            )
+            # for i in bounded_values:
+            #     if i is None:
+            #         continue
+            #         # don't run compare elo
+
+            # call elo function to get user's new elo score using this weeks data
+            new_elo, _ = challenge.compare_elo(
+                player_elo=elo_score,
+                challenge=bounded_values,
+                outcome= 1.0 if not (week_distance < week_distance_goal or week_frequency < week_freq_goal) else 0.0
+            )
+
+            # update user's elo score in db 
+            query = '''
+                UPDATE UserEloRatings
+                SET %s = %s 
+                WHERE userId = %s
+            '''
+            cursor.execute(query, (elo_type, new_elo, user_id))
+            
+
+            # use elo function to update a user's goal if the game is adaptive
+            if adaptive_goals:
+                new_challenges = challenge.get_nearest_challenges(new_elo)
+                best_challenge = new_challenges[0]
+                challenge_params = best_challenge[1]
+                g_t = challenge_settings['get_generic_tuple'](challenge_params)
+                query = '''
+                    UPDATE GameParticipants
+                    SET weekDistanceGoal = %s, weekFrequencyGoal = %s
+                    WHERE gameCode = %s AND userId = %s
+                '''
+                cursor.execute(query, (g_t[0], g_t[1], game_code, user_id))
+
+            # update weekDistance, weekFrequency to be 0 for each user in game
+            query = '''
+                UPDATE GameParticipants
+                SET weekDistance = 0, weekFrequency = 0
+                WHERE gameCode = %s AND userId = %s
+            '''
+            cursor.execute(query, (game_code, user_id))
+
+        # add updates to challenge to csv file
+        elo.serialize_challenge_to_csv(challenge, challenge_file_loc)
+
+
+        # use winners and losers to update balances for each player in each game
+        # rounding isn't perfect (shown in example), should probably fix
+        weekly_amount = round(bet_amount / duration, 2) # 250 / 4 = 62.5
+        split_amount = round(len(losers) * weekly_amount, 2) # 62.5 * 3 = 187.5
+        split_amount = round(split_amount / len(winners), 2) # 187.5 / 4 = 46.875 = 46.88 ------> (46.88 * 4 = 187.52) ------> 187.52 > original split_amount (187.5)
+
+        for p in participants:
+            user_id = p[0]
+            amount_gained = p[5]
+            amount_lost = p[6]
+            if user_id in losers:
+                new_amount_lost = amount_lost + weekly_amount
+                query = '''
+                    UPDATE GameParticipants
+                    SET amountLost = %s
+                    WHERE gameCode = %s AND userId = %s
+                '''
+                cursor.execute(query, (new_amount_lost, game_code, user_id))
+
+            elif user_id in winners:
+                new_amount_gained = amount_gained + split_amount
+                query = '''
+                    UPDATE GameParticipants
+                    SET amountGained = %s
+                    WHERE gameCode = %s AND userId = %s
+                '''
+                cursor.execute(query, (new_amount_gained, game_code, user_id))
+        
+        
+        
+
+    # scheduler = BackgroundScheduler()
+
+    # # schedule to run at the end of everyday
+    # scheduler.add_job(job, 'interval', days=1, start_date='2024-11-06 23:59:00')
+    # scheduler.start()
+
+    # try:
+    #     while True:
+    #         time.sleep(60)  # Sleep to keep the scheduler running
+    # except (KeyboardInterrupt, SystemExit):
+    #     scheduler.shutdown()
