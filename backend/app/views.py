@@ -285,9 +285,9 @@ def create_game(request):
     Creates a new game and adds the current user to the game.
 
     Request must contain: user_id, bet_amount, exercise_type,
-    frequency, distance, duration, adaptive_goals, start_date
+    frequency, distance, duration, adaptive_goals, start_date, password
 
-    frequncy, distance may be null
+    frequncy, distance, password may be null
 
     Response format:
     {
@@ -312,18 +312,18 @@ def create_game(request):
     # also tested with null values for frequency, distance
     # inserted into db correctly with nulls
     user_id, bet_amount, exercise_type, frequency, \
-    distance, duration, adaptive_goals, start_date = (
+    distance, duration, adaptive_goals, start_date, password = (
         json_data.get(key) for key in [
             "user_id", "bet_amount", "exercise_type", "frequency",
-            "distance", "duration", "adaptive_goals", "start_date"
+            "distance", "duration", "adaptive_goals", "start_date", "password"
         ]
     )
     # Add game to Games table
     cursor.execute("INSERT INTO Games (gameCode, betAmount, exerciseType, frequency, \
-                   distance, duration, adaptiveGoals, startDate) \
+                   distance, duration, adaptiveGoals, startDate, password) \
                    VALUES (%s, %s, %s, %s, %s, %s, %s, %s)",
                    (game_code, bet_amount, exercise_type, frequency, distance,
-                    duration, adaptive_goals, start_date))
+                    duration, adaptive_goals, start_date, password))
 
     # Set current user as player of this game
     if distance is not None:
@@ -344,7 +344,7 @@ def join_game(request):
     """
     Adds a user to a game with a valid game code.
 
-    Request must contain: user ID, game code
+    Request must contain: user ID, game code, password (password may be null)
 
     Response format:
     {
@@ -361,9 +361,16 @@ def join_game(request):
 
     user_id = json_data.get("user_id")
     game_code = json_data.get("game_code")
+    password = json_data.get("password")
 
     if not user_id or not game_code:
         return JsonResponse({"error": "Invalid or missing user_id/game_code"}, status=400)
+
+    if password:
+        cursor.execute("SELECT password FROM Games WHERE gameCode = %s", (game_code,))
+        new_pass = cursor.fetchone()
+        if new_pass != password:
+            return JsonResponse({"error": "Incorrect password"}, status=400)
 
 
     # verify that user id is valid
