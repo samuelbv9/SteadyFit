@@ -564,7 +564,7 @@ def goal_status(request):
     cursor.execute("SELECT * FROM GameParticipants WHERE gameCode = %s AND userId = %s", (game_code, user_id))
     goal = cursor.fetchone()
 
-    if len(game) >= 5:
+    if game[4] and game[5]:
         weekly_distance = game[4] / game[5]
     else:
         weekly_distance = None
