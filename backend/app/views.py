@@ -564,7 +564,10 @@ def goal_status(request):
     cursor.execute("SELECT * FROM GameParticipants WHERE gameCode = %s AND userId = %s", (game_code, user_id))
     goal = cursor.fetchone()
 
-    weekly_distance = game[4] / game[5]
+    if len(game) >= 5:
+        weekly_distance = game[4] / game[5]
+    else:
+        weekly_distance = None
 
     return JsonResponse({
         "totalExpectedDistance": game[4],
