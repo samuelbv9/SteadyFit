@@ -27,28 +27,6 @@ struct ActiveGameView: View {
     }
     
     var body: some View {
-        let data = [ // This will be for the circle chart
-            GraphDataPoint(
-                day: "Mon",
-                hours: Double(viewModel.gameData?.currentDistance ?? "0") ?? 0
-            ),
-            GraphDataPoint(
-                day: "tues",
-                hours:  Double(viewModel.gameData?.totalDistance ?? "1") ?? 1
-            )
-        ]
-        
-        let data2 = [ // This will be for the circle chart
-            GraphDataPoint(
-                day: "Mon",
-                hours: Double(viewModel.gameData?.currentFrequency ?? 0)
-            ),
-            GraphDataPoint(
-                day: "tues",
-                hours:  Double(viewModel.gameData?.totalFrequency ?? 1)
-            )
-        ]
-        
         let gameData = viewModel.gameData
         var isStrengthTraining = false
         if gameData?.exerciseType == "strength training" {
@@ -59,6 +37,38 @@ struct ActiveGameView: View {
             units = "yards"
         }
         
+        let data = [ // Outer Circle
+            GraphDataPoint(
+                day: "Mon",
+                hours: isStrengthTraining ? 
+                    Double(viewModel.gameData?.currentFrequency ?? 0) ?? 0 :
+                    Double(viewModel.gameData?.currentDistance ?? "0") ?? 0
+            ),
+            GraphDataPoint(
+                day: "tues",
+                hours:  isStrengthTraining ?
+                    Double(viewModel.gameData?.totalFrequency ?? 1) ?? 1 :
+                    Double(viewModel.gameData?.totalDistance ?? "1") ?? 1
+            )
+        ]
+        
+        let convertedD: Double = Double(viewModel.gameData?.weekDistance ?? "0") ?? 0.0
+        let convertedDgoal: Double = Double(viewModel.gameData?.weekDistanceGoal ?? "0") ?? 0.0
+        let convertedF:  Double = Double(viewModel.gameData?.weekFrequency ?? 0) ?? 0.0
+        let convertedFgoal:  Double = Double(viewModel.gameData?.weekFrequencyGoal ?? 0) ?? 0.0
+        
+        let data2 = [ // Inner Circle
+            GraphDataPoint(
+                day: "Mon",
+                hours: convertedD
+            ),
+            GraphDataPoint(
+                day: "tues",
+                hours:  convertedDgoal - convertedD
+            )
+        ]
+        
+
         
         
         return VStack {
@@ -130,12 +140,12 @@ struct ActiveGameView: View {
                             Spacer()
                             // ####### HERE #############
                             if (isStrengthTraining) { // Show correct units
-                                Text("\(gameData?.currentFrequency ?? 0) times") // week distance
+                                Text("\(gameData?.weekFrequency ?? 0) times") // week distance
                                     .padding(.trailing, 30)
                                     .font(.custom("Poppins-Regular", size: 20))
                                     .kerning(-0.3)
                             } else {
-                                Text("\(gameData?.currentDistance ?? "err") \(units)")
+                                Text("\(gameData?.weekDistance ?? "err") \(units)")
                                     .padding(.trailing, 30)
                                     .font(.custom("Poppins-Regular", size: 20))
                                     .kerning(-0.3)
@@ -267,7 +277,11 @@ struct ActiveGameView: View {
                                 .frame(width: 50, height: 50)
                             let currentDistance = Double(viewModel.gameData?.currentDistance ?? "0") ?? 0
                             let totalDistance = Double(viewModel.gameData?.totalDistance ?? "1") ?? 1
-                            let percentage = (currentDistance / totalDistance) * 100
+                            let currentFrequency = Double(viewModel.gameData?.currentFrequency ?? 0) ?? 0
+                            let totalFrequency = Double(viewModel.gameData?.totalFrequency ?? 0) ?? 0
+                            let percentage = isStrengthTraining ?
+                                (currentFrequency / totalFrequency) * 100:
+                                (currentDistance / totalDistance) * 100
                             Text("\(String(format: "%.1f", percentage))%")
                                 .font(.custom("Poppins-Bold", size: 14))
                                 .kerning(-0.6)
@@ -285,7 +299,7 @@ struct ActiveGameView: View {
                         //stats
                         // ####### HERE #############
                         if (isStrengthTraining) {
-                            Text("\(gameData?.currentFrequency ?? 0)/\(gameData?.totalDistance ?? "err") times")
+                            Text("\(gameData?.currentFrequency ?? 0)/\(gameData?.totalFrequency ?? 0) times")
                                 .font(.custom("Poppins-Regular", size: 18))
                                 .frame(width: 183, alignment: .leading)
                         } else {
@@ -299,11 +313,11 @@ struct ActiveGameView: View {
                         //stats
                         // ####### HERE #############
                         if (isStrengthTraining) {
-                            Text("\(gameData?.currentFrequency ?? 1)/\(gameData?.weekFrequencyGoal ?? 1) units")
+                            Text("\(gameData?.weekFrequency ?? 1)/\(gameData?.weekFrequencyGoal ?? 1) units")
                                 .font(.custom("Poppins-Regular", size: 18))
                                 .frame(width: 183, alignment: .leading)
                         } else {
-                            Text("\(gameData?.currentDistance ?? "err")/\(gameData?.weekDistanceGoal ?? "err") \(units)")
+                            Text("\(gameData?.weekDistance ?? "err")/\(gameData?.weekDistanceGoal ?? "err") \(units)")
                                 .font(.custom("Poppins-Regular", size: 18))
                                 .frame(width: 183, alignment: .leading)
                         }
@@ -428,7 +442,7 @@ extension Color {
             return .lightGray
         // Add more cases as needed
         default:
-            return .gray
+            return .lightGray
         }
     }
 }
