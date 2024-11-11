@@ -81,8 +81,8 @@ struct JoinGamecode: View {
                 Text("Game Code")
                 TextInputField(text: $userInputGameCode)
                     .padding(.bottom, 5)
-//                Text("Password (Optional)")
-//                TextInputField(text: $userInputPassword)
+                Text("Password (Optional)")
+                TextInputField(text: $userInputPassword)
             }
             Spacer()
             VStack(spacing: 0) {
@@ -101,7 +101,7 @@ struct JoinGamecode: View {
                     }
                     Spacer()
                     Button(action: {
-                        GamesStore.shared.joinGame(userInputGameCode)
+                        GamesStore.shared.joinGame(userInputGameCode, userInputPassword)
                     }) {
                         HStack {
                             Text("Join Game")
