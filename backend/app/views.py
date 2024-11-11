@@ -369,8 +369,7 @@ def join_game(request):
     # add user to GameParticipants with default values
     frequency = game[3]
     distance = game[4]
-    duration = game[5]
-        
+            
     try:
         cursor.execute("""
             INSERT INTO GameParticipants 
