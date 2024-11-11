@@ -755,7 +755,7 @@ def weekly_update(date):
                         losers.append(user_id)
                         failed_freq = true
 
-                if failed_distance == false and failed_freq == false
+                if failed_distance == false and failed_freq == false:
                     winners.append(user_id)
             
                 # get user's elo score for this exercise type
