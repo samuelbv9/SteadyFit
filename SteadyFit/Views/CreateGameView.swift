@@ -24,7 +24,6 @@ class UserData: ObservableObject {
 struct CreateGameView: View {
     @Environment(\.presentationMode) var presentationMode
     @StateObject var userData = UserData()
-    @State private var navigateToHome = false
     let exerciseOptions = ["Choose an exercise", "Swimming", "Running", "Walking", "Strength Training", "Cycling"]
     var body: some View {
         NavigationView {
