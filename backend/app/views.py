@@ -824,8 +824,8 @@ def weekly_update(date):
 
                 # call elo function to get user's new elo score using this weeks data
                 new_elo, _ = challenge.compare_elo(
-                    player_elo=elo_score,
-                    challenge=bounded_values,
+                    player_elo=float(elo_score),
+                    challenge_values=bounded_values,
                     outcome= 1.0 if not (week_distance < week_distance_goal or week_frequency < week_freq_goal) else 0.0
                 )
 
