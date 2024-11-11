@@ -50,10 +50,10 @@ class ActiveGameViewModel: ObservableObject {
         }
     }
 
-    func fetchBetDetails(gameCode: String) async throws -> BetDetail {
-        guard let url = URL(string: "https://52.200.16.208/bet_details?game_code=\(gameCode)") else {
+    func fetchBetDetails(userId: String, gameCode: String) async throws -> BetDetail {
+        guard let url = URL(string: "https://52.200.16.208/personal_bet_details?user_id=\(userId)&game_code=\(gameCode)") else {
             self.errorMessage = "Invalid URL"
-            return BetDetail(userId: "123", balance: 0, amountGained: 0, amountLost: 0)
+            return BetDetail(initialBet: 0, balance: 0, amountGained: 0, amountLost: 0)
         }
         
         let (data, response) = try await URLSession.shared.data(from: url)
@@ -75,7 +75,7 @@ class ActiveGameViewModel: ObservableObject {
     func loadBetDetails(gameCode: String) {
         Task {
             do {
-                let betData = try await fetchBetDetails(gameCode: gameCode)
+                let betData = try await fetchBetDetails(userId: Auth.auth().currentUser?.uid ?? "", gameCode: gameCode)
                 self.betDetails = betData
             } catch {
                 print("Error fetching current game: \(error)")
@@ -98,7 +98,7 @@ struct GameData: Decodable {
 }
 
 struct BetDetail: Decodable {
-    let userId: String
+    let initialBet: Double
     let balance: Double
     let amountGained: Double
     let amountLost: Double

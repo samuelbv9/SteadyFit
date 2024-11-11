@@ -17,10 +17,10 @@ struct SteadyFitApp: App {
     
     var body: some Scene {
         WindowGroup {
-//            ContentView()
+            ContentView()
 //            LoadingView()
             //TestingView()
-            CreateGameView()
+//            CreateGameView()
 //            JoinGameView()
         }
     }

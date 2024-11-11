@@ -59,7 +59,14 @@ struct CreateGameView: View {
                                         Text("session(s) / week")
                                     }
                                 }
-                            } else {
+                            }
+                            else if userData.selectedExerciseOption == "Swimming" {
+                                Text("Distance: ")
+                                Spacer()
+                                NumberInputField(inputText: $userData.distanceStr, outputInt: $userData.distanceInt)
+                                Text("yard(s) / week")
+                            }
+                            else {
                                 Text("Distance: ")
                                 Spacer()
                                 NumberInputField(inputText: $userData.distanceStr, outputInt: $userData.distanceInt)
