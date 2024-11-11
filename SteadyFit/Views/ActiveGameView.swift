@@ -79,10 +79,8 @@ struct ActiveGameView: View {
             Spacer()
 
             HStack { // Game title and back button
-                Button {
-                    // Action on press
-                    // action()
-                } label: {
+                NavigationLink(destination: HomeView()
+                    .navigationBarBackButtonHidden(true)) {
                     ZStack {
                         RoundedRectangle(cornerRadius: 40)
                             .foregroundColor(Color.deepBlue)
@@ -96,10 +94,13 @@ struct ActiveGameView: View {
                     Text(gameData?.exerciseType.capitalized ?? "no game data")
                         .font(.custom("Poppins-Bold", size: 30))
                         .kerning(-0.6) // Decreases letter spacing
+                        .padding(.bottom, -16)
                     Text(gameCode)
                         .font(.custom("Poppins-Bold", size: 30))
                         .kerning(-0.6) // Decreases letter spacing
                 }
+                .padding(.bottom, -15)
+                .padding(.top, -15)
             }
             .padding(.top, 20)
             .padding(.bottom, 10)
@@ -244,7 +245,7 @@ struct ActiveGameView: View {
             }
             .frame(width: 322)
             .padding(.top, 10)
-            .padding(.bottom, 10)
+            .padding(.bottom, 0)
             
             Spacer()
             

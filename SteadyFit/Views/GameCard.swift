@@ -122,7 +122,8 @@ struct GameCard: View {
                     Text(exerciseAction + " " + goalText + " " + unit)
                     Text("Progress: \(currentProgressText) \(unit) / \(goalText) \(unit)")
                     Spacer()
-                    NavigationLink(destination: ActiveGameView(gameCode: gameCode, healthStore: healthStore)) {
+                    NavigationLink(destination: ActiveGameView(gameCode: gameCode, healthStore: healthStore)
+                                    .navigationBarBackButtonHidden(true)) {
                         Text("View Game Details >")
                             .foregroundColor(.deepBlue)
                             .font(.custom("Poppins-Bold", size: 10))
