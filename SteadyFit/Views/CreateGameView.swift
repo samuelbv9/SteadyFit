@@ -24,6 +24,7 @@ class UserData: ObservableObject {
 struct CreateGameView: View {
     @Environment(\.presentationMode) var presentationMode
     @StateObject var userData = UserData()
+    @State private var navigateToHome = false
     let exerciseOptions = ["Choose an exercise", "Swimming", "Running", "Walking", "Strength Training", "Cycling"]
     var body: some View {
         NavigationView {
@@ -49,7 +50,7 @@ struct CreateGameView: View {
                         }
                         
                         HStack {
-                            if userData.selectedExerciseOption == "strengthTraining" {
+                            if userData.selectedExerciseOption == "Strength Training" {
                                 VStack(alignment: .leading) {
                                     Text("Frequency:")
                                         .padding(.bottom, 2)
@@ -133,6 +134,7 @@ extension View {
 struct CreateGameWagerView: View {
     @Environment(\.presentationMode) var presentationMode
     @ObservedObject var userData: UserData
+    @State private var navigateToHome = false
     
     private var perWeek: Double {
         if let wager = userData.wagerInt, let duration = userData.durationInt, duration != 0 {
@@ -160,6 +162,9 @@ struct CreateGameWagerView: View {
     }
     
     var body: some View {
+        NavigationLink(destination: HomeView(), isActive: $navigateToHome) {
+            EmptyView()
+        }
         ZStack { // Wrap in ZStack to detect taps outside of text fields
             VStack {
                 HeaderView()
@@ -205,7 +210,8 @@ struct CreateGameWagerView: View {
                         }
                         Spacer()
                         Button(action: {
-                            GamesStore.shared.postGame(userData)
+                            GamesStore.shared.postGame(userData) // Call postGame
+                            navigateToHome = true               // Trigger navigation
                         }) {
                             HStack {
                                 Text("Publish")
