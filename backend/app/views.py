@@ -324,9 +324,7 @@ def create_game(request):
     connection.commit()
 
     return JsonResponse({
-                        "done": game_code, # used for testing
-                        "frequency": frequency,
-                        "distance": distance
+                        "done": game_code
                     })
 
 @csrf_exempt
@@ -385,9 +383,7 @@ def join_game(request):
 
     return JsonResponse({
                         "game_code": game_code,
-                        "user_id": user_id,
-                        "frequency": frequency,
-                        "distance": distance
+                        "user_id": user_id
                     })
 
 @csrf_exempt
@@ -674,7 +670,7 @@ from django.conf import settings
 
 
 def update_date(request):
-    test_date = date(2024, 11, 30)
+    test_date = date(2024, 11, 9)
     # test_date += timedelta(days=1)
     r = weekly_update(test_date)
     return JsonResponse(r)  
