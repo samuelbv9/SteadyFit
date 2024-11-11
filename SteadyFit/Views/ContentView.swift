@@ -21,6 +21,7 @@ struct ContentView: View {
             HomeView()
         } else {
             //LaunchView()
+            LoginView()
         }
     }
             

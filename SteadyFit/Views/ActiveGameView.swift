@@ -95,6 +95,9 @@ struct ActiveGameView: View {
                 Text(gameData?.exerciseType.capitalized ?? "no game data")
                 .font(.custom("Poppins-Bold", size: 30))
                 .kerning(-0.6) // Decreases letter spacing
+                Text(gameCode)
+                    .font(.custom("Poppins-Bold", size: 30))
+                    .kerning(-0.6) // Decreases letter spacing
             }
             .padding(.top, 20)
             .padding(.bottom, 10)
