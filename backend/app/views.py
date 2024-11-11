@@ -620,6 +620,42 @@ def bet_details(request):
 
     return JsonResponse({"bet_details": response_data})
 
+@csrf_exempt
+def personal_bet_details(request):
+    """
+    Shows current status for personal bets in a game.
+    Request must contain game_code and user_id.
+
+    Response format:
+    {
+        bet_details: {
+            "balance": float,
+            "amountGained": float,
+            "amountLost": float
+        }
+    }
+    """
+    if request.method != 'GET':
+        return HttpResponse(status=404)
+
+    cursor = connection.cursor()
+    game_code = request.GET.get("game_code")
+
+    if not game_code:
+        return HttpResponse(status=400)
+
+    user_id = request.GET.get("user_id")
+
+    cursor.execute("SELECT balance, amountGained, amountLost FROM GameParticipants WHERE gameCode = %s AND userId = %s", (game_code, user_id))
+    participants = cursor.fetchone()
+    response_data = { 
+            "balance": participants[0],
+            "amountGained": participants[1],
+            "amountLost": participants[2]
+        }
+
+    return JsonResponse({"bet_details": response_data})
+
 
 @csrf_exempt
 def create_user(request):
