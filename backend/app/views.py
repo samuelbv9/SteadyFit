@@ -669,13 +669,13 @@ def get_activity_type(request):
         "exercise_type" : exercise_type
     })
 
-from app import adaptive as elo
+from app.adaptive.elo import create_challenge, serialize_challenge_to_csv, deserialize_challenge_from_csv
 import os
 from django.conf import settings
 
 
 def update_date(request):
-    test_date = date(2024, 11, 2)
+    test_date = date(2024, 11, 4)
     # test_date += timedelta(days=1)
     weekly_update(test_date)
     return HttpResponse("Date updated successfully")  
@@ -773,9 +773,9 @@ def weekly_update(date):
             challenge_file_loc = challenge_settings['file']
 
             if os.path.exists(challenge_file_loc):
-                challenge = elo.deserialize_challenge_from_csv(challenge_file_loc)
+                challenge = deserialize_challenge_from_csv(challenge_file_loc)
             else:
-                challenge = elo.create_challenge(
+                challenge = create_challenge(
                     challenge_settings['name'],
                     challenge_settings['default_vars']
                 )
@@ -860,7 +860,7 @@ def weekly_update(date):
                 cursor.execute(query, (game_code, user_id))
         
             # add updates to challenge to csv file
-            elo.serialize_challenge_to_csv(challenge, challenge_file_loc)
+            serialize_challenge_to_csv(challenge, challenge_file_loc)
 
 
             # use winners and losers to update balances for each player in each game
@@ -943,9 +943,9 @@ def update():
         challenge_file_loc = challenge_settings['file']
 
         if os.path.exists(challenge_file_loc):
-            challenge = elo.deserialize_challenge_from_csv(challenge_file_loc)
+            challenge = deserialize_challenge_from_csv(challenge_file_loc)
         else:
-            challenge = elo.create_challenge(
+            challenge = create_challenge(
                 challenge_settings['name'],
                 challenge_settings['default_vars']
             )
@@ -1019,7 +1019,7 @@ def update():
             cursor.execute(query, (game_code, user_id))
 
         # add updates to challenge to csv file
-        elo.serialize_challenge_to_csv(challenge, challenge_file_loc)
+        serialize_challenge_to_csv(challenge, challenge_file_loc)
 
 
         # use winners and losers to update balances for each player in each game
