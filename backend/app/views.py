@@ -374,8 +374,6 @@ def join_game(request):
     duration = game[5]
     if distance is not None:
         distance = round(distance / duration, 2)
-    if frequency is not None:
-        frequency = round(frequency / duration, 2)
         
     try:
         cursor.execute("""
@@ -746,7 +744,7 @@ def weekly_update(date):
                 # cant do it now bc we need all winners, all losers for calculations
                 failed_distance = false
                 failed_freq = false
-                
+
                 if week_distance is not None and week_distance_goal is not None: 
                     if week_distance < week_distance_goal: 
                         losers.append(user_id)
