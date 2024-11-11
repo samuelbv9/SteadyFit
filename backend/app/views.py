@@ -789,20 +789,20 @@ def weekly_update(date):
 
                 # get all winners and all losers for updating amountGained and amountLost later
                 # cant do it now bc we need all winners, all losers for calculations
-                failed_distance = false
-                failed_freq = false
+                failed_distance = False
+                failed_freq = False
 
                 if week_distance is not None and week_distance_goal is not None: 
                     if week_distance < week_distance_goal: 
                         losers.append(user_id)
-                        failed_distance = true
+                        failed_distance = True
 
                 if week_frequency is not None and week_freq_goal is not None: 
                     if week_frequency < week_freq_goal:
                         losers.append(user_id)
-                        failed_freq = true
+                        failed_freq = True
 
-                if failed_distance == false and failed_freq == false:
+                if not failed_distance and not failed_freq:
                     winners.append(user_id)
             
                 # get user's elo score for this exercise type
