@@ -14,22 +14,22 @@ struct GameCompletedView: View {
     
     var body: some View {
         let data = [ // This will be for the circle chart
-            SleepDataPoint(
+            GraphDataPoint(
                 day: "Mon",
                 hours: Double(viewModel.gameData?.currentDistance ?? "0") ?? 0
             ),
-            SleepDataPoint(
+            GraphDataPoint(
                 day: "tues",
                 hours:  Double(viewModel.gameData?.totalDistance ?? "1") ?? 1
             )
         ]
         
         let data2 = [ // This will be for the circle chart
-            SleepDataPoint(
+            GraphDataPoint(
                 day: "Mon",
                 hours: Double(viewModel.gameData?.currentFrequency ?? 0)
             ),
-            SleepDataPoint(
+            GraphDataPoint(
                 day: "tues",
                 hours:  Double(viewModel.gameData?.totalFrequency ?? 1)
             )

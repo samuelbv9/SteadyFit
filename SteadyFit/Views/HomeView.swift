@@ -20,18 +20,21 @@ struct HomeView: View {
             VStack {
                 HeaderView()
                 Spacer()
-                
-                List(gamesStore.activeGames, id: \.gameCode) { game in
-                    VStack(alignment: .leading, spacing: 5) {
-                        if game.exerciseType == "Strength Training" {
-                            GameCard(exerciseType: game.exerciseType, goal: Double(game.frequencyGoal ?? 0), currentProgress: Double(game.frequency ?? 0), healthStore: viewModel.healthStore, gameCode: game.gameCode)
-                        }
-                        else {
-                            GameCard(exerciseType: game.exerciseType, goal: (game.distanceGoal ?? 0), currentProgress: (game.distance ?? 0), healthStore: viewModel.healthStore, gameCode: game.gameCode)
+                Text("Your Active Games")
+                    .font(.custom("Poppins-Bold", size: 30))
+                    .padding(.bottom, 20)
+                ScrollView {
+                    ForEach(gamesStore.activeGames, id: \.gameCode) { game in
+                        VStack(alignment: .leading, spacing: 5) {
+                            if game.exerciseType == "Strength Training" {
+                                GameCard(exerciseType: game.exerciseType, goal: Double(game.frequencyGoal ?? 0), currentProgress: Double(game.frequency ?? 0), healthStore: viewModel.healthStore, gameCode: game.gameCode)
+                            }
+                            else {
+                                GameCard(exerciseType: game.exerciseType, goal: (game.distanceGoal ?? 0), currentProgress: (game.distance ?? 0), healthStore: viewModel.healthStore, gameCode: game.gameCode)
+                            }
                         }
                     }
                 }
-                
                 Spacer()
                 NavBarView(viewIndex: 0)
             }

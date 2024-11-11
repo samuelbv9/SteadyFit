@@ -19,10 +19,12 @@ class UserData: ObservableObject {
     @Published var adaptiveGoalsChecked: Bool = false
     @Published var wagerStr: String = ""
     @Published var wagerInt: Int? = 0
+    @Published var password: String = ""
 }
 struct CreateGameView: View {
     @Environment(\.presentationMode) var presentationMode
     @StateObject var userData = UserData()
+    @State private var navigateToHome = false
     let exerciseOptions = ["Choose an exercise", "Swimming", "Running", "Walking", "Strength Training", "Cycling"]
     var body: some View {
         NavigationView {
@@ -48,7 +50,7 @@ struct CreateGameView: View {
                         }
                         
                         HStack {
-                            if userData.selectedExerciseOption == "strengthTraining" {
+                            if userData.selectedExerciseOption == "Strength Training" {
                                 VStack(alignment: .leading) {
                                     Text("Frequency:")
                                         .padding(.bottom, 2)
@@ -132,6 +134,7 @@ extension View {
 struct CreateGameWagerView: View {
     @Environment(\.presentationMode) var presentationMode
     @ObservedObject var userData: UserData
+    @State private var navigateToHome = false
     
     private var perWeek: Double {
         if let wager = userData.wagerInt, let duration = userData.durationInt, duration != 0 {
@@ -159,6 +162,9 @@ struct CreateGameWagerView: View {
     }
     
     var body: some View {
+        NavigationLink(destination: HomeView(), isActive: $navigateToHome) {
+            EmptyView()
+        }
         ZStack { // Wrap in ZStack to detect taps outside of text fields
             VStack {
                 HeaderView()
@@ -180,6 +186,10 @@ struct CreateGameWagerView: View {
                         Text("Per week: $\(String(format: "%.2f", perWeek))")
                         Text("Per mile or session: $\(String(format: "%.2f", perWorkout))")
                     }
+                    VStack(alignment: .leading) {
+                        Text("Password (Optional):")
+                        TextInputField(text: $userData.password)
+                    }
                 }
                 .padding(.top, 20)
                 Spacer()
@@ -200,7 +210,8 @@ struct CreateGameWagerView: View {
                         }
                         Spacer()
                         Button(action: {
-                            GamesStore.shared.postGame(userData)
+                            GamesStore.shared.postGame(userData) // Call postGame
+                            navigateToHome = true               // Trigger navigation
                         }) {
                             HStack {
                                 Text("Publish")
