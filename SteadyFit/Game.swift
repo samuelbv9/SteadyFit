@@ -6,8 +6,8 @@
 //
 
 import Foundation
-import SwiftUI
 import FirebaseAuth
+import SwiftUI
 
 struct Game {
     var gameCode: String
@@ -52,8 +52,6 @@ final class GamesStore: ObservableObject {
                guard let activeGamesArray = responseDict?["active_games"] as? [[String: Any]] else {
                    return
                }
-               
-               print(activeGamesArray)
 
                var games: [Game] = []
 
@@ -82,7 +80,6 @@ final class GamesStore: ObservableObject {
                }
                // Update UI on main thread
                DispatchQueue.main.async {
-//                   self.activeGames.removeAll()
                    self.activeGames = games
                }
            } catch {
@@ -151,11 +148,11 @@ final class GamesStore: ObservableObject {
         
     }
     
-    func joinGame(_ gameCode: String) {
-        
+    func joinGame(_ gameCode: String, _ password: String) {
         let jsonObj: [String: Any?] = [
             "user_id": Auth.auth().currentUser?.uid,
-            "game_code": gameCode
+            "game_code": gameCode,
+            "password": password
         ]
 
         guard let jsonData = try? JSONSerialization.data(withJSONObject: jsonObj) else {
@@ -197,26 +194,18 @@ final class GamesStore: ObservableObject {
         let dateFormatter = DateFormatter()
         dateFormatter.dateFormat = "yyyy-MM-dd"
         let dateString = dateFormatter.string(from: currentDate)
-        
-        print(Auth.auth().currentUser?.uid)
-        print(game.wagerInt)
-        print(game.selectedExerciseOption)
-        print(game.frequencyInt ?? NSNull())
-        print(game.distanceInt)
-        print(game.durationInt)
-        print(game.adaptiveGoalsChecked)
-        print(dateString)
-        
+        let password: String? = game.password.isEmpty ? nil : game.password
         
         let jsonObj: [String: Any?] = [
             "user_id": Auth.auth().currentUser?.uid,
             "bet_amount": game.wagerInt,
             "exercise_type": game.selectedExerciseOption,
-            "frequency": game.frequencyInt ?? NSNull(),
+            "frequency": game.frequencyInt,
             "distance": game.distanceInt,
             "duration": game.durationInt,
             "adaptive_goals": game.adaptiveGoalsChecked,
             "start_date": dateString,
+            "password" : password
         ]
         // deal with nil values
         let filteredJsonObj = jsonObj.compactMapValues { $0 }
