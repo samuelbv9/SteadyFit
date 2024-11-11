@@ -4,6 +4,10 @@
 //
 //  Created by Brenden Saur on 11/1/24.
 //
+// TODO:
+// Take in a game code and change the .onAppear block at bottom.
+// Use correct variables (totalDistanceGoal) for showing numbers
+// Add real money data
 
 import SwiftUI
 import Foundation
@@ -24,33 +28,43 @@ struct ActiveGameView: View {
     
     var body: some View {
         let data = [ // This will be for the circle chart
-            SleepDataPoint(
+            GraphDataPoint(
                 day: "Mon",
                 hours: Double(viewModel.gameData?.currentDistance ?? "0") ?? 0
             ),
-            SleepDataPoint(
+            GraphDataPoint(
                 day: "tues",
                 hours:  Double(viewModel.gameData?.totalDistance ?? "1") ?? 1
             )
         ]
         
         let data2 = [ // This will be for the circle chart
-            SleepDataPoint(
+            GraphDataPoint(
                 day: "Mon",
                 hours: Double(viewModel.gameData?.currentFrequency ?? 0)
             ),
-            SleepDataPoint(
+            GraphDataPoint(
                 day: "tues",
                 hours:  Double(viewModel.gameData?.totalFrequency ?? 1)
             )
         ]
         
+        let gameData = viewModel.gameData
+        var isStrengthTraining = false
+        if gameData?.exerciseType == "strength training" {
+            isStrengthTraining = true
+        }
+        var units = "miles"
+        if gameData?.exerciseType == "swimming" {
+            units = "yards"
+        }
+        
+        
+        
         return VStack {
             HeaderView()
             Spacer()
 
-            let gameData = viewModel.gameData
-            
             HStack { // Game title and back button
                 Button {
                     // Action on press
@@ -95,10 +109,18 @@ struct ActiveGameView: View {
                                 //.frame(maxWidth: 300, alignment: .leading)
                                 .padding(.leading, 20)
                             Spacer()
-                            Text("\(gameData?.totalDistance ?? "err") units")
-                                .padding(.trailing, 30)
-                                .font(.custom("Poppins-Regular", size: 20))
-                                .kerning(-0.3)
+                            // ####### HERE #############
+                            if (isStrengthTraining) { // Show correct units
+                                Text("\(gameData?.weekFrequencyGoal ?? 0) times") // week distance goal
+                                    .padding(.trailing, 30)
+                                    .font(.custom("Poppins-Regular", size: 20))
+                                    .kerning(-0.3)
+                            } else {
+                                Text("\(gameData?.weekDistanceGoal ?? "err") \(units)")
+                                    .padding(.trailing, 30)
+                                    .font(.custom("Poppins-Regular", size: 20))
+                                    .kerning(-0.3)
+                            }
                         }
                         HStack {
                             Text("Current Progress") // This will need to change based on game
@@ -106,10 +128,18 @@ struct ActiveGameView: View {
                                 .kerning(-0.3) // Decreases letter spacing
                                 .padding(.leading, 20)
                             Spacer()
-                            Text("\(gameData?.currentDistance ?? "err") units")
-                                .padding(.trailing, 30)
-                                .font(.custom("Poppins-Regular", size: 20))
-                                .kerning(-0.3)
+                            // ####### HERE #############
+                            if (isStrengthTraining) { // Show correct units
+                                Text("\(gameData?.currentFrequency ?? 0) times") // week distance
+                                    .padding(.trailing, 30)
+                                    .font(.custom("Poppins-Regular", size: 20))
+                                    .kerning(-0.3)
+                            } else {
+                                Text("\(gameData?.currentDistance ?? "err") \(units)")
+                                    .padding(.trailing, 30)
+                                    .font(.custom("Poppins-Regular", size: 20))
+                                    .kerning(-0.3)
+                            }
                         }
                         Button {
                             if let healthStore = healthStore {
@@ -253,16 +283,30 @@ struct ActiveGameView: View {
                             .font(.custom("Poppins-Bold", size: 18))
                             .frame(width: 183, alignment: .leading)
                         //stats
-                        Text("\(gameData?.currentDistance ?? "err")/\(gameData?.totalDistance ?? "err") units")
-                            .font(.custom("Poppins-Regular", size: 18))
-                            .frame(width: 183, alignment: .leading)
+                        // ####### HERE #############
+                        if (isStrengthTraining) {
+                            Text("\(gameData?.currentFrequency ?? 0)/\(gameData?.totalDistance ?? "err") times")
+                                .font(.custom("Poppins-Regular", size: 18))
+                                .frame(width: 183, alignment: .leading)
+                        } else {
+                            Text("\(gameData?.currentDistance ?? "err")/\(gameData?.totalDistance ?? "err") \(units)")
+                                .font(.custom("Poppins-Regular", size: 18))
+                                .frame(width: 183, alignment: .leading)
+                        }
                         Text("This Week")
                             .font(.custom("Poppins-Bold", size: 18))
                             .frame(width: 183, alignment: .leading)
                         //stats
-                        Text("\(gameData?.currentFrequency ?? 1)/\(gameData?.totalFrequency ?? 1) units")
-                            .font(.custom("Poppins-Regular", size: 18))
-                            .frame(width: 183, alignment: .leading)
+                        // ####### HERE #############
+                        if (isStrengthTraining) {
+                            Text("\(gameData?.currentFrequency ?? 1)/\(gameData?.weekFrequencyGoal ?? 1) units")
+                                .font(.custom("Poppins-Regular", size: 18))
+                                .frame(width: 183, alignment: .leading)
+                        } else {
+                            Text("\(gameData?.currentDistance ?? "err")/\(gameData?.weekDistanceGoal ?? "err") \(units)")
+                                .font(.custom("Poppins-Regular", size: 18))
+                                .frame(width: 183, alignment: .leading)
+                        }
                     }
                     .padding(.leading, 20)
                 }
