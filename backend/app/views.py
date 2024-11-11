@@ -673,8 +673,8 @@ from django.conf import settings
 def update_date(request):
     test_date = date(2024, 11, 4)
     # test_date += timedelta(days=1)
-    weekly_update(test_date)
-    return HttpResponse("Date updated successfully")  
+    r = weekly_update(test_date)
+    return JsonResponse(r)  
 
 
 def weekly_update(date):
@@ -899,6 +899,17 @@ def weekly_update(date):
 
     # commit db changes
     connection.commit()
+    result = []
+    for winner in winners:
+        result.append({
+            "winner": winner
+        })
+    for loser in losers:
+        result.append({
+            "loser": loser
+        })
+
+    return ({"result": result}) 
 
     # scheduler = BackgroundScheduler()
 
