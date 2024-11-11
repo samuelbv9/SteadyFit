@@ -531,8 +531,13 @@ def last_upload(request):
         timestamp = timestamp_result[0]  # Extract the timestamp from the tuple
         return JsonResponse({"timestamp": timestamp})
     else:
-        return JsonResponse({"timestamp": startDate})  # Return game start date if no timestamp is found
-
+        startDate = startDate[0]
+        startDate = datetime.combine(startDate, datetime.min.time())  # Set time to 00:00:00
+        time_component = timedelta(hours=0, minutes=0, seconds=0, milliseconds=0)
+        full_timestamp = startDate + time_component
+        # Format the datetime object to the desired ISO 8601 string with milliseconds
+        timestamp_str = full_timestamp.strftime("%Y-%m-%dT%H:%M:%S.%f")[:-3]  # Remove extra microsecond digits
+        return JsonResponse({"timestamp": timestamp_str})  # Return game start date if no timestamp is found
 
 @csrf_exempt
 def goal_status(request):
