@@ -648,13 +648,18 @@ def personal_bet_details(request):
 
     cursor.execute("SELECT balance, amountGained, amountLost FROM GameParticipants WHERE gameCode = %s AND userId = %s", (game_code, user_id))
     participants = cursor.fetchone()
+
+    cursor.execute("SELECT betAmount FROM Games WHERE gameCode = %s", (game_code,))
+    betAmt = cursor.fetchone()
+
     response_data = { 
-            "balance": participants[0],
-            "amountGained": participants[1],
-            "amountLost": participants[2]
+            "initialBet": float(betAmt[0]),         
+            "balance": float(participants[0]),
+            "amountGained": float(participants[1]),
+            "amountLost": float(participants[2])
         }
 
-    return JsonResponse({"bet_details": response_data})
+    return JsonResponse(response_data)
 
 
 @csrf_exempt
