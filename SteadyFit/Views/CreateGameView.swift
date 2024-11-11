@@ -19,6 +19,7 @@ class UserData: ObservableObject {
     @Published var adaptiveGoalsChecked: Bool = false
     @Published var wagerStr: String = ""
     @Published var wagerInt: Int? = 0
+    @Published var password: String = ""
 }
 struct CreateGameView: View {
     @Environment(\.presentationMode) var presentationMode
@@ -179,6 +180,10 @@ struct CreateGameWagerView: View {
                         NumberInputField(inputText: $userData.wagerStr, outputInt: $userData.wagerInt)
                         Text("Per week: $\(String(format: "%.2f", perWeek))")
                         Text("Per mile or session: $\(String(format: "%.2f", perWorkout))")
+                    }
+                    VStack(alignment: .leading) {
+                        Text("Password (Optional):")
+                        TextInputField(text: $userData.password)
                     }
                 }
                 .padding(.top, 20)
