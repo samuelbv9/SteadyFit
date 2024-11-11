@@ -30,6 +30,7 @@ struct ActiveGameView: View {
     
     var body: some View {
         let gameData = viewModel.gameData
+        let betData = viewModel.betDetails
         var isStrengthTraining = false
         if gameData?.exerciseType == "strength training" {
             isStrengthTraining = true
@@ -333,7 +334,7 @@ struct ActiveGameView: View {
                     Text("Total Balance")
                         .font(.custom("Poppins-Light", size: 12)) // poopins-light
                         // dollar amount
-                    Text("100.00$")
+                    Text("\(betData?.balance ?? 0)") // Change this after i get the api
                         .font(.custom("Poppins-Bold", size: 27))
                         .frame(width: 130, alignment: .leading)
                         // Profit amount
@@ -342,11 +343,12 @@ struct ActiveGameView: View {
                 Image("chart-line")
                 
                 VStack {
+                    let currentBalance = (betData?.balance ?? 0) + (betData?.amountGained ?? 0) - (betData?.amountLost ?? 0)
                     ZStack {
                         Text("Initial Bet: ")
                             .font(.custom("Poppins-Bold", size: 18))
                             .frame(width: 210, alignment: .leading)
-                        Text("$100.00")
+                        Text("\(currentBalance)")
                             .font(.custom("Poppins-Regular", size: 18))
                             .padding(.leading, 60)
                             .frame(width: 130, alignment: .leading)
@@ -355,7 +357,7 @@ struct ActiveGameView: View {
                         Text("Lost: ")
                             .font(.custom("Poppins-Bold", size: 18))
                             .frame(width: 210, alignment: .leading)
-                        Text("$5.00")
+                        Text("\(betData?.amountLost ?? 0)")
                             .font(.custom("Poppins-Regular", size: 18))
                             .frame(width: 130, alignment: .leading)
                             .padding(.leading, 25)
@@ -364,7 +366,7 @@ struct ActiveGameView: View {
                         Text("Gained: ")
                             .font(.custom("Poppins-Bold", size: 18))
                             .frame(width: 210, alignment: .leading)
-                        Text("$15.00")
+                        Text("\(betData?.amountGained ?? 0)")
                             .font(.custom("Poppins-Regular", size: 18))
                             .frame(width: 130, alignment: .leading)
                             .padding(.leading, 80)

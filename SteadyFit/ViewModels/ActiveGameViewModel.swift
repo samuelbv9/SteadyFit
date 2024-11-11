@@ -11,6 +11,7 @@ import Combine
 
 class ActiveGameViewModel: ObservableObject {
     @Published var gameData: GameData?
+    @Published var betDetails: BetDetail?
     @Published var errorMessage: String?
     // Add a isLoading bool for no user visable data updating
     
@@ -48,6 +49,40 @@ class ActiveGameViewModel: ObservableObject {
             }
         }
     }
+
+    func fetchBetDetails(gameCode: String) async throws -> BetDetail {
+        guard let url = URL(string: "https://52.200.16.208/bet_details?game_code=\(gameCode)") else {
+            self.errorMessage = "Invalid URL"
+            return BetDetail(userId: "123", balance: 0, amountGained: 0, amountLost: 0)
+        }
+        
+        let (data, response) = try await URLSession.shared.data(from: url)
+        
+        // Print the raw response data for debugging
+        if let httpResponse = response as? HTTPURLResponse {
+            print("HTTP Status Code: \(httpResponse.statusCode)")
+        }
+        if let responseDataString = String(data: data, encoding: .utf8) {
+            print("Response Data: \(responseDataString)")
+        }
+        
+        // Decode directly into an array of BetDetail
+        let decoded = try JSONDecoder().decode(BetDetail.self, from: data)
+        
+        return decoded
+    }
+
+    func loadBetDetails(gameCode: String) {
+        Task {
+            do {
+                let betData = try await fetchBetDetails(gameCode: gameCode)
+                self.betDetails = betData
+            } catch {
+                print("Error fetching current game: \(error)")
+                self.errorMessage = "Error fetching current game: \(error.localizedDescription)"
+            }
+        }
+    }
 }
 
 struct GameData: Decodable {
@@ -60,7 +95,13 @@ struct GameData: Decodable {
     let weekDistance: String?
     let weekFrequencyGoal: Int?
     let weekDistanceGoal: String?
+}
 
+struct BetDetail: Decodable {
+    let userId: String
+    let balance: Double
+    let amountGained: Double
+    let amountLost: Double
 }
 
 struct GraphDataPoint: Identifiable {
