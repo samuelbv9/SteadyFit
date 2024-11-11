@@ -727,6 +727,7 @@ def weekly_update(date):
     # get the current date
     # current_date = datetime.now().date()
     current_date = date
+    result = []
     
     # get all active games
     cursor = connection.cursor()
@@ -890,7 +891,16 @@ def weekly_update(date):
                         WHERE gameCode = %s AND userId = %s
                     '''
                     cursor.execute(query, (new_amount_gained, game_code, user_id))
-    
+            for winner in winners:
+                result.append({
+                    "game": game_code,
+                    "winner": winner
+                })
+            for loser in losers:
+                result.append({
+                    "game": game_code,
+                    "loser": loser
+                })
     
         # check if the game has ended, update to not active if so
         if weeks_elapsed >= duration:
@@ -903,15 +913,6 @@ def weekly_update(date):
 
     # commit db changes
     connection.commit()
-    result = []
-    for winner in winners:
-        result.append({
-            "winner": winner
-        })
-    for loser in losers:
-        result.append({
-            "loser": loser
-        })
 
     return ({"result": result}) 
 
