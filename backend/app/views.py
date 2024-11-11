@@ -798,9 +798,23 @@ def weekly_update(date):
 
                 if failed_distance or failed_freq:
                     losers.append(user_id)
+                    result.append({
+                            "loser": user_id
+                            "weekdistance": week_distance,
+                            "week_distance_goal": week_distance_goal,
+                            "weekfreq": week_frequency,
+                            "weekfreqgoal": week_freq_goal
+                            })
 
                 if not failed_distance and not failed_freq:
                     winners.append(user_id)
+                    result.append({
+                        "winner": user_id
+                        "weekdistance": week_distance,
+                        "week_distance_goal": week_distance_goal,
+                        "weekfreq": week_frequency,
+                        "weekfreqgoal": week_freq_goal
+                        })
             
                 # get user's elo score for this exercise type
                 elo_type = exercise_type + "Elo"
@@ -891,16 +905,6 @@ def weekly_update(date):
                         WHERE gameCode = %s AND userId = %s
                     '''
                     cursor.execute(query, (new_amount_gained, game_code, user_id))
-            for winner in winners:
-                result.append({
-                    "game": game_code,
-                    "winner": winner
-                })
-            for loser in losers:
-                result.append({
-                    "game": game_code,
-                    "loser": loser
-                })
     
         # check if the game has ended, update to not active if so
         if weeks_elapsed >= duration:
