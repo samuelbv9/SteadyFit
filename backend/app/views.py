@@ -823,7 +823,7 @@ def weekly_update(date):
                 new_elo, _ = challenge.compare_elo(
                     player_elo=float(elo_score),
                     challenge_values=bounded_values,
-                    outcome= 1.0 if not (week_distance < week_distance_goal or week_frequency < week_freq_goal) else 0.0
+                    outcome= 1.0 if not (failed_distance or failed_freq) else 0.0
                 )
 
                 # update user's elo score in db 
