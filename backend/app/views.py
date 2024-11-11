@@ -4,7 +4,7 @@ from django.views.decorators.csrf import csrf_exempt
 from django.utils import timezone
 from datetime import timedelta
 # from apscheduler.schedulers.background import BackgroundScheduler
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, date
 import time
 import json
 import random
@@ -320,8 +320,6 @@ def create_game(request):
     # Set current user as player of this game
     if distance is not None:
         distance = round(distance / duration, 2)
-    if frequency is not None:
-        frequency = round(frequency / duration, 2)
     cursor.execute("INSERT INTO GameParticipants (gameCode, userId, weekDistanceGoal, weekFrequencyGoal) VALUES (%s, %s, %s, %s)",
                    (game_code, user_id, distance, frequency))
     
@@ -679,7 +677,7 @@ from django.conf import settings
 
 
 def update_date(request):
-    test_date = datetime(2024, 10, 31)
+    test_date = date(2024, 10, 31)
     # test_date += timedelta(days=1)
     weekly_update(test_date)
     return HttpResponse("Date updated successfully")  
@@ -701,8 +699,8 @@ def weekly_update(date):
     games = cursor.fetchall()
 
     for game in games:
+        # start_date is of type datetime.date
         game_code, start_date, last_updated, bet_amount, duration, adaptive_goals, exercise_type = game
-        start_date = datetime(start_date)
         # check if a week has passed
         weeks_elapsed = (current_date - start_date).days // 7
 
@@ -746,11 +744,22 @@ def weekly_update(date):
 
                 # get all winners and all losers for updating amountGained and amountLost later
                 # cant do it now bc we need all winners, all losers for calculations
-                if week_distance < week_distance_goal or week_frequency < week_freq_goal:
-                    losers.append(user_id)
-                else:
-                    winners.append(user_id)
+                failed_distance = false
+                failed_freq = false
+                
+                if week_distance is not None and week_distance_goal is not None: 
+                    if week_distance < week_distance_goal: 
+                        losers.append(user_id)
+                        failed_distance = true
 
+                if week_frequency is not None and week_freq_goal is not None: 
+                    if week_frequency < week_freq_goal:
+                        losers.append(user_id)
+                        failed_freq = true
+
+                if failed_distance == false and failed_freq == false
+                    winners.append(user_id)
+            
                 # get user's elo score for this exercise type
                 elo_type = exercise_type + "Elo"
                 query = ''' SELECT %s
