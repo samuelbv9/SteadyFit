@@ -70,7 +70,11 @@ struct JoinGamecode: View {
     @Environment(\.presentationMode) var presentationMode
     @State private var userInputGameCode = ""
     @State private var userInputPassword = ""
+    @State private var navigateToHome = false
     var body: some View {
+        NavigationLink(destination: HomeView(), isActive: $navigateToHome) {
+            EmptyView()
+        }
         VStack() {
             HeaderView()
             VStack(alignment: .leading) {
@@ -102,6 +106,7 @@ struct JoinGamecode: View {
                     Spacer()
                     Button(action: {
                         GamesStore.shared.joinGame(userInputGameCode, userInputPassword)
+                        navigateToHome = true               // Trigger navigation
                     }) {
                         HStack {
                             Text("Join Game")
