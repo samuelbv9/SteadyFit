@@ -204,7 +204,7 @@ struct ActiveGameView: View {
                                 RoundedRectangle(cornerRadius: 0)
                                     .foregroundColor(Color.deepBlue)
                                     .frame(height: 50)
-                                    .frame(width: 322)
+                                    .frame(width: 324)
                                     .clipShape(RoundedCorner(radius: 8, corners: [.bottomLeft, .bottomRight]))
                                 HStack {
                                     Text("Upload & Verify Workout")
