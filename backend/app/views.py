@@ -318,8 +318,6 @@ def create_game(request):
                     duration, adaptive_goals, start_date))
 
     # Set current user as player of this game
-    if distance is not None:
-        distance = round(distance / duration, 2)
     cursor.execute("INSERT INTO GameParticipants (gameCode, userId, weekDistanceGoal, weekFrequencyGoal) VALUES (%s, %s, %s, %s)",
                    (game_code, user_id, distance, frequency))
     
@@ -372,8 +370,6 @@ def join_game(request):
     frequency = game[3]
     distance = game[4]
     duration = game[5]
-    if distance is not None:
-        distance = round(distance / duration, 2)
         
     try:
         cursor.execute("""
