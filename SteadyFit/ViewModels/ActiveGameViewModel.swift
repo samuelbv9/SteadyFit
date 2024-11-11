@@ -18,7 +18,7 @@ class ActiveGameViewModel: ObservableObject {
         // http://52.200.16.208/goal/?game_code=NODqAbjW&user_id=8503f31c-8c1f-45eb-a7dd-180095aad816
         guard let url = URL(string: "https://52.200.16.208/goal/?user_id=\(userId)&game_code=\(gameCode)") else {
             self.errorMessage = "Invalid URL"
-            return GameData(exerciseType: "failed", currentDistance: "0", currentFrequency: 0, totalDistance: "0", totalFrequency: 0,weekFrequencyGoal: 0, weekDistanceGoal: "0")
+            return GameData(exerciseType: "failed", currentDistance: "0", currentFrequency: 0, totalDistance: "0", totalFrequency: 0, weekFrequency: 0,  weekDistance: "0", weekFrequencyGoal: 0, weekDistanceGoal: "0")
         }
         
         let (data, response) = try await URLSession.shared.data(from: url)
@@ -52,15 +52,18 @@ class ActiveGameViewModel: ObservableObject {
 
 struct GameData: Decodable {
     let exerciseType: String
-    let currentDistance: String? // Can be null (if distance based, wont be null)
-    let currentFrequency: Int? // Can be null
-    let totalDistance: String? // Can be null
-    let totalFrequency: Int? // Can be null
-    let weekFrequencyGoal: Int?
-    let weekDistanceGoal: String?
+    let currentDistance: String // Can be null (if distance based, wont be null)
+    let currentFrequency: Int // Can be null
+    let totalDistance: String // Can be null
+    let totalFrequency: Int // Can be null
+    let weekFrequency: Int
+    let weekDistance: String
+    let weekFrequencyGoal: Int
+    let weekDistanceGoal: String
+
 }
 
-struct SleepDataPoint: Identifiable {
+struct GraphDataPoint: Identifiable {
     var id = UUID().uuidString
     var day: String
     var hours: Double
