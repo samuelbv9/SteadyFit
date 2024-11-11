@@ -843,7 +843,7 @@ def weekly_update(date):
                     g_t = challenge_settings['get_generic_tuple'](challenge_params)
                     query = '''
                         UPDATE GameParticipants
-                        SET weekDistanceGoal = %s, weekFrequencyGoal = %s
+                        SET weekDistanceGoal = %s
                         WHERE gameCode = %s AND userId = %s
                     '''
                     cursor.execute(query, (g_t[0], g_t[1], game_code, user_id))
