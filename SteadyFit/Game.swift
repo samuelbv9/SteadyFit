@@ -7,6 +7,7 @@
 
 import Foundation
 import SwiftUI
+import FirebaseAuth
 
 struct Game {
     var gameCode: String
@@ -51,6 +52,8 @@ final class GamesStore: ObservableObject {
                guard let activeGamesArray = responseDict?["active_games"] as? [[String: Any]] else {
                    return
                }
+               
+               print(activeGamesArray)
 
                var games: [Game] = []
 
@@ -79,6 +82,7 @@ final class GamesStore: ObservableObject {
                }
                // Update UI on main thread
                DispatchQueue.main.async {
+//                   self.activeGames.removeAll()
                    self.activeGames = games
                }
            } catch {
@@ -150,7 +154,7 @@ final class GamesStore: ObservableObject {
     func joinGame(_ gameCode: String) {
         
         let jsonObj: [String: Any?] = [
-            "user_id": "7e79c620-42c2-4b9b-96f1-d01f6012a4b8",
+            "user_id": Auth.auth().currentUser?.uid,
             "game_code": gameCode
         ]
 
@@ -194,15 +198,25 @@ final class GamesStore: ObservableObject {
         dateFormatter.dateFormat = "yyyy-MM-dd"
         let dateString = dateFormatter.string(from: currentDate)
         
+        print(Auth.auth().currentUser?.uid)
+        print(game.wagerInt)
+        print(game.selectedExerciseOption)
+        print(game.frequencyInt ?? NSNull())
+        print(game.distanceInt)
+        print(game.durationInt)
+        print(game.adaptiveGoalsChecked)
+        print(dateString)
+        
+        
         let jsonObj: [String: Any?] = [
-            "user_id": "8503f31c-8c1f-45eb-a7dd-180095aad816",
+            "user_id": Auth.auth().currentUser?.uid,
             "bet_amount": game.wagerInt,
             "exercise_type": game.selectedExerciseOption,
-            "frequency": game.frequencyInt,
+            "frequency": game.frequencyInt ?? NSNull(),
             "distance": game.distanceInt,
             "duration": game.durationInt,
             "adaptive_goals": game.adaptiveGoalsChecked,
-            "start_date": dateString
+            "start_date": dateString,
         ]
         // deal with nil values
         let filteredJsonObj = jsonObj.compactMapValues { $0 }

@@ -52,12 +52,12 @@ class ActiveGameViewModel: ObservableObject {
 
 struct GameData: Decodable {
     let exerciseType: String
-    let currentDistance: String // Can be null (if distance based, wont be null)
-    let currentFrequency: Int // Can be null
-    let totalDistance: String // Can be null
-    let totalFrequency: Int // Can be null
-    let weekFrequencyGoal: Int
-    let weekDistanceGoal: String
+    let currentDistance: String? // Can be null (if distance based, wont be null)
+    let currentFrequency: Int? // Can be null
+    let totalDistance: String? // Can be null
+    let totalFrequency: Int? // Can be null
+    let weekFrequencyGoal: Int?
+    let weekDistanceGoal: String?
 }
 
 struct SleepDataPoint: Identifiable {
