@@ -366,10 +366,10 @@ def join_game(request):
     if not user_id or not game_code:
         return JsonResponse({"error": "Invalid or missing user_id/game_code"}, status=400)
 
-    if password:
-        cursor.execute("SELECT password FROM Games WHERE gameCode = %s", (game_code,))
-        new_pass = cursor.fetchone()
-        if new_pass[0] != password:
+    cursor.execute("SELECT password FROM Games WHERE gameCode = %s", (game_code,))
+    db_pass = cursor.fetchone()
+    if db_pass:
+        if db_pass[0] != password:
             return JsonResponse({"error": "Incorrect password"}, status=400)
 
 
