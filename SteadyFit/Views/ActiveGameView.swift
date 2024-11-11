@@ -20,6 +20,7 @@ struct ActiveGameView: View {
     @StateObject private var viewModel = ActiveGameViewModel()
     let gameCode : String
     let healthStore: HealthStore?
+    @State private var navigateToVerificationView = false
 
 //    //initialize instance of class HealthStore
 //    private var healthStore: HealthStore?
@@ -75,6 +76,9 @@ struct ActiveGameView: View {
         
         
         return VStack {
+            NavigationLink(destination: LoadingView(), isActive: $navigateToVerificationView) {
+                EmptyView()
+            }
             HeaderView()
             Spacer()
 
@@ -196,6 +200,7 @@ struct ActiveGameView: View {
                                                 }
                                             }
                                         }
+                                        navigateToVerificationView = true
                                     }
                                 }
                             }

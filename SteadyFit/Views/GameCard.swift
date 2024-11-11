@@ -14,6 +14,7 @@ struct GameCard: View {
     let currentProgress: Double
     let healthStore: HealthStore?
     let gameCode : String
+    @State private var navigateToVerificationView = false
     
     // Computed property to determine units based on exercise type
     private var unit: String {
@@ -57,6 +58,9 @@ struct GameCard: View {
     }
     
     var body: some View {
+        NavigationLink(destination: LoadingView(), isActive: $navigateToVerificationView) {
+            EmptyView()
+        }
         VStack {
             HStack {
                 Spacer()
@@ -96,6 +100,7 @@ struct GameCard: View {
                                             }
                                         }
                                     }
+                                    navigateToVerificationView = true
                                 }
                             }
                         }

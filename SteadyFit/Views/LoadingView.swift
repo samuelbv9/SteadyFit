@@ -9,6 +9,8 @@ import SwiftUI
 
 struct LoadingView: View {
     @State private var isAnimating = false
+    @Environment(\.presentationMode) var presentationMode // Environment variable to control navigation
+
     var body: some View {
         ZStack {
             Color(.systemBackground).ignoresSafeArea()
@@ -28,6 +30,11 @@ struct LoadingView: View {
                     .animation(.linear(duration: 1).repeatForever(autoreverses: false), value: isAnimating)
                     .onAppear {
                         isAnimating = true
+                        
+                        // Dismiss view after 2-3 seconds
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 2.5) {
+                            self.presentationMode.wrappedValue.dismiss()
+                        }
                     }
                     .padding(20)
             }
