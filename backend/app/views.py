@@ -807,11 +807,11 @@ def weekly_update(date):
             
                 # get user's elo score for this exercise type
                 elo_type = exercise_type + "Elo"
-                query = ''' SELECT %s
-                    FROM UserEloRatings 
-                    WHERE userId = %s
-                '''
-                cursor.execute(query, (elo_type, user_id))
+                query = f''' SELECT {elo_type}
+                            FROM UserEloRatings 
+                            WHERE userId = %s
+                        '''
+                cursor.execute(query, (user_id,))
                 elo_score = cursor.fetchone()[0]
 
                 bounded_values = challenge.bound_values(
