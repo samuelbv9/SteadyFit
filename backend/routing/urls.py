@@ -33,5 +33,5 @@ urlpatterns = [
     path('create_user/', views.create_user, name="create_user"),
     path('get_activity_type/', views.get_activity_type, name="get_activity_type"),
     path('update_date/', views.update_date, name="update_date"),
-
+    path('personal_bet_details/', views.personal_bet_details, name="personal_bet_details")
 ]
