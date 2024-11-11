@@ -671,7 +671,7 @@ from django.conf import settings
 
 
 def update_date(request):
-    test_date = date(2024, 11, 4)
+    test_date = date(2024, 11, 30)
     # test_date += timedelta(days=1)
     r = weekly_update(test_date)
     return JsonResponse(r)  
@@ -864,7 +864,11 @@ def weekly_update(date):
             # rounding isn't perfect (shown in example), should probably fix
             weekly_amount = round(bet_amount / duration, 2) # 250 / 4 = 62.5
             split_amount = round(len(losers) * weekly_amount, 2) # 62.5 * 3 = 187.5
-            split_amount = round(split_amount / len(winners), 2) # 187.5 / 4 = 46.875 = 46.88 ------> (46.88 * 4 = 187.52) ------> 187.52 > original split_amount (187.5)
+            if len(winners) > 0:
+                split_amount = round(split_amount / len(winners), 2)
+            else:
+                split_amount = 0  
+                # 187.5 / 4 = 46.875 = 46.88 ------> (46.88 * 4 = 187.52) ------> 187.52 > original split_amount (187.5)
 
             for p in participants:
                 user_id = p[0]
