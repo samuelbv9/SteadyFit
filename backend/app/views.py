@@ -679,7 +679,7 @@ from django.conf import settings
 
 
 def update_date(request):
-    test_date = date(2024, 10, 31)
+    test_date = datetime(2024, 10, 31)
     # test_date += timedelta(days=1)
     weekly_update(test_date)
     return HttpResponse("Date updated successfully")  
@@ -702,7 +702,7 @@ def weekly_update(date):
 
     for game in games:
         game_code, start_date, last_updated, bet_amount, duration, adaptive_goals, exercise_type = game
-        
+        start_date = datetime(start_date)
         # check if a week has passed
         weeks_elapsed = (current_date - start_date).days // 7
 
