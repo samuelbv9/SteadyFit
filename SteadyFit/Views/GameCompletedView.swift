@@ -74,9 +74,6 @@ struct GameCompletedView: View {
                     .font(.custom("Poppins-Bold", size: 30))
                     .kerning(-0.6) // Decreases letter spacing
                     .padding(.bottom, -16)
-                Text(gameCode)
-                    .font(.custom("Poppins-Bold", size: 30))
-                    .kerning(-0.6) // Decreases letter spacing
             }
             .padding(.bottom, -15)
             .padding(.top, -15)
