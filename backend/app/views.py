@@ -682,6 +682,53 @@ def update_date(request):
 
 
 def weekly_update(date):
+    challenges = {
+    "running": {
+        "file": "running_challenge.csv",
+        "name": "Running Challenge",
+        "default_vars": {
+            "distance": [0, 0.1, 1, 3, 6, 10]  # miles
+        },
+        "get_challenge_tuple": lambda d, f: (d,), # (distance, frequency) -> challenge_params
+        "get_generic_tuple": lambda d: (d, None)  # challenge_params - > (distance, frequency)
+    },
+    "walking": {
+        "file": "walking_challenge.csv",
+        "name": "Walking Challenge",
+        "default_vars": {
+            "distance": [0, 0.1, 1, 3, 6, 10]  # miles
+        },
+        "get_challenge_tuple": lambda d, f: (d,),
+        "get_generic_tuple": lambda d: (d, None)
+    },
+    "swimming": {
+        "file": "swimming_challenge.csv",
+        "name": "Swimming Challenge",
+        "default_vars": {
+            "distance": [0, 0.1, 0.5, 1, 3, 5]  # miles
+        },
+        "get_challenge_tuple": lambda d, f: (d,),
+        "get_generic_tuple": lambda d: (d, None)
+    },
+    "strengthTraining": {
+        "file": "strength_challenge.csv",
+        "name": "Strength Training Challenge",
+        "default_vars": {
+            "frequency": [0, 1, 2, 3, 5, 8, 12]  # times a week
+        },
+        "get_challenge_tuple": lambda d, f: (f,),
+        "get_generic_tuple": lambda f: (None, f)
+    },
+    "cycling": {
+        "file": "cycling_challenge.csv",
+        "name": "Cycling Challenge",
+        "default_vars": {
+            "distance": [0, 1, 3, 5, 8, 13, 21, 34, 54]  # Miles
+        },
+        "get_challenge_tuple": lambda d, f: (d,),
+        "get_generic_tuple": lambda d: (d, None)
+    }
+}
     # get the current date
     # current_date = datetime.now().date()
     current_date = date
@@ -722,7 +769,7 @@ def weekly_update(date):
             participants = cursor.fetchall()
 
             # get challenge data if already exists, else create challenge 
-            challenge_settings = settings.challenges[exercise_type]
+            challenge_settings = challenges[exercise_type]
             challenge_file_loc = challenge_settings['file']
 
             if os.path.exists(challenge_file_loc):
@@ -892,7 +939,7 @@ def update():
         participants = cursor.fetchall()
 
         # get challenge data if already exists, else create challenge 
-        challenge_settings = settings.challenges[exercise_type]
+        challenge_settings = challenges[exercise_type]
         challenge_file_loc = challenge_settings['file']
 
         if os.path.exists(challenge_file_loc):
