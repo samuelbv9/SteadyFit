@@ -51,7 +51,7 @@ class HealthStore {
             completion(nil)
             return
         }
-        
+                
         let task = URLSession.shared.dataTask(with: url) { data, response, error in
             if let error = error {
                 print("Failed to fetch last upload time: \(error.localizedDescription)")

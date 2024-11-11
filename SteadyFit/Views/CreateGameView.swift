@@ -23,7 +23,7 @@ class UserData: ObservableObject {
 struct CreateGameView: View {
     @Environment(\.presentationMode) var presentationMode
     @StateObject var userData = UserData()
-    let exerciseOptions = ["Choose an exercise", "swimming", "running", "walking", "strengthTraining", "cycling"]
+    let exerciseOptions = ["Choose an exercise", "Swimming", "Running", "Walking", "Strength Training", "Cycling"]
     var body: some View {
         NavigationView {
             ZStack { // Wrap in ZStack to detect taps outside of text fields

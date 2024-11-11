@@ -13,6 +13,7 @@ struct GameCard: View {
     let goal: Double
     let currentProgress: Double
     let healthStore: HealthStore?
+    let gameCode : String
     
     // Computed property to determine units based on exercise type
     private var unit: String {
@@ -64,8 +65,7 @@ struct GameCard: View {
                             //check if we have permmission to use metrics and if not request permission
                             healthStore.requestAuthorization { success in
                                 if success {
-                                    // CHANGE HARDCODED GAMECODE TO ACTUAL GAME
-                                    healthStore.calculateWorkouts(gameCode: "FpcVHDwe") { workouts in
+                                    healthStore.calculateWorkouts(gameCode: gameCode) { workouts in
                                         if let workouts = workouts {
                                             //update UI
                                             for workout in workouts {
@@ -91,9 +91,8 @@ struct GameCard: View {
                                                 print("duration: ", durationInMinutes)
                                                 print("distance: ", finalDistance ?? "nil")
                                                
-                                                // CHANGE HARDCODED GAMECODE TO ACTUAL GAME
                                                 //SEND TO DB HERE
-                                                healthStore.sendActivityToDB(gameCode: "FpcVHDwe", activityType: activityType, durationInMinutes: Int(durationInMinutes), distanceText: finalDistance)
+                                                healthStore.sendActivityToDB(gameCode: gameCode, activityType: activityType, durationInMinutes: Int(durationInMinutes), distanceText: finalDistance)
                                             }
                                         }
                                     }
@@ -123,9 +122,7 @@ struct GameCard: View {
                     Text(exerciseAction + " " + goalText + " " + unit)
                     Text("Progress: \(currentProgressText) \(unit) / \(goalText) \(unit)")
                     Spacer()
-                    Button {
-                        //GO TO ACTIVE GAME DETAILS PAGE
-                    } label: {
+                    NavigationLink(destination: ActiveGameView(gameCode: gameCode, healthStore: healthStore)) {
                         Text("View Game Details >")
                             .foregroundColor(.deepBlue)
                             .font(.custom("Poppins-Bold", size: 10))
@@ -146,5 +143,5 @@ struct GameCard: View {
 }
 
 #Preview {
-    GameCard(exerciseType: "Running", goal: 10, currentProgress: 8.75, healthStore: HealthStore())
+    GameCard(exerciseType: "Running", goal: 10, currentProgress: 8.75, healthStore: HealthStore(), gameCode: "FpcVHDwe")
 }

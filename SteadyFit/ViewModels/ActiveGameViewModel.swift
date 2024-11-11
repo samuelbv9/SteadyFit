@@ -60,6 +60,7 @@ struct GameData: Decodable {
     let weekDistance: String
     let weekFrequencyGoal: Int
     let weekDistanceGoal: String
+
 }
 
 struct GraphDataPoint: Identifiable {

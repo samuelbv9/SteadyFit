@@ -18,13 +18,15 @@ import HealthKit
 
 struct ActiveGameView: View {
     @StateObject private var viewModel = ActiveGameViewModel()
-    
-    //initialize instance of class HealthStore
-    private var healthStore: HealthStore?
-    
-    init() {
-        healthStore = HealthStore()
-    }
+    let gameCode : String
+    let healthStore: HealthStore?
+
+//    //initialize instance of class HealthStore
+//    private var healthStore: HealthStore?
+//    
+//    init() {
+//        healthStore = HealthStore()
+//    }
     
     var body: some View {
         let gameData = viewModel.gameData
@@ -156,8 +158,7 @@ struct ActiveGameView: View {
                                 //check if we have permmission to use metrics and if not request permission
                                 healthStore.requestAuthorization { success in
                                     if success {
-                                        // CHANGE HARDCODED GAMECODE TO ACTUAL GAME
-                                        healthStore.calculateWorkouts(gameCode: "FpcVHDwe") { workouts in
+                                        healthStore.calculateWorkouts(gameCode: gameCode) { workouts in
                                             if let workouts = workouts {
                                                 //update UI
                                                 for workout in workouts {
@@ -183,9 +184,8 @@ struct ActiveGameView: View {
                                                     print("duration: ", durationInMinutes)
                                                     print("distance: ", finalDistance ?? "nil")
                                                    
-                                                    // CHANGE HARDCODED GAMECODE TO ACTUAL GAME
                                                     //SEND TO DB HERE
-                                                    healthStore.sendActivityToDB(gameCode: "FpcVHDwe", activityType: activityType, durationInMinutes: Int(durationInMinutes), distanceText: finalDistance)
+                                                    healthStore.sendActivityToDB(gameCode: gameCode, activityType: activityType, durationInMinutes: Int(durationInMinutes), distanceText: finalDistance)
                                                 }
                                             }
                                         }
@@ -383,13 +383,13 @@ struct ActiveGameView: View {
         .ignoresSafeArea()
         .edgesIgnoringSafeArea(.bottom)
         .onAppear {
-            viewModel.loadCurrentGame(userId: Auth.auth().currentUser?.uid ?? "", gameCode: "NODqAbjW")
+            viewModel.loadCurrentGame(userId: Auth.auth().currentUser?.uid ?? "", gameCode: gameCode)
         }
     }
 }
 
 #Preview {
-    ActiveGameView()
+    ActiveGameView(gameCode: "NODqAbjW", healthStore: HealthStore())
 }
 
 struct RoundedCorner: Shape {
