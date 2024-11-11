@@ -799,7 +799,7 @@ def weekly_update(date):
                 if failed_distance or failed_freq:
                     losers.append(user_id)
                     result.append({
-                            "loser": user_id
+                            "loser": user_id,
                             "weekdistance": week_distance,
                             "week_distance_goal": week_distance_goal,
                             "weekfreq": week_frequency,
@@ -809,7 +809,7 @@ def weekly_update(date):
                 if not failed_distance and not failed_freq:
                     winners.append(user_id)
                     result.append({
-                        "winner": user_id
+                        "winner": user_id,
                         "weekdistance": week_distance,
                         "week_distance_goal": week_distance_goal,
                         "weekfreq": week_frequency,
