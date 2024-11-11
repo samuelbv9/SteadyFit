@@ -867,10 +867,10 @@ def weekly_update(date):
 
             for p in participants:
                 user_id = p[0]
-                amount_gained = p[5]
-                amount_lost = p[6]
+                gained = p[5]
+                lost = p[6]
                 if user_id in losers:
-                    new_amount_lost = amount_lost + weekly_amount
+                    new_amount_lost = lost + weekly_amount
                     query = '''
                         UPDATE GameParticipants
                         SET amountLost = %s
@@ -879,7 +879,7 @@ def weekly_update(date):
                     cursor.execute(query, (new_amount_lost, game_code, user_id))
 
                 elif user_id in winners:
-                    new_amount_gained = amount_gained + split_amount
+                    new_amount_gained = gained + split_amount
                     query = '''
                         UPDATE GameParticipants
                         SET amountGained = %s
