@@ -830,12 +830,12 @@ def weekly_update(date):
                 )
 
                 # update user's elo score in db 
-                query = '''
+                query = f'''
                     UPDATE UserEloRatings
-                    SET %s = %s 
+                    SET {elo_type} = %s
                     WHERE userId = %s
                 '''
-                cursor.execute(query, (elo_type, new_elo, user_id))
+                cursor.execute(query, (new_elo, user_id))
                 
 
                 # use elo function to update a user's goal if the game is adaptive
