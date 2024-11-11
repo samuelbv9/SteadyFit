@@ -846,7 +846,7 @@ def weekly_update(date):
                         SET weekDistanceGoal = %s
                         WHERE gameCode = %s AND userId = %s
                     '''
-                    cursor.execute(query, (g_t[0], g_t[1], game_code, user_id))
+                    cursor.execute(query, (g_t[0], game_code, user_id))
 
                 # update weekDistance, weekFrequency to be 0 for each user in game
                 query = '''
