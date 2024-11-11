@@ -339,12 +339,11 @@ struct ActiveGameView: View {
                 VStack {
                     let currentBalance = (betData?.balance ?? 0) + (betData?.initialBet ?? 0)
                     Text("Total Balance")
-                        .font(.custom("Poppins-Light", size: 12)) // poopins-light
-                        // dollar amount
-                    Text("\(currentBalance)") // Change this after i get the api
+                        .font(.custom("Poppins-Light", size: 12))
+                    // Format the dollar amount to two decimal places with a dollar sign
+                    Text("$\(String(format: "%.2f", currentBalance))")
                         .font(.custom("Poppins-Bold", size: 27))
                         .frame(width: 130, alignment: .leading)
-                        // Profit amount
                 }
                 
                 Image("chart-line")
@@ -354,7 +353,8 @@ struct ActiveGameView: View {
                         Text("Initial Bet: ")
                             .font(.custom("Poppins-Bold", size: 18))
                             .frame(width: 210, alignment: .leading)
-                        Text("\(betData?.initialBet ?? 0)")
+                        // Format the initial bet to two decimal places with a dollar sign
+                        Text("$\(String(format: "%.2f", betData?.initialBet ?? 0))")
                             .font(.custom("Poppins-Regular", size: 18))
                             .padding(.leading, 60)
                             .frame(width: 130, alignment: .leading)
@@ -363,7 +363,8 @@ struct ActiveGameView: View {
                         Text("Lost: ")
                             .font(.custom("Poppins-Bold", size: 18))
                             .frame(width: 210, alignment: .leading)
-                        Text("\(betData?.amountLost ?? 0)")
+                        // Format the amount lost to two decimal places with a dollar sign
+                        Text("$\(String(format: "%.2f", betData?.amountLost ?? 0))")
                             .font(.custom("Poppins-Regular", size: 18))
                             .frame(width: 130, alignment: .leading)
                             .padding(.leading, 25)
@@ -372,7 +373,8 @@ struct ActiveGameView: View {
                         Text("Gained: ")
                             .font(.custom("Poppins-Bold", size: 18))
                             .frame(width: 210, alignment: .leading)
-                        Text("\(betData?.amountGained ?? 0)")
+                        // Format the amount gained to two decimal places
+                        Text(String(format: "%.2f", betData?.amountGained ?? 0))
                             .font(.custom("Poppins-Regular", size: 18))
                             .frame(width: 130, alignment: .leading)
                             .padding(.leading, 80)
