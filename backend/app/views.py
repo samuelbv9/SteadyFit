@@ -325,6 +325,8 @@ def create_game(request):
 
     return JsonResponse({
                         "done": game_code, # used for testing
+                        "frequency": frequency,
+                        "distance": distance
                     })
 
 @csrf_exempt
@@ -383,7 +385,9 @@ def join_game(request):
 
     return JsonResponse({
                         "game_code": game_code,
-                        "user_id": user_id
+                        "user_id": user_id,
+                        "frequency": frequency,
+                        "distance": distance
                     })
 
 @csrf_exempt
