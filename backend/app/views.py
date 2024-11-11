@@ -790,13 +790,14 @@ def weekly_update(date):
 
                 if week_distance is not None and week_distance_goal is not None: 
                     if week_distance < week_distance_goal: 
-                        losers.append(user_id)
                         failed_distance = True
 
                 if week_frequency is not None and week_freq_goal is not None: 
                     if week_frequency < week_freq_goal:
-                        losers.append(user_id)
                         failed_freq = True
+
+                if failed_distance or failed_freq:
+                    losers.append(user_id)
 
                 if not failed_distance and not failed_freq:
                     winners.append(user_id)
