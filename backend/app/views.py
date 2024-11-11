@@ -670,7 +670,7 @@ from django.conf import settings
 
 
 def update_date(request):
-    test_date = date(2024, 11, 9)
+    test_date = date(2024, 12, 1)
     # test_date += timedelta(days=1)
     r = weekly_update(test_date)
     return JsonResponse(r)  
