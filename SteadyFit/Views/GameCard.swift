@@ -119,22 +119,25 @@ struct GameCard: View {
                     .frame(width: 1, height: 82)
                     .foregroundColor(.lightGray)
                 Spacer()
-                VStack(alignment: .leading){
-                    Spacer()
-                    Text(exerciseType)
-                        .font(.custom("Poppins-Bold", size: 15))
-                    Spacer()
-                    Text(exerciseAction + " " + goalText + " " + unit)
-                    Text("Progress: \(currentProgressText) \(unit) / \(goalText) \(unit)")
-                    Spacer()
-                    NavigationLink(destination: ActiveGameView(gameCode: gameCode, healthStore: healthStore)
-                                    .navigationBarBackButtonHidden(true)) {
+                NavigationLink(destination: ActiveGameView(gameCode: gameCode, healthStore: healthStore)
+                                .navigationBarBackButtonHidden(true)) {
+                    VStack(alignment: .leading){
+                        Spacer()
+                        Text(exerciseType)
+                            .font(.custom("Poppins-Bold", size: 15))
+                        Spacer()
+                        Text(exerciseAction + " " + goalText + " " + unit)
+                        Text("Progress: \(currentProgressText) \(unit) / \(goalText) \(unit)")
+                        Spacer()
                         Text("View Game Details >")
                             .foregroundColor(.deepBlue)
                             .font(.custom("Poppins-Bold", size: 10))
+                            .padding(.bottom, 2)
+                        
+                        Spacer()
                     }
-                    Spacer()
                 }
+                    .foregroundColor(.black)
                 Spacer()
             }
         }
