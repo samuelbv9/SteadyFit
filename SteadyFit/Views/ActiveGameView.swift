@@ -57,9 +57,9 @@ struct ActiveGameView: View {
         ]
         
         let convertedD: Double = Double(viewModel.gameData?.weekDistance ?? "0") ?? 0.0
-        let convertedDgoal: Double = Double(viewModel.gameData?.weekDistanceGoal ?? "0") ?? 0.0
+        let convertedDgoal: Double = Double(viewModel.gameData?.weekDistanceGoal ?? "1") ?? 1.0
         let convertedF:  Double = Double(viewModel.gameData?.weekFrequency ?? 0)
-        let convertedFgoal:  Double = Double(viewModel.gameData?.weekFrequencyGoal ?? 0)
+        let convertedFgoal:  Double = Double(viewModel.gameData?.weekFrequencyGoal ?? 1)
         
         let data2 = [ // Inner Circle
             GraphDataPoint(
@@ -293,8 +293,8 @@ struct ActiveGameView: View {
                                 .frame(width: 50, height: 50)
                             let currentDistance = Double(viewModel.gameData?.currentDistance ?? "0") ?? 0
                             let totalDistance = Double(viewModel.gameData?.totalDistance ?? "1") ?? 1
-                            let currentFrequency = Double(viewModel.gameData?.currentFrequency ?? 0) ?? 0
-                            let totalFrequency = Double(viewModel.gameData?.totalFrequency ?? 0) ?? 0
+                            let currentFrequency = Double(viewModel.gameData?.currentFrequency ?? 0)
+                            let totalFrequency = Double(viewModel.gameData?.totalFrequency ?? 0)
                             let percentage = isStrengthTraining ?
                                 (currentFrequency / totalFrequency) * 100:
                                 (currentDistance / totalDistance) * 100
@@ -352,7 +352,7 @@ struct ActiveGameView: View {
                     // Format the dollar amount to two decimal places with a dollar sign
                     Text("$\(String(format: "%.2f", currentBalance))")
                         .font(.custom("Poppins-Bold", size: 27))
-                        .frame(width: 130, alignment: .leading)
+                        .frame(width: 130, alignment: .center)
                 }
                 
                 Image("chart-line")
@@ -450,7 +450,7 @@ extension Color {
             return .darkGray
         // Add more cases as needed
         default:
-            return .gray
+            return .darkGray
         }
     }
     
