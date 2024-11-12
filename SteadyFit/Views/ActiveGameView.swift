@@ -45,30 +45,34 @@ struct ActiveGameView: View {
             GraphDataPoint(
                 day: "Mon",
                 hours: isStrengthTraining ? 
-                    Double(viewModel.gameData?.currentFrequency ?? 0) ?? 0 :
+                    Double(viewModel.gameData?.currentFrequency ?? 0) :
                     Double(viewModel.gameData?.currentDistance ?? "0") ?? 0
             ),
             GraphDataPoint(
                 day: "tues",
                 hours:  isStrengthTraining ?
-                    Double(viewModel.gameData?.totalFrequency ?? 1) ?? 1 :
+                    Double(viewModel.gameData?.totalFrequency ?? 1) :
                     Double(viewModel.gameData?.totalDistance ?? "1") ?? 1
             )
         ]
         
         let convertedD: Double = Double(viewModel.gameData?.weekDistance ?? "0") ?? 0.0
         let convertedDgoal: Double = Double(viewModel.gameData?.weekDistanceGoal ?? "0") ?? 0.0
-        let convertedF:  Double = Double(viewModel.gameData?.weekFrequency ?? 0) ?? 0.0
-        let convertedFgoal:  Double = Double(viewModel.gameData?.weekFrequencyGoal ?? 0) ?? 0.0
+        let convertedF:  Double = Double(viewModel.gameData?.weekFrequency ?? 0)
+        let convertedFgoal:  Double = Double(viewModel.gameData?.weekFrequencyGoal ?? 0)
         
         let data2 = [ // Inner Circle
             GraphDataPoint(
                 day: "Mon",
-                hours: convertedD
+                hours: isStrengthTraining ?
+                    convertedD :
+                    convertedF
             ),
             GraphDataPoint(
                 day: "tues",
-                hours:  convertedDgoal - convertedD
+                hours:  isStrengthTraining ?
+                    convertedDgoal - convertedD :
+                    convertedFgoal - convertedF
             )
         ]
         
@@ -130,18 +134,18 @@ struct ActiveGameView: View {
                                 .font(.custom("Poppins-Bold", size: 20))
                                 .kerning(-0.3) // Decreases letter spacing
                                 //.frame(maxWidth: 300, alignment: .leading)
-                                .padding(.leading, 20)
+                                .padding(.leading, 15)
                             Spacer()
                             // ####### HERE #############
                             if (isStrengthTraining) { // Show correct units
                                 Text("\(gameData?.weekFrequencyGoal ?? 0) times") // week distance goal
-                                    .padding(.trailing, 30)
-                                    .font(.custom("Poppins-Regular", size: 20))
+                                    .padding(.trailing, 20)
+                                    .font(.custom("Poppins-Regular", size: 18))
                                     .kerning(-0.3)
                             } else {
                                 Text("\(gameData?.weekDistanceGoal ?? "err") \(units)")
-                                    .padding(.trailing, 30)
-                                    .font(.custom("Poppins-Regular", size: 20))
+                                    .padding(.trailing, 20)
+                                    .font(.custom("Poppins-Regular", size: 18))
                                     .kerning(-0.3)
                             }
                         }
@@ -149,18 +153,18 @@ struct ActiveGameView: View {
                             Text("Current Progress") // This will need to change based on game
                                 .font(.custom("Poppins-Bold", size: 20))
                                 .kerning(-0.3) // Decreases letter spacing
-                                .padding(.leading, 20)
+                                .padding(.leading, 15)
                             Spacer()
                             // ####### HERE #############
                             if (isStrengthTraining) { // Show correct units
                                 Text("\(gameData?.weekFrequency ?? 0) times") // week distance
-                                    .padding(.trailing, 30)
-                                    .font(.custom("Poppins-Regular", size: 20))
+                                    .padding(.trailing, 20)
+                                    .font(.custom("Poppins-Regular", size: 18))
                                     .kerning(-0.3)
                             } else {
                                 Text("\(gameData?.weekDistance ?? "err") \(units)")
-                                    .padding(.trailing, 30)
-                                    .font(.custom("Poppins-Regular", size: 20))
+                                    .padding(.trailing, 20)
+                                    .font(.custom("Poppins-Regular", size: 18))
                                     .kerning(-0.3)
                             }
                         }
