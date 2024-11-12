@@ -149,12 +149,15 @@ final class GamesStore: ObservableObject {
     }
     
     func joinGame(_ gameCode: String, _ password: String) {
-        let jsonObj: [String: Any?] = [
+        var jsonObj: [String: Any?] = [
             "user_id": Auth.auth().currentUser?.uid,
             "game_code": gameCode,
-            "password": password
         ]
-
+                
+        if password != "" {
+            jsonObj["password"] = password
+        }
+            
         guard let jsonData = try? JSONSerialization.data(withJSONObject: jsonObj) else {
            print("joinGame: jsonData serialization error")
            return

@@ -8,30 +8,60 @@
 import SwiftUI
 import Foundation
 import Charts
+import Firebase
+import FirebaseAuth
 
 struct GameCompletedView: View {
     @StateObject private var viewModel = ActiveGameViewModel()
+    let gameCode : String
+
+//    //initialize instance of class HealthStore
+//    private var healthStore: HealthStore?
+//
+//    init() {
+//        healthStore = HealthStore()
+//    }
     
     var body: some View {
-        let data = [ // This will be for the circle chart
+        let gameData = viewModel.gameData
+        let betData = viewModel.betDetails
+        var isStrengthTraining = false
+        if gameData?.exerciseType == "strength training" {
+            isStrengthTraining = true
+        }
+        var units = "miles"
+        if gameData?.exerciseType == "swimming" {
+            units = "yards"
+        }
+        
+        let data = [ // Outer Circle
             GraphDataPoint(
                 day: "Mon",
-                hours: Double(viewModel.gameData?.currentDistance ?? "0") ?? 0
+                hours: isStrengthTraining ?
+                    Double(viewModel.gameData?.currentFrequency ?? 0) ?? 0 :
+                    5.0
             ),
             GraphDataPoint(
                 day: "tues",
-                hours:  Double(viewModel.gameData?.totalDistance ?? "1") ?? 1
+                hours:  isStrengthTraining ?
+                    Double(viewModel.gameData?.totalFrequency ?? 1) ?? 1 :
+                    0
             )
         ]
         
-        let data2 = [ // This will be for the circle chart
+        let convertedD: Double = Double(viewModel.gameData?.weekDistance ?? "0") ?? 0.0
+        let convertedDgoal: Double = Double(viewModel.gameData?.weekDistanceGoal ?? "0") ?? 0.0
+        let convertedF:  Double = Double(viewModel.gameData?.weekFrequency ?? 0) ?? 0.0
+        let convertedFgoal:  Double = Double(viewModel.gameData?.weekFrequencyGoal ?? 0) ?? 0.0
+        
+        let data2 = [ // Inner Circle
             GraphDataPoint(
                 day: "Mon",
-                hours: Double(viewModel.gameData?.currentFrequency ?? 0)
+                hours: 5
             ),
             GraphDataPoint(
                 day: "tues",
-                hours:  Double(viewModel.gameData?.totalFrequency ?? 1)
+                hours:  0
             )
         ]
         
@@ -39,20 +69,26 @@ struct GameCompletedView: View {
             HeaderView()
             Spacer()
 
-            let gameData = viewModel.gameData
+            VStack {
+                Text("Game Completed")
+                    .font(.custom("Poppins-Bold", size: 30))
+                    .kerning(-0.6) // Decreases letter spacing
+                    .padding(.bottom, -16)
+            }
+            .padding(.bottom, -15)
+            .padding(.top, -15)
             
-            
-            Text("Game Completed")
-                .font(.custom("Poppins-Bold", size: 30))
-                .kerning(-0.6) // Decreases letter spacing
-                .padding(.top, 20)
-            
+            .padding(.top, 20)
+            .padding(.bottom, 10)
+            .frame(width: 322, alignment: .leading)
+    
             Spacer()
             
             VStack { // Overall Stats
                 Text("Overall Statistics")
                     .font(.custom("Poppins-Bold", size: 20))
                     .kerning(-0.6) // Decreases letter spacing
+                    .padding(.bottom, -5)
                 HStack{
                     // Circle completion percent pie chart
                     VStack{
@@ -83,7 +119,11 @@ struct GameCompletedView: View {
                                 .frame(width: 50, height: 50)
                             let currentDistance = Double(viewModel.gameData?.currentDistance ?? "0") ?? 0
                             let totalDistance = Double(viewModel.gameData?.totalDistance ?? "1") ?? 1
-                            let percentage = (currentDistance / totalDistance) * 100
+                            let currentFrequency = Double(viewModel.gameData?.currentFrequency ?? 0) ?? 0
+                            let totalFrequency = Double(viewModel.gameData?.totalFrequency ?? 0) ?? 0
+                            let percentage = isStrengthTraining ?
+                                (currentFrequency / totalFrequency) * 100:
+                                (5 / totalDistance) * 100
                             Text("\(String(format: "%.1f", percentage))%")
                                 .font(.custom("Poppins-Bold", size: 14))
                                 .kerning(-0.6)
@@ -99,16 +139,30 @@ struct GameCompletedView: View {
                             .font(.custom("Poppins-Bold", size: 18))
                             .frame(width: 183, alignment: .leading)
                         //stats
-                        Text("\(gameData?.currentDistance ?? "err")/\(gameData?.totalDistance ?? "err") units")
-                            .font(.custom("Poppins-Regular", size: 18))
-                            .frame(width: 183, alignment: .leading)
+                        // ####### HERE #############
+                        if (isStrengthTraining) {
+                            Text("\(gameData?.currentFrequency ?? 0)/\(gameData?.totalFrequency ?? 0) times")
+                                .font(.custom("Poppins-Regular", size: 18))
+                                .frame(width: 183, alignment: .leading)
+                        } else {
+                            Text("5.00/\(gameData?.totalDistance ?? "err") \(units)")
+                                .font(.custom("Poppins-Regular", size: 18))
+                                .frame(width: 183, alignment: .leading)
+                        }
                         Text("This Week")
                             .font(.custom("Poppins-Bold", size: 18))
                             .frame(width: 183, alignment: .leading)
                         //stats
-                        Text("\(gameData?.currentFrequency ?? 1)/\(gameData?.totalFrequency ?? 1) units")
-                            .font(.custom("Poppins-Regular", size: 18))
-                            .frame(width: 183, alignment: .leading)
+                        // ####### HERE #############
+                        if (isStrengthTraining) {
+                            Text("5.00/\(gameData?.weekFrequencyGoal ?? 1) units")
+                                .font(.custom("Poppins-Regular", size: 18))
+                                .frame(width: 183, alignment: .leading)
+                        } else {
+                            Text("5.00/\(gameData?.weekDistanceGoal ?? "err") \(units)")
+                                .font(.custom("Poppins-Regular", size: 18))
+                                .frame(width: 183, alignment: .leading)
+                        }
                     }
                     .padding(.leading, 20)
                 }
@@ -118,13 +172,13 @@ struct GameCompletedView: View {
             
             HStack { // Total Balance
                 VStack {
+                    let currentBalance = (betData?.balance ?? 0) + (betData?.initialBet ?? 0)
                     Text("Total Balance")
-                        .font(.custom("Poppins-Light", size: 12)) // poopins-light
-                        // dollar amount
-                    Text("100.00$")
+                        .font(.custom("Poppins-Light", size: 12))
+                    // Format the dollar amount to two decimal places with a dollar sign
+                    Text("$\(String(format: "%.2f", currentBalance))")
                         .font(.custom("Poppins-Bold", size: 27))
                         .frame(width: 130, alignment: .leading)
-                        // Profit amount
                 }
                 
                 Image("chart-line")
@@ -134,7 +188,8 @@ struct GameCompletedView: View {
                         Text("Initial Bet: ")
                             .font(.custom("Poppins-Bold", size: 18))
                             .frame(width: 210, alignment: .leading)
-                        Text("$100.00")
+                        // Format the initial bet to two decimal places with a dollar sign
+                        Text("$\(String(format: "%.2f", betData?.initialBet ?? 0))")
                             .font(.custom("Poppins-Regular", size: 18))
                             .padding(.leading, 60)
                             .frame(width: 130, alignment: .leading)
@@ -143,7 +198,8 @@ struct GameCompletedView: View {
                         Text("Lost: ")
                             .font(.custom("Poppins-Bold", size: 18))
                             .frame(width: 210, alignment: .leading)
-                        Text("$5.00")
+                        // Format the amount lost to two decimal places with a dollar sign
+                        Text("$\(String(format: "%.2f", betData?.amountLost ?? 0))")
                             .font(.custom("Poppins-Regular", size: 18))
                             .frame(width: 130, alignment: .leading)
                             .padding(.leading, 25)
@@ -152,7 +208,8 @@ struct GameCompletedView: View {
                         Text("Gained: ")
                             .font(.custom("Poppins-Bold", size: 18))
                             .frame(width: 210, alignment: .leading)
-                        Text("$15.00")
+                        // Format the amount gained to two decimal places
+                        Text("$\(String(format: "%.2f", betData?.amountGained ?? 0))")
                             .font(.custom("Poppins-Regular", size: 18))
                             .frame(width: 130, alignment: .leading)
                             .padding(.leading, 80)
@@ -161,23 +218,24 @@ struct GameCompletedView: View {
                 .padding(.leading, 20)
                 .frame(width: 212)
             }
+            .padding(.bottom, 10)
             
             Spacer()
             NavBarView(viewIndex: 4)
-                .padding(.bottom, -10)
         }
         //.frame(maxHeight: .infinity, alignment: .top)
         .frame(width: 350)
         .ignoresSafeArea()
         .edgesIgnoringSafeArea(.bottom)
         .onAppear {
-            viewModel.loadCurrentGame(userId: "8503f31c-8c1f-45eb-a7dd-180095aad816", gameCode: "NODqAbjW")
+            viewModel.loadCurrentGame(userId: Auth.auth().currentUser?.uid ?? "", gameCode: gameCode)
+            viewModel.loadBetDetails(gameCode: gameCode)
         }
     }
 }
 
 #Preview {
-    GameCompletedView()
+    GameCompletedView(gameCode: "Eo6Pav9I")
 }
 
 //struct RoundedCorner: Shape {

@@ -20,6 +20,7 @@ struct ActiveGameView: View {
     @StateObject private var viewModel = ActiveGameViewModel()
     let gameCode : String
     let healthStore: HealthStore?
+    @State private var navigateToVerificationView = false
 
 //    //initialize instance of class HealthStore
 //    private var healthStore: HealthStore?
@@ -75,14 +76,15 @@ struct ActiveGameView: View {
         
         
         return VStack {
+            NavigationLink(destination: LoadingView(), isActive: $navigateToVerificationView) {
+                EmptyView()
+            }
             HeaderView()
             Spacer()
 
             HStack { // Game title and back button
-                Button {
-                    // Action on press
-                    // action()
-                } label: {
+                NavigationLink(destination: HomeView()
+                    .navigationBarBackButtonHidden(true)) {
                     ZStack {
                         RoundedRectangle(cornerRadius: 40)
                             .foregroundColor(Color.deepBlue)
@@ -92,9 +94,17 @@ struct ActiveGameView: View {
                             .foregroundColor(Color.white)
                     }
                 }
-                Text(gameData?.exerciseType.capitalized ?? "no game data")
-                .font(.custom("Poppins-Bold", size: 30))
-                .kerning(-0.6) // Decreases letter spacing
+                VStack {
+                    Text(gameData?.exerciseType.capitalized ?? "no game data")
+                        .font(.custom("Poppins-Bold", size: 30))
+                        .kerning(-0.6) // Decreases letter spacing
+                        .padding(.bottom, -16)
+                    Text(gameCode)
+                        .font(.custom("Poppins-Bold", size: 30))
+                        .kerning(-0.6) // Decreases letter spacing
+                }
+                .padding(.bottom, -15)
+                .padding(.top, -15)
             }
             .padding(.top, 20)
             .padding(.bottom, 10)
@@ -190,6 +200,7 @@ struct ActiveGameView: View {
                                                 }
                                             }
                                         }
+                                        navigateToVerificationView = true
                                     }
                                 }
                             }
@@ -198,7 +209,7 @@ struct ActiveGameView: View {
                                 RoundedRectangle(cornerRadius: 0)
                                     .foregroundColor(Color.deepBlue)
                                     .frame(height: 50)
-                                    .frame(width: 322)
+                                    .frame(width: 324)
                                     .clipShape(RoundedCorner(radius: 8, corners: [.bottomLeft, .bottomRight]))
                                 HStack {
                                     Text("Upload & Verify Workout")
@@ -239,7 +250,7 @@ struct ActiveGameView: View {
             }
             .frame(width: 322)
             .padding(.top, 10)
-            .padding(.bottom, 10)
+            .padding(.bottom, 0)
             
             Spacer()
             
@@ -331,24 +342,24 @@ struct ActiveGameView: View {
             
             HStack { // Total Balance
                 VStack {
+                    let currentBalance = (betData?.balance ?? 0) + (betData?.initialBet ?? 0)
                     Text("Total Balance")
-                        .font(.custom("Poppins-Light", size: 12)) // poopins-light
-                        // dollar amount
-                    Text("\(betData?.balance ?? 0)") // Change this after i get the api
+                        .font(.custom("Poppins-Light", size: 12))
+                    // Format the dollar amount to two decimal places with a dollar sign
+                    Text("$\(String(format: "%.2f", currentBalance))")
                         .font(.custom("Poppins-Bold", size: 27))
                         .frame(width: 130, alignment: .leading)
-                        // Profit amount
                 }
                 
                 Image("chart-line")
                 
                 VStack {
-                    let currentBalance = (betData?.balance ?? 0) + (betData?.amountGained ?? 0) - (betData?.amountLost ?? 0)
                     ZStack {
                         Text("Initial Bet: ")
                             .font(.custom("Poppins-Bold", size: 18))
                             .frame(width: 210, alignment: .leading)
-                        Text("\(currentBalance)")
+                        // Format the initial bet to two decimal places with a dollar sign
+                        Text("$\(String(format: "%.2f", betData?.initialBet ?? 0))")
                             .font(.custom("Poppins-Regular", size: 18))
                             .padding(.leading, 60)
                             .frame(width: 130, alignment: .leading)
@@ -357,7 +368,8 @@ struct ActiveGameView: View {
                         Text("Lost: ")
                             .font(.custom("Poppins-Bold", size: 18))
                             .frame(width: 210, alignment: .leading)
-                        Text("\(betData?.amountLost ?? 0)")
+                        // Format the amount lost to two decimal places with a dollar sign
+                        Text("$\(String(format: "%.2f", betData?.amountLost ?? 0))")
                             .font(.custom("Poppins-Regular", size: 18))
                             .frame(width: 130, alignment: .leading)
                             .padding(.leading, 25)
@@ -366,7 +378,8 @@ struct ActiveGameView: View {
                         Text("Gained: ")
                             .font(.custom("Poppins-Bold", size: 18))
                             .frame(width: 210, alignment: .leading)
-                        Text("\(betData?.amountGained ?? 0)")
+                        // Format the amount gained to two decimal places
+                        Text(String(format: "%.2f", betData?.amountGained ?? 0))
                             .font(.custom("Poppins-Regular", size: 18))
                             .frame(width: 130, alignment: .leading)
                             .padding(.leading, 80)
@@ -386,6 +399,7 @@ struct ActiveGameView: View {
         .edgesIgnoringSafeArea(.bottom)
         .onAppear {
             viewModel.loadCurrentGame(userId: Auth.auth().currentUser?.uid ?? "", gameCode: gameCode)
+            viewModel.loadBetDetails(gameCode: gameCode)
         }
     }
 }
