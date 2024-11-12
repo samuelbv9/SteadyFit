@@ -7,6 +7,7 @@
 
 import SwiftUI
 import HealthKit
+import Charts
 
 struct GameCard: View {
     let exerciseType: String
@@ -58,6 +59,17 @@ struct GameCard: View {
     }
     
     var body: some View {
+        let data = [ // Outer Circle
+            GraphDataPoint(
+                day: "Mon",
+                hours: Double(currentProgress)
+            ),
+            GraphDataPoint(
+                day: "tues",
+                hours:  Double(goal)
+            )
+        ]
+        
         NavigationLink(destination: LoadingView(), isActive: $navigateToVerificationView) {
             EmptyView()
         }
@@ -106,8 +118,18 @@ struct GameCard: View {
                         }
                     } label: {
                         ZStack{
+                            Chart {
+                                ForEach(data.indices, id: \.self) { index in
+                                    let d = data[index]
+                                    SectorMark(angle: .value("Hours", d.hours))
+                                        .foregroundStyle(Color.customColor2(for: index))
+                                }
+                            }
+                            .chartLegend(.hidden)
+                            .frame(width: 80, height: 80)
                             Circle()
                                 .stroke(Color.deepBlue, lineWidth: 2)
+                                .fill(.white)
                                 .frame(width: 57)
                             Text("Upload\n& Verify")
                                 .foregroundColor(.deepBlue)
