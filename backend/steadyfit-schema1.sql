@@ -28,7 +28,9 @@ CREATE TABLE GameParticipants (
     weekDistanceGoal    DECIMAL(10, 2) DEFAULT 0,
     totalFrequency       INTEGER DEFAULT 0,
     weekFrequency        INTEGER DEFAULT 0,
-    weekFrequencyGoal   INTEGER DEFAULT 0
+    weekFrequencyGoal   INTEGER DEFAULT 0,
+    latitude             DECIMAL(10, 4),
+    longitude            DECIMAL(10, 4),
     PRIMARY KEY (gameCode, userId),
     FOREIGN KEY (gameCode) REFERENCES Games(gameCode) ON DELETE CASCADE,
     FOREIGN KEY (userId) REFERENCES Users(userId) ON DELETE CASCADE
