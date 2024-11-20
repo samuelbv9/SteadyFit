@@ -436,7 +436,8 @@ def add_workout(request):
     """
     Adds a completed workout to a user's workout list
 
-    Request must contain: user ID, Game code, Activity Type, Distance, Duration
+    Request must contain: user ID, Game code, Activity Type, Distance, Duration, latitude, longitude
+    latitude, longitude must not be null if activity_type is swimming or strengthTraining
 
     Response format:
     {
@@ -475,6 +476,21 @@ def add_workout(request):
     exerciseType = cursor.fetchone()
     if not exerciseType:
         return HttpResponse(status=400)
+    
+    # verify location
+    if activity_type == "swimming" or activity_type == "strengthTraining":
+        request_lat = json_data.get("latitude")
+        request_lon = json_data.get("longitude")
+
+        cursor.execute("""SELECT latitude, longitude FROM GameParticipants
+                       WHERE gameCode = %s AND userId = %s
+                       """, (game_code, user_id))
+        game_participants_loc = cursor.fetchone()
+        game_lat = game_participants_loc[0]
+        game_lon = game_participants_loc[1]
+
+        if request_lat != game_lat or request_lon != game_lon:
+            return JsonResponse({"error": "Incorrect latitude or longitude for workout."}, status=400)
 
     current_timestamp = timezone.now()
 
