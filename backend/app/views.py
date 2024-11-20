@@ -287,7 +287,8 @@ def create_game(request):
     Creates a new game and adds the current user to the game.
 
     Request must contain: user_id, bet_amount, exercise_type,
-    frequency, distance, duration, adaptive_goals, start_date, password
+    frequency, distance, duration, adaptive_goals, start_date, password,
+    latitude, longitude
 
     frequncy, distance, password may be null
 
@@ -328,8 +329,12 @@ def create_game(request):
                     duration, adaptive_goals, start_date, password))
 
     # Set current user as player of this game
-    cursor.execute("INSERT INTO GameParticipants (gameCode, userId, weekDistanceGoal, weekFrequencyGoal) VALUES (%s, %s, %s, %s)",
-                   (game_code, user_id, distance, frequency))
+    lat = round(float(json_data.get("latitude")), 3)
+    lon = round(float(json_data.get("longitude")), 3)
+    cursor.execute("""INSERT INTO GameParticipants
+                   (gameCode, userId, weekDistanceGoal, weekFrequencyGoal, latitude, longitudee) 
+                   VALUES (%s, %s, %s, %s, %s, %s)""",
+                   (game_code, user_id, distance, frequency, lat, lon))
     
     connection.commit()
 
@@ -342,7 +347,7 @@ def join_game(request):
     """
     Adds a user to a game with a valid game code.
 
-    Request must contain: user ID, game code, password (password may be null)
+    Request must contain: user ID, game code, password (password may be null), latitude, longitude
 
     Response format:
     {
@@ -360,6 +365,8 @@ def join_game(request):
     user_id = json_data.get("user_id")
     game_code = json_data.get("game_code")
     password = json_data.get("password")
+    lat = round(float(json_data.get("latitude")), 3)
+    lon = round(float(json_data.get("longitude")), 3)
 
     if not user_id or not game_code:
         return JsonResponse({"error": "Invalid or missing user_id/game_code"}, status=400)
@@ -389,10 +396,10 @@ def join_game(request):
     try:
         cursor.execute("""
             INSERT INTO GameParticipants 
-            (gameCode, userId, weekDistanceGoal, weekFrequencyGoal) 
-            VALUES (%s, %s, %s, %s)
+            (gameCode, userId, weekDistanceGoal, weekFrequencyGoal, latitude, longitude) 
+            VALUES (%s, %s, %s, %s, %s, %s)
             """, 
-            (game_code, user_id, distance, frequency))
+            (game_code, user_id, distance, frequency, lat, lon))
         connection.commit()
     except Exception as e:
         return JsonResponse({"error": str(e)}, status=500)
