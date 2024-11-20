@@ -28,6 +28,7 @@ DEBUG = True
 
 ALLOWED_HOSTS = ['localhost', '52.200.16.208', '127.0.0.1']
 
+APSCHEDULER_RUN_NOW_TIMEOUT = 5  # Seconds
 
 # Application definition
 

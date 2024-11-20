@@ -676,7 +676,7 @@ def update_date(request):
     return JsonResponse(r)  
 
 
-def weekly_update(date):
+def weekly_update():
     challenges = {
     "running": {
         "file": "running_challenge.csv",
@@ -725,8 +725,8 @@ def weekly_update(date):
     }
 }
     # get the current date
-    # current_date = datetime.now().date()
-    current_date = date
+    current_date = datetime.now().date()
+    # current_date = date
     result = []
     
     # get all active games
@@ -746,7 +746,7 @@ def weekly_update(date):
         weeks_elapsed = (current_date - start_date).days // 7
 
         # if a week has passed, do updates
-        if weeks_elapsed > last_updated:
+        if weeks_elapsed > last_updated or True == True:
             # change game's last updated week # to current week #
             new_last_updated = last_updated + 1
             query = '''
@@ -789,6 +789,8 @@ def weekly_update(date):
                 failed_freq = False
 
                 if week_distance is not None and week_distance_goal is not None: 
+                    if week_freq_goal is not None:
+                        week_distance_goal = week_distance_goal * week_freq_goal
                     if week_distance < week_distance_goal: 
                         failed_distance = True
 
