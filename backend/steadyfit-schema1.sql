@@ -40,7 +40,7 @@ CREATE TABLE Activities (
     gameCode       VARCHAR(20) NOT NULL,
     userId         VARCHAR(255) NOT NULL,
     activity       VARCHAR(20) NOT NULL,
-    distance       DECIMAL(10, 2) DEFAULT 0,
+    distance   ""    DECIMAL(10, 2) DEFAULT 0,
     duration       INTEGER DEFAULT 0,
     timestamp      TIMESTAMP NOT NULL, 
     PRIMARY KEY (gameCode, userId, timestamp),

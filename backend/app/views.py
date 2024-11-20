@@ -343,7 +343,7 @@ def create_game(request):
         lon = round(float(lon), 3)
 
     cursor.execute("""INSERT INTO GameParticipants
-                   (gameCode, userId, weekDistanceGoal, weekFrequencyGoal, latitude, longitudee) 
+                   (gameCode, userId, weekDistanceGoal, weekFrequencyGoal, latitude, longitude) 
                    VALUES (%s, %s, %s, %s, %s, %s)""",
                    (game_code, user_id, distance, frequency, lat, lon))
     
