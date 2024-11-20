@@ -39,7 +39,7 @@ def goal(request):
 
     cursor = connection.cursor()
 
-    cursor.execute("SELECT totalDistance, totalFrequency, weekDistanceGoal, weekFrequencyGoal FROM GameParticipants WHERE gameCode = %s AND userId = %s", (game_code, user_id))
+    cursor.execute("SELECT totalDistance, totalFrequency, weekDistanceGoal, weekFrequencyGoal, weekDistance, weekFrequency FROM GameParticipants WHERE gameCode = %s AND userId = %s", (game_code, user_id))
     goal = cursor.fetchone()
 
     cursor.execute("SELECT exerciseType, frequency, distance FROM Games WHERE gameCode = %s", (game_code,))
@@ -47,12 +47,14 @@ def goal(request):
 
     response_data = {
                         "exerciseType": gameInfo[0],
-                        "currentDistance": goal[0], # may be null
-                        "currentFrequency": goal[1], # may be null
-                        "totalDistance": gameInfo[2], # may be null
-                        "totalFrequency": gameInfo[1], # may be null
-                        "weekDistanceGoal": goal[2],
-                        "weekFrequencyGoal": goal[3]
+                        "currentDistance": goal[0], # total distance completed so far
+                        "currentFrequency": goal[1], # total freq completed so far
+                        "totalDistance": gameInfo[2], 
+                        "totalFrequency": gameInfo[1], 
+                        "weekDistanceGoal": goal[2], 
+                        "weekFrequencyGoal": goal[3],
+                        "weekDistance": goal[4],
+                        "weekFrequency": goal[5]
                     }
     # for testing, inserted users, games, into db for (freq and distance) (only freq) (only distance)
     # when tested, returned null in the appropriate places
@@ -171,7 +173,11 @@ def active_games(request):
                 "exerciseType": string,
                 "duration": int,
                 "betAmount": float,
-                "startDate": YYYY-MM-DD
+                "startDate": YYYY-MM-DD,
+                "weekDistance": float,
+                "weekDistanceGoal": float,
+                "weekFrequency": int,
+                "weekDistanceGoal": int
             }, ...
     ]
     """
@@ -185,7 +191,7 @@ def active_games(request):
         return JsonResponse(status=400)
     
     query = '''
-        SELECT G.gameCode, G.exerciseType, G.duration, G.betAmount, G.startDate
+        SELECT G.gameCode, G.exerciseType, G.duration, G.betAmount, G.startDate, GP.weekDistance, GP.weekDistanceGoal, GP.weekFrequency, GP.weekFrequencyGoal
         FROM Games G
         JOIN GameParticipants GP ON G.gameCode = GP.gameCode
         WHERE GP.userId = %s AND G.isActive = TRUE
@@ -196,13 +202,17 @@ def active_games(request):
 
     result = []
     for game in games:
-        game_code, exercise_type, duration, bet_amount, start_date = game
+        game_code, exercise_type, duration, bet_amount, start_date, weekDistance, weekDistanceGoal, weekFrequency, weekFrequencyGoal = game
         result.append({
             "gameCode": game_code,
             "exerciseType": exercise_type,
             "duration": duration,
             "betAmount": float(bet_amount),
-            "startDate": start_date
+            "startDate": start_date,
+            "weekDistance": float(weekDistance),
+            "weekDistanceGoal": float(weekDistanceGoal),
+            "weekFrequency": weekFrequency,
+            "weekFrequencyGoal": weekFrequencyGoal
         })
 
     return JsonResponse({"active_games": result})
@@ -277,9 +287,9 @@ def create_game(request):
     Creates a new game and adds the current user to the game.
 
     Request must contain: user_id, bet_amount, exercise_type,
-    frequency, distance, duration, adaptive_goals, start_date
+    frequency, distance, duration, adaptive_goals, start_date, password
 
-    frequncy, distance may be null
+    frequncy, distance, password may be null
 
     Response format:
     {
@@ -304,18 +314,18 @@ def create_game(request):
     # also tested with null values for frequency, distance
     # inserted into db correctly with nulls
     user_id, bet_amount, exercise_type, frequency, \
-    distance, duration, adaptive_goals, start_date = (
+    distance, duration, adaptive_goals, start_date, password = (
         json_data.get(key) for key in [
             "user_id", "bet_amount", "exercise_type", "frequency",
-            "distance", "duration", "adaptive_goals", "start_date"
+            "distance", "duration", "adaptive_goals", "start_date", "password"
         ]
     )
     # Add game to Games table
     cursor.execute("INSERT INTO Games (gameCode, betAmount, exerciseType, frequency, \
-                   distance, duration, adaptiveGoals, startDate) \
-                   VALUES (%s, %s, %s, %s, %s, %s, %s, %s)",
+                   distance, duration, adaptiveGoals, startDate, password) \
+                   VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)",
                    (game_code, bet_amount, exercise_type, frequency, distance,
-                    duration, adaptive_goals, start_date))
+                    duration, adaptive_goals, start_date, password))
 
     # Set current user as player of this game
     cursor.execute("INSERT INTO GameParticipants (gameCode, userId, weekDistanceGoal, weekFrequencyGoal) VALUES (%s, %s, %s, %s)",
@@ -324,7 +334,7 @@ def create_game(request):
     connection.commit()
 
     return JsonResponse({
-                        "done": game_code
+                        "done": game_code, # used for testing
                     })
 
 @csrf_exempt
@@ -332,7 +342,7 @@ def join_game(request):
     """
     Adds a user to a game with a valid game code.
 
-    Request must contain: user ID, game code
+    Request must contain: user ID, game code, password (password may be null)
 
     Response format:
     {
@@ -349,9 +359,16 @@ def join_game(request):
 
     user_id = json_data.get("user_id")
     game_code = json_data.get("game_code")
+    password = json_data.get("password")
 
     if not user_id or not game_code:
         return JsonResponse({"error": "Invalid or missing user_id/game_code"}, status=400)
+
+    cursor.execute("SELECT password FROM Games WHERE gameCode = %s", (game_code,))
+    db_pass = cursor.fetchone()
+    if db_pass:
+        if db_pass[0] != password:
+            return JsonResponse({"error": "Incorrect password"}, status=400)
 
 
     # verify that user id is valid
@@ -369,7 +386,6 @@ def join_game(request):
     # add user to GameParticipants with default values
     frequency = game[3]
     distance = game[4]
-            
     try:
         cursor.execute("""
             INSERT INTO GameParticipants 
@@ -492,11 +508,11 @@ def last_upload(request):
     if not user:
         return HttpResponse(status=400)
 
-    # verify that game code is valid + fetch game details
+    # verify that game code is valid + fetch start date for game
     game_code = request.GET.get("game_code")
-    cursor.execute("SELECT isActive FROM Games WHERE gameCode = %s", (game_code,))
-    game = cursor.fetchone()
-    if not game:
+    cursor.execute("SELECT startDate FROM Games WHERE gameCode = %s", (game_code,))
+    startDate = cursor.fetchone()
+    if not startDate:
         return HttpResponse(status=404)
 
     cursor.execute("SELECT timestamp FROM Activities WHERE gameCode = %s AND userId = %s ORDER BY timestamp DESC LIMIT 1", (game_code, user_id))
@@ -505,8 +521,13 @@ def last_upload(request):
         timestamp = timestamp_result[0]  # Extract the timestamp from the tuple
         return JsonResponse({"timestamp": timestamp})
     else:
-        return JsonResponse({"timestamp": None})  # Return None if no timestamp found
-
+        startDate = startDate[0]
+        startDate = datetime.combine(startDate, datetime.min.time())  # Set time to 00:00:00
+        time_component = timedelta(hours=0, minutes=0, seconds=0, milliseconds=0)
+        full_timestamp = startDate + time_component
+        # Format the datetime object to the desired ISO 8601 string with milliseconds
+        timestamp_str = full_timestamp.strftime("%Y-%m-%dT%H:%M:%S.%f")[:-3]  # Remove extra microsecond digits
+        return JsonResponse({"timestamp": timestamp_str})  # Return game start date if no timestamp is found
 
 @csrf_exempt
 def goal_status(request):
@@ -540,7 +561,10 @@ def goal_status(request):
     cursor.execute("SELECT * FROM GameParticipants WHERE gameCode = %s AND userId = %s", (game_code, user_id))
     goal = cursor.fetchone()
 
-    weekly_distance = game[4] / game[5]
+    if game[4] and game[5]:
+        weekly_distance = game[4] / game[5]
+    else:
+        weekly_distance = None
 
     return JsonResponse({
         "totalExpectedDistance": game[4],
@@ -595,6 +619,47 @@ def bet_details(request):
     ]
 
     return JsonResponse({"bet_details": response_data})
+
+@csrf_exempt
+def personal_bet_details(request):
+    """
+    Shows current status for personal bets in a game.
+    Request must contain game_code and user_id.
+
+    Response format:
+    {
+        bet_details: {
+            "balance": float,
+            "amountGained": float,
+            "amountLost": float
+        }
+    }
+    """
+    if request.method != 'GET':
+        return HttpResponse(status=404)
+
+    cursor = connection.cursor()
+    game_code = request.GET.get("game_code")
+
+    if not game_code:
+        return HttpResponse(status=400)
+
+    user_id = request.GET.get("user_id")
+
+    cursor.execute("SELECT balance, amountGained, amountLost FROM GameParticipants WHERE gameCode = %s AND userId = %s", (game_code, user_id))
+    participants = cursor.fetchone()
+
+    cursor.execute("SELECT betAmount FROM Games WHERE gameCode = %s", (game_code,))
+    betAmt = cursor.fetchone()
+
+    response_data = { 
+            "initialBet": float(betAmt[0]),         
+            "balance": float(participants[0]),
+            "amountGained": float(participants[1]),
+            "amountLost": float(participants[2])
+        }
+
+    return JsonResponse(response_data)
 
 
 @csrf_exempt
