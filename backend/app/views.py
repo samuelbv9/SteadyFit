@@ -334,8 +334,13 @@ def create_game(request):
         lat = 0.0
         lon = 0.0
     else:
-        lat = round(float(json_data.get("latitude")), 3)
-        lon = round(float(json_data.get("longitude")), 3)
+        lat = json_data.get("latitude")
+        lon = json_data.get("latitude")
+        if not lat or not lon:
+            return JsonResponse({"error": "Missing latitude or longitude. Required for swim and strength training."}, status=400)
+
+        lat = round(float(lat), 3)
+        lon = round(float(lon), 3)
 
     cursor.execute("""INSERT INTO GameParticipants
                    (gameCode, userId, weekDistanceGoal, weekFrequencyGoal, latitude, longitudee) 
@@ -399,8 +404,13 @@ def join_game(request):
         lat = 0.0
         lon = 0.0
     else:
-        lat = round(float(json_data.get("latitude")), 3)
-        lon = round(float(json_data.get("longitude")), 3)
+        lat = json_data.get("latitude")
+        lon = json_data.get("latitude")
+        if not lat or not lon:
+            return JsonResponse({"error": "Missing latitude or longitude. Required for swim and strength training."}, status=400)
+
+        lat = round(float(lat), 3)
+        lon = round(float(lon), 3)
 
     # add user to GameParticipants with default values
     frequency = game[3]
