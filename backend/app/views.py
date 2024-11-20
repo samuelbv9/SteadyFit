@@ -290,6 +290,7 @@ def create_game(request):
     frequency, distance, duration, adaptive_goals, start_date, password,
     latitude, longitude
 
+    latitude and longitude must not be null if exercise_type is strengthTraining or swimming
     frequncy, distance, password may be null
 
     Response format:
@@ -329,8 +330,13 @@ def create_game(request):
                     duration, adaptive_goals, start_date, password))
 
     # Set current user as player of this game
-    lat = round(float(json_data.get("latitude")), 3)
-    lon = round(float(json_data.get("longitude")), 3)
+    if exercise_type != "strengthTraining" and exercise_type != "swimming":
+        lat = 0.0
+        lon = 0.0
+    else:
+        lat = round(float(json_data.get("latitude")), 3)
+        lon = round(float(json_data.get("longitude")), 3)
+
     cursor.execute("""INSERT INTO GameParticipants
                    (gameCode, userId, weekDistanceGoal, weekFrequencyGoal, latitude, longitudee) 
                    VALUES (%s, %s, %s, %s, %s, %s)""",
@@ -348,6 +354,7 @@ def join_game(request):
     Adds a user to a game with a valid game code.
 
     Request must contain: user ID, game code, password (password may be null), latitude, longitude
+    latitude and longitude must not be null if the game's exercise type is strengthTraining or swimming
 
     Response format:
     {
@@ -365,8 +372,6 @@ def join_game(request):
     user_id = json_data.get("user_id")
     game_code = json_data.get("game_code")
     password = json_data.get("password")
-    lat = round(float(json_data.get("latitude")), 3)
-    lon = round(float(json_data.get("longitude")), 3)
 
     if not user_id or not game_code:
         return JsonResponse({"error": "Invalid or missing user_id/game_code"}, status=400)
@@ -389,6 +394,13 @@ def join_game(request):
     game = cursor.fetchone()
     if not game:
         return HttpResponse(status=404)
+    
+    if game[2] != "strengthTraining" and game[2] != "swimming":
+        lat = 0.0
+        lon = 0.0
+    else:
+        lat = round(float(json_data.get("latitude")), 3)
+        lon = round(float(json_data.get("longitude")), 3)
 
     # add user to GameParticipants with default values
     frequency = game[3]
