@@ -5,5 +5,7 @@ class AppConfig(AppConfig):
     name = "app"  
 
     def ready(self):
+        print("starting job")
+
         from .scheduler.updater import schedule_jobs
         schedule_jobs()

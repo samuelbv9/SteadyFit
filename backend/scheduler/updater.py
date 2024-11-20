@@ -24,3 +24,4 @@ def schedule_jobs():
     scheduler = BackgoundScheduler()
     scheduler.add_job(weekly_update, "interval", minutes = 2, id = "update", replace_existing=True)
     scheduler.start()
+    print(scheduler.get_jobs())
