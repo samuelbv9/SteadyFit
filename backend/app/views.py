@@ -479,15 +479,15 @@ def add_workout(request):
     
     # verify location
     if activity_type == "swimming" or activity_type == "strengthTraining":
-        request_lat = json_data.get("latitude")
-        request_lon = json_data.get("longitude")
+        request_lat = round(float(json_data.get("latitude")), 3)
+        request_lon = round(float(json_data.get("longitude")), 3)
 
         cursor.execute("""SELECT latitude, longitude FROM GameParticipants
                        WHERE gameCode = %s AND userId = %s
                        """, (game_code, user_id))
         game_participants_loc = cursor.fetchone()
-        game_lat = game_participants_loc[0]
-        game_lon = game_participants_loc[1]
+        game_lat = round(float(game_participants_loc[0]), 3)
+        game_lon = round(float(game_participants_loc[1]), 3)
 
         if request_lat != game_lat or request_lon != game_lon:
             return JsonResponse({"error": "Incorrect latitude or longitude for workout."}, status=400)
