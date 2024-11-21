@@ -45,8 +45,13 @@ struct HomeView: View {
                      await GamesStore.shared.getActiveGames(userId: Auth.auth().currentUser?.uid ?? "0")
                 }
             }
+            .navigationBarBackButtonHidden(true)
+        }
+        .refreshable {
+            await GamesStore.shared.getActiveGames(userId: Auth.auth().currentUser?.uid ?? "0")
         }
     }
+    
 }
 
 #Preview {
