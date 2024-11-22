@@ -245,4 +245,7 @@ final class GamesStore: ObservableObject {
            }.resume()
        }
    }
+    func postFitnessSurvey(_ data: FitnessSurveyData) {
+        print(data)
+    }
 }
