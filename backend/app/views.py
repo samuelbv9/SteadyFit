@@ -803,8 +803,8 @@ def weekly_update():
     }
 }
     # get the current date
-    current_date = datetime.now().date()
-    # current_date = date(2024, 12, 1)
+    # current_date = datetime.now().date()
+    current_date = date(2024, 12, 1)
     # current_date = date
     result = []
     
