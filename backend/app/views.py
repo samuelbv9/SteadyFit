@@ -146,16 +146,17 @@ def past_games(request):
     games = cursor.fetchall()
 
     result = []
-    for game in games:
-        game_code, exercise_type, duration, bet_amount, start_date = game
-        time_completed = time_ago(start_date)
-        result.append({
-            "gameCode": game_code,
-            "exerciseType": exercise_type,
-            "duration": duration,
-            "betAmount": float(bet_amount),
-            "completed": time_completed
-        })
+    if games is not None: 
+        for game in games:
+            game_code, exercise_type, duration, bet_amount, start_date = game
+            time_completed = time_ago(start_date)
+            result.append({
+                "gameCode": game_code,
+                "exerciseType": exercise_type,
+                "duration": duration,
+                "betAmount": float(bet_amount),
+                "completed": time_completed
+            })
 
     return JsonResponse({"past_games": result}) # listed starting with most recently finished
 
