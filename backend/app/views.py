@@ -133,6 +133,7 @@ def past_games(request):
     if not user_id:
         return JsonResponse(status=400)
 
+    weekly_update()
     cursor = connection.cursor()
     query = '''
         SELECT G.gameCode, G.exerciseType, G.duration, G.betAmount, G.startDate
@@ -183,6 +184,8 @@ def active_games(request):
     """
     if request.method != 'GET':
         return HttpResponse(status=404)
+
+    weekly_update()
 
     cursor = connection.cursor()
 
@@ -260,11 +263,12 @@ def game_details(request):
     if request.method != 'GET':
         return HttpResponse(status=404)
 
-    cursor = connection.cursor()
     game_code = request.GET.get("game_code")
     if not game_code:
         return HttpResponse(status=400)
 
+    weekly_update()
+    cursor = connection.cursor()
     cursor.execute("SELECT * FROM Games WHERE gameCode = %s", (game_code,))
     game = cursor.fetchone()
     if not game:
@@ -551,6 +555,8 @@ def goal_status(request):
     if request.method != 'GET':
         return HttpResponse(status=404)
 
+    weekly_update()
+
     cursor = connection.cursor()
     user_id = request.GET.get("user_id")
     game_code = request.GET.get("game_code")
@@ -600,11 +606,14 @@ def bet_details(request):
     if request.method != 'GET':
         return HttpResponse(status=404)
 
+    weekly_update()
+
     cursor = connection.cursor()
     game_code = request.GET.get("game_code")
 
     if not game_code:
         return HttpResponse(status=400)
+    
 
     cursor.execute("SELECT userId, balance, amountGained, amountLost FROM GameParticipants WHERE gameCode = %s", (game_code,))
     participants = cursor.fetchall()
@@ -638,7 +647,6 @@ def personal_bet_details(request):
     if request.method != 'GET':
         return HttpResponse(status=404)
 
-    cursor = connection.cursor()
     game_code = request.GET.get("game_code")
 
     if not game_code:
@@ -646,6 +654,9 @@ def personal_bet_details(request):
 
     user_id = request.GET.get("user_id")
 
+    weekly_update()
+
+    cursor = connection.cursor()
     cursor.execute("SELECT balance, amountGained, amountLost FROM GameParticipants WHERE gameCode = %s AND userId = %s", (game_code, user_id))
     participants = cursor.fetchone()
 
@@ -734,11 +745,11 @@ import os
 from django.conf import settings
 
 
-def update_date(request):
-    test_date = date(2024, 12, 1)
-    # test_date += timedelta(days=1)
-    r = weekly_update(test_date)
-    return JsonResponse(r)  
+# def update_date(request):
+#     test_date = date(2024, 12, 1)
+#     # test_date += timedelta(days=1)
+#     r = weekly_update(test_date)
+#     return JsonResponse(r)  
 
 
 def weekly_update():
@@ -813,7 +824,7 @@ def weekly_update():
         # if a week has passed, do updates
         if weeks_elapsed > last_updated or True == True:
             # change game's last updated week # to current week #
-            new_last_updated = last_updated + 1
+            new_last_updated = weeks_elapsed
             query = '''
                     UPDATE Games
                     SET lastUpdated = %s
@@ -987,14 +998,3 @@ def weekly_update():
 
     return ({"result": result}) 
 
-    # scheduler = BackgroundScheduler()
-
-    # # schedule to run at the end of everyday
-    # scheduler.add_job(job, 'interval', days=1, start_date='2024-11-06 23:59:00')
-    # scheduler.start()
-
-    # try:
-    #     while True:
-    #         time.sleep(60)  # Sleep to keep the scheduler running
-    # except (KeyboardInterrupt, SystemExit):
-    #     scheduler.shutdown()
