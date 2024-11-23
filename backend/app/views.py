@@ -753,7 +753,7 @@ def update_date(request):
     return JsonResponse(r)  
 
 
-def weekly_update(date):
+def weekly_update():
     challenges = {
     "running": {
         "file": "running_challenge.csv",
