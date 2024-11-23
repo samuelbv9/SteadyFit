@@ -455,19 +455,19 @@ def add_workout(request):
 
     current_timestamp = timezone.now()
 
-    cursor.execute("UPDATE GameParticipants \
-                   SET weekDistance = weekDistance + %s, \
-                   weekFrequency = weekFrequency + 1, \
-                   totalDistance = totalDistance + %s, \
-                   totalFrequency = totalFrequency + 1 \
-                   WHERE gameCode = %s AND userId = %s;",
-                   (distance, distance, game_code, user_id))
-
     # verify activity type is the same as game_type
     if activity_type == exerciseType[0]:
         cursor.execute("INSERT INTO Activities (gameCode, userId, activity, distance, duration, timestamp) \
                         VALUES (%s, %s, %s, %s, %s, %s)",
                         (game_code, user_id, activity_type, distance, duration, current_timestamp))
+                        
+        cursor.execute("UPDATE GameParticipants \
+                SET weekDistance = weekDistance + %s, \
+                weekFrequency = weekFrequency + 1, \
+                totalDistance = totalDistance + %s, \
+                totalFrequency = totalFrequency + 1 \
+                WHERE gameCode = %s AND userId = %s;",
+                (distance, distance, game_code, user_id))
 
         return JsonResponse({
             "activity_type": activity_type,
