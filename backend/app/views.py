@@ -440,6 +440,7 @@ def add_workout(request):
         ]
     )
 
+    weekly_update()
     # verify that user id is valid
     cursor.execute("SELECT * FROM Users WHERE userId = %s", (user_id,))
     user = cursor.fetchone()
@@ -746,11 +747,11 @@ import os
 from django.conf import settings
 
 
-def update_date(request):
-    test_date = date(2024, 12, 1)
-    # test_date += timedelta(days=1)
-    r = weekly_update(test_date)
-    return JsonResponse(r)  
+# def update_date(request):
+#     test_date = date(2024, 12, 1)
+#     # test_date += timedelta(days=1)
+#     r = weekly_update(test_date)
+#     return JsonResponse(r)  
 
 
 def weekly_update():
@@ -802,8 +803,8 @@ def weekly_update():
     }
 }
     # get the current date
-    # current_date = datetime.now().date()
-    current_date = date(2024, 12, 1)
+    current_date = datetime.now().date()
+    # current_date = date(2024, 12, 1)
     # current_date = date
     result = []
     
