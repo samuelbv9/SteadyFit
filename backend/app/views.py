@@ -94,7 +94,7 @@ def user_details(request):
 
 def time_ago(date):
     current_date = datetime.now().date()
-    diff = now - date
+    diff = current_date - date
     if diff.days >= 365:
         return f"{diff.days // 365} years ago"
     elif diff.days >= 1:
