@@ -460,7 +460,7 @@ def add_workout(request):
         cursor.execute("INSERT INTO Activities (gameCode, userId, activity, distance, duration, timestamp) \
                         VALUES (%s, %s, %s, %s, %s, %s)",
                         (game_code, user_id, activity_type, distance, duration, current_timestamp))
-                        
+
         cursor.execute("UPDATE GameParticipants \
                 SET weekDistance = weekDistance + %s, \
                 weekFrequency = weekFrequency + 1, \
@@ -803,8 +803,8 @@ def weekly_update():
     }
 }
     # get the current date
-    # current_date = datetime.now().date()
-    current_date = date(2024, 12, 1)
+    current_date = datetime.now().date()
+    # current_date = date(2024, 12, 1)
     # current_date = date
     result = []
     
