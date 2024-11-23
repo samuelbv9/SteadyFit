@@ -14,7 +14,8 @@ CREATE TABLE Games (
     adaptiveGoals BOOLEAN NOT NULL,
     startDate     DATE NOT NULL,
     lastUpdated   INT NOT NULL DEFAULT 0,
-    isActive      BOOLEAN DEFAULT TRUE
+    isActive      BOOLEAN DEFAULT TRUE,
+    password      VARCHAR(25) DEFAULT NULL
 );
 
 CREATE TABLE GameParticipants (

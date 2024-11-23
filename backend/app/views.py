@@ -92,9 +92,9 @@ def user_details(request):
                         "name": user_info[2]
                     })
 
-def time_ago(time):
-    now = timezone.now()
-    diff = now - time
+def time_ago(date):
+    current_date = datetime.now().date()
+    diff = current_date - date
     if diff.days >= 365:
         return f"{diff.days // 365} years ago"
     elif diff.days >= 1:
@@ -133,6 +133,7 @@ def past_games(request):
     if not user_id:
         return JsonResponse(status=400)
 
+    weekly_update()
     cursor = connection.cursor()
     query = '''
         SELECT G.gameCode, G.exerciseType, G.duration, G.betAmount, G.startDate
@@ -145,16 +146,17 @@ def past_games(request):
     games = cursor.fetchall()
 
     result = []
-    for game in games:
-        game_code, exercise_type, duration, bet_amount, start_date = game
-        time_completed = time_ago(start_date)
-        result.append({
-            "gameCode": game_code,
-            "exerciseType": exercise_type,
-            "duration": duration,
-            "betAmount": float(bet_amount),
-            "completed": time_completed
-        })
+    if games is not None: 
+        for game in games:
+            game_code, exercise_type, duration, bet_amount, start_date = game
+            time_completed = time_ago(start_date)
+            result.append({
+                "gameCode": game_code,
+                "exerciseType": exercise_type,
+                "duration": duration,
+                "betAmount": float(bet_amount),
+                "completed": time_completed
+            })
 
     return JsonResponse({"past_games": result}) # listed starting with most recently finished
 
@@ -183,6 +185,8 @@ def active_games(request):
     """
     if request.method != 'GET':
         return HttpResponse(status=404)
+
+    weekly_update()
 
     cursor = connection.cursor()
 
@@ -260,11 +264,12 @@ def game_details(request):
     if request.method != 'GET':
         return HttpResponse(status=404)
 
-    cursor = connection.cursor()
     game_code = request.GET.get("game_code")
     if not game_code:
         return HttpResponse(status=400)
 
+    weekly_update()
+    cursor = connection.cursor()
     cursor.execute("SELECT * FROM Games WHERE gameCode = %s", (game_code,))
     game = cursor.fetchone()
     if not game:
@@ -425,7 +430,6 @@ def add_workout(request):
     if request.method != 'POST':
         return HttpResponse(status=404)
 
-    cursor = connection.cursor()
     json_data = json.loads(request.body)
 
     user_id, game_code, activity_type, distance, duration = (
@@ -434,6 +438,9 @@ def add_workout(request):
             "distance", "duration"
         ]
     )
+
+    weekly_update()
+    cursor = connection.cursor()
 
     # verify that user id is valid
     cursor.execute("SELECT * FROM Users WHERE userId = %s", (user_id,))
@@ -449,19 +456,19 @@ def add_workout(request):
 
     current_timestamp = timezone.now()
 
-    cursor.execute("UPDATE GameParticipants \
-                   SET weekDistance = weekDistance + %s, \
-                   weekFrequency = weekFrequency + 1, \
-                   totalDistance = totalDistance + %s, \
-                   totalFrequency = totalFrequency + 1 \
-                   WHERE gameCode = %s AND userId = %s;",
-                   (distance, distance, game_code, user_id))
-
     # verify activity type is the same as game_type
     if activity_type == exerciseType[0]:
         cursor.execute("INSERT INTO Activities (gameCode, userId, activity, distance, duration, timestamp) \
                         VALUES (%s, %s, %s, %s, %s, %s)",
                         (game_code, user_id, activity_type, distance, duration, current_timestamp))
+
+        cursor.execute("UPDATE GameParticipants \
+                SET weekDistance = weekDistance + %s, \
+                weekFrequency = weekFrequency + 1, \
+                totalDistance = totalDistance + %s, \
+                totalFrequency = totalFrequency + 1 \
+                WHERE gameCode = %s AND userId = %s;",
+                (distance, distance, game_code, user_id))
 
         return JsonResponse({
             "activity_type": activity_type,
@@ -551,6 +558,8 @@ def goal_status(request):
     if request.method != 'GET':
         return HttpResponse(status=404)
 
+    weekly_update()
+
     cursor = connection.cursor()
     user_id = request.GET.get("user_id")
     game_code = request.GET.get("game_code")
@@ -600,11 +609,14 @@ def bet_details(request):
     if request.method != 'GET':
         return HttpResponse(status=404)
 
+    weekly_update()
+
     cursor = connection.cursor()
     game_code = request.GET.get("game_code")
 
     if not game_code:
         return HttpResponse(status=400)
+    
 
     cursor.execute("SELECT userId, balance, amountGained, amountLost FROM GameParticipants WHERE gameCode = %s", (game_code,))
     participants = cursor.fetchall()
@@ -638,7 +650,6 @@ def personal_bet_details(request):
     if request.method != 'GET':
         return HttpResponse(status=404)
 
-    cursor = connection.cursor()
     game_code = request.GET.get("game_code")
 
     if not game_code:
@@ -646,6 +657,8 @@ def personal_bet_details(request):
 
     user_id = request.GET.get("user_id")
 
+    weekly_update()
+    cursor = connection.cursor()
     cursor.execute("SELECT balance, amountGained, amountLost FROM GameParticipants WHERE gameCode = %s AND userId = %s", (game_code, user_id))
     participants = cursor.fetchone()
 
@@ -734,14 +747,14 @@ import os
 from django.conf import settings
 
 
-def update_date(request):
-    test_date = date(2024, 12, 1)
-    # test_date += timedelta(days=1)
-    r = weekly_update(test_date)
-    return JsonResponse(r)  
+# def update_date(request):
+#     test_date = date(2024, 12, 1)
+#     # test_date += timedelta(days=1)
+#     r = weekly_update(test_date)
+#     return JsonResponse(r)  
 
 
-def weekly_update(date):
+def weekly_update():
     challenges = {
     "running": {
         "file": "running_challenge.csv",
@@ -790,8 +803,9 @@ def weekly_update(date):
     }
 }
     # get the current date
-    # current_date = datetime.now().date()
-    current_date = date
+    current_date = datetime.now().date()
+    # current_date = date(2024, 12, 1)
+    # current_date = date
     result = []
     
     # get all active games
@@ -813,7 +827,7 @@ def weekly_update(date):
         # if a week has passed, do updates
         if weeks_elapsed > last_updated:
             # change game's last updated week # to current week #
-            new_last_updated = last_updated + 1
+            new_last_updated = weeks_elapsed
             query = '''
                     UPDATE Games
                     SET lastUpdated = %s
@@ -854,6 +868,8 @@ def weekly_update(date):
                 failed_freq = False
 
                 if week_distance is not None and week_distance_goal is not None: 
+                    if week_freq_goal is not None:
+                        week_distance_goal = week_distance_goal * week_freq_goal
                     if week_distance < week_distance_goal: 
                         failed_distance = True
 
@@ -985,14 +1001,3 @@ def weekly_update(date):
 
     return ({"result": result}) 
 
-    # scheduler = BackgroundScheduler()
-
-    # # schedule to run at the end of everyday
-    # scheduler.add_job(job, 'interval', days=1, start_date='2024-11-06 23:59:00')
-    # scheduler.start()
-
-    # try:
-    #     while True:
-    #         time.sleep(60)  # Sleep to keep the scheduler running
-    # except (KeyboardInterrupt, SystemExit):
-    #     scheduler.shutdown()
