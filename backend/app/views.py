@@ -753,7 +753,7 @@ def update_date(request):
     return JsonResponse(r)  
 
 
-def weekly_update():
+def weekly_update(date):
     challenges = {
     "running": {
         "file": "running_challenge.csv",
@@ -803,7 +803,8 @@ def weekly_update():
 }
     # get the current date
     # current_date = datetime.now().date()
-    current_date = date(2024, 12, 1)
+    # current_date = date(2024, 12, 1)
+    current_date = date
     result = []
     
     # get all active games
