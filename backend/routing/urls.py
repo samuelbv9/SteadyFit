@@ -32,6 +32,6 @@ urlpatterns = [
     path('add_workout/', views.add_workout, name="add_workout"),
     path('create_user/', views.create_user, name="create_user"),
     path('get_activity_type/', views.get_activity_type, name="get_activity_type"),
-    path('update_date/', views.update_date, name="update_date"),
+    # path('update_date/', views.update_date, name="update_date"),
 
 ]
