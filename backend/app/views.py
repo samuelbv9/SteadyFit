@@ -801,8 +801,8 @@ def weekly_update():
     }
 }
     # get the current date
-    current_date = datetime.now().date()
-    # current_date = date
+    # current_date = datetime.now().date()
+    current_date = date(2024, 12, 1)
     result = []
     
     # get all active games
@@ -822,7 +822,7 @@ def weekly_update():
         weeks_elapsed = (current_date - start_date).days // 7
 
         # if a week has passed, do updates
-        if weeks_elapsed > last_updated or True == True:
+        if weeks_elapsed > last_updated:
             # change game's last updated week # to current week #
             new_last_updated = weeks_elapsed
             query = '''
