@@ -292,8 +292,10 @@ def create_game(request):
     Creates a new game and adds the current user to the game.
 
     Request must contain: user_id, bet_amount, exercise_type,
-    frequency, distance, duration, adaptive_goals, start_date, password
+    frequency, distance, duration, adaptive_goals, start_date, password,
+    latitude, longitude
 
+    latitude and longitude must not be null if exercise_type is strengthTraining or swimming
     frequncy, distance, password may be null
 
     Response format:
@@ -333,8 +335,22 @@ def create_game(request):
                     duration, adaptive_goals, start_date, password))
 
     # Set current user as player of this game
-    cursor.execute("INSERT INTO GameParticipants (gameCode, userId, weekDistanceGoal, weekFrequencyGoal) VALUES (%s, %s, %s, %s)",
-                   (game_code, user_id, distance, frequency))
+    if exercise_type != "strengthTraining" and exercise_type != "swimming":
+        lat = 0.0
+        lon = 0.0
+    else:
+        lat = json_data.get("latitude")
+        lon = json_data.get("latitude")
+        if not lat or not lon:
+            return JsonResponse({"error": "Missing latitude or longitude. Required for swim and strength training."}, status=400)
+
+        lat = round(float(lat), 3)
+        lon = round(float(lon), 3)
+
+    cursor.execute("""INSERT INTO GameParticipants
+                   (gameCode, userId, weekDistanceGoal, weekFrequencyGoal, latitude, longitude) 
+                   VALUES (%s, %s, %s, %s, %s, %s)""",
+                   (game_code, user_id, distance, frequency, lat, lon))
     
     connection.commit()
 
@@ -347,7 +363,8 @@ def join_game(request):
     """
     Adds a user to a game with a valid game code.
 
-    Request must contain: user ID, game code, password (password may be null)
+    Request must contain: user ID, game code, password (password may be null), latitude, longitude
+    latitude and longitude must not be null if the game's exercise type is strengthTraining or swimming
 
     Response format:
     {
@@ -387,6 +404,18 @@ def join_game(request):
     game = cursor.fetchone()
     if not game:
         return HttpResponse(status=404)
+    
+    if game[2] != "strengthTraining" and game[2] != "swimming":
+        lat = 0.0
+        lon = 0.0
+    else:
+        lat = json_data.get("latitude")
+        lon = json_data.get("latitude")
+        if not lat or not lon:
+            return JsonResponse({"error": "Missing latitude or longitude. Required for swim and strength training."}, status=400)
+
+        lat = round(float(lat), 3)
+        lon = round(float(lon), 3)
 
     # add user to GameParticipants with default values
     frequency = game[3]
@@ -394,10 +423,10 @@ def join_game(request):
     try:
         cursor.execute("""
             INSERT INTO GameParticipants 
-            (gameCode, userId, weekDistanceGoal, weekFrequencyGoal) 
-            VALUES (%s, %s, %s, %s)
+            (gameCode, userId, weekDistanceGoal, weekFrequencyGoal, latitude, longitude) 
+            VALUES (%s, %s, %s, %s, %s, %s)
             """, 
-            (game_code, user_id, distance, frequency))
+            (game_code, user_id, distance, frequency, lat, lon))
         connection.commit()
     except Exception as e:
         return JsonResponse({"error": str(e)}, status=500)
@@ -412,7 +441,8 @@ def add_workout(request):
     """
     Adds a completed workout to a user's workout list
 
-    Request must contain: user ID, Game code, Activity Type, Distance, Duration
+    Request must contain: user ID, Game code, Activity Type, Distance, Duration, latitude, longitude
+    latitude, longitude must not be null if activity_type is swimming or strengthTraining
 
     Response format:
     {
@@ -453,6 +483,21 @@ def add_workout(request):
     exerciseType = cursor.fetchone()
     if not exerciseType:
         return HttpResponse(status=400)
+    
+    # verify location
+    if activity_type == "swimming" or activity_type == "strengthTraining":
+        request_lat = round(float(json_data.get("latitude")), 3)
+        request_lon = round(float(json_data.get("longitude")), 3)
+
+        cursor.execute("""SELECT latitude, longitude FROM GameParticipants
+                       WHERE gameCode = %s AND userId = %s
+                       """, (game_code, user_id))
+        game_participants_loc = cursor.fetchone()
+        game_lat = round(float(game_participants_loc[0]), 3)
+        game_lon = round(float(game_participants_loc[1]), 3)
+
+        if request_lat != game_lat or request_lon != game_lon:
+            return JsonResponse({"error": "Incorrect latitude or longitude for workout."}, status=400)
 
     current_timestamp = timezone.now()
 
