@@ -443,24 +443,6 @@ struct RoundedCorner: Shape {
     }
 }
 
-struct CustomCircle: Shape {
-    var trimTo: CGFloat = 1
-    var rotation: Double = 0
-    var lineWidth: CGFloat = 1
-
-    func path(in rect: CGRect) -> Path {
-        var path = Path()
-        path.addArc(center: CGPoint(x: rect.midX, y: rect.midY),
-                    radius: min(rect.width, rect.height) / 2,
-                    startAngle: .degrees(0),
-                    endAngle: .degrees(360),
-                    clockwise: false)
-        return path
-            .trimmedPath(from: 0, to: trimTo)
-            .strokedPath(StrokeStyle(lineWidth: lineWidth, lineCap: .round, lineJoin: .round))
-            .applying(CGAffineTransform(rotationAngle: 90.0))
-    }
-}
 
 extension Color {
     static func customColor(for index: Int) -> Color {
