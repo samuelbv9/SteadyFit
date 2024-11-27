@@ -41,25 +41,45 @@ struct ActiveGameView: View {
             units = "yards"
         }
         
+        var currentF = Double(viewModel.gameData?.currentFrequency ?? 0)
+        var currentD = Double(viewModel.gameData?.currentDistance ?? "0") ?? 0
+        let currentFgoal = Double(viewModel.gameData?.totalFrequency ?? 1)
+        let currentDgoal = Double(viewModel.gameData?.totalDistance ?? "1") ?? 1
+        
+        if (!isStrengthTraining && (currentD > currentDgoal)) {
+            currentD = currentDgoal
+        }
+        else if (isStrengthTraining && (currentF > currentFgoal)) {
+            currentF = currentFgoal
+        }
+        
         let data = [ // Outer Circle
             GraphDataPoint(
                 day: "Mon",
                 hours: isStrengthTraining ? 
-                    Double(viewModel.gameData?.currentFrequency ?? 0) :
-                    Double(viewModel.gameData?.currentDistance ?? "0") ?? 0
+                    currentF :
+                    currentD
             ),
             GraphDataPoint(
                 day: "tues",
                 hours:  isStrengthTraining ?
-                    Double(viewModel.gameData?.totalFrequency ?? 1) :
-                    Double(viewModel.gameData?.totalDistance ?? "1") ?? 1
+                    currentFgoal :
+                    currentDgoal
             )
         ]
         
-        let convertedD: Double = Double(viewModel.gameData?.weekDistance ?? "0") ?? 0.0
+        var convertedD: Double = Double(viewModel.gameData?.weekDistance ?? "0") ?? 0.0
         let convertedDgoal: Double = Double(viewModel.gameData?.weekDistanceGoal ?? "1") ?? 1.0
-        let convertedF:  Double = Double(viewModel.gameData?.weekFrequency ?? 0)
+        var convertedF:  Double = Double(viewModel.gameData?.weekFrequency ?? 0)
         let convertedFgoal:  Double = Double(viewModel.gameData?.weekFrequencyGoal ?? 1)
+        
+        if (!isStrengthTraining && (convertedD > convertedDgoal)) {
+            convertedD = convertedDgoal
+        }
+        else if (isStrengthTraining && (convertedF > convertedFgoal)) {
+            convertedF = convertedFgoal
+        }
+        
         
         let data2 = [ // Inner Circle
             GraphDataPoint(
@@ -104,11 +124,12 @@ struct ActiveGameView: View {
                         .kerning(-0.6) // Decreases letter spacing
                         .padding(.bottom, -16)
                     Text(gameCode)
-                        .font(.custom("Poppins-Bold", size: 30))
+                        .font(.custom("Poppins-Bold", size: 25))
                         .kerning(-0.6) // Decreases letter spacing
                 }
                 .padding(.bottom, -15)
                 .padding(.top, -15)
+                .padding(.leading, 30)
             }
             .padding(.top, 20)
             .padding(.bottom, 10)
