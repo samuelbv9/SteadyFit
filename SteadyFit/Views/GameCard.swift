@@ -7,6 +7,7 @@
 
 import SwiftUI
 import HealthKit
+import CoreLocation
 
 struct GameCard: View {
     let exerciseType: String
@@ -14,6 +15,7 @@ struct GameCard: View {
     let currentProgress: Double
     let healthStore: HealthStore?
     let gameCode : String
+    let locManager = CLLocationManager()
     @State private var navigateToVerificationView = false
     
     // Computed property to determine units based on exercise type
@@ -58,6 +60,7 @@ struct GameCard: View {
     }
     
     var body: some View {
+        
         NavigationLink(destination: LoadingView(), isActive: $navigateToVerificationView) {
             EmptyView()
         }
@@ -65,6 +68,22 @@ struct GameCard: View {
             HStack {
                 Spacer()
                     Button {
+                        // Declare currentLocation as an optional
+                        var currentLocation: CLLocation?
+
+                        // Check location authorization status
+                        if CLLocationManager.authorizationStatus() == .authorizedWhenInUse || CLLocationManager.authorizationStatus() == .authorizedAlways {
+                            currentLocation = locManager.location
+                        } else {
+                            print("Location services not authorized.")
+                            return
+                        }
+
+                        // Safely unwrap currentLocation
+                        guard let location = currentLocation else {
+                            print("Unable to fetch current location.")
+                            return
+                        }
                         if let healthStore = healthStore {
                             //check if we have permmission to use metrics and if not request permission
                             healthStore.requestAuthorization { success in
@@ -94,9 +113,11 @@ struct GameCard: View {
                                                 print("activityType: ", activityType)
                                                 print("duration: ", durationInMinutes)
                                                 print("distance: ", finalDistance ?? "nil")
+                                                print("longitude: ", currentLocation?.coordinate.longitude)
+                                                print("lattitude: ", currentLocation?.coordinate.latitude)
                                                
                                                 //SEND TO DB HERE
-                                                healthStore.sendActivityToDB(gameCode: gameCode, activityType: activityType, durationInMinutes: Int(durationInMinutes), distanceText: finalDistance)
+                                                healthStore.sendActivityToDB(gameCode: gameCode, activityType: activityType, durationInMinutes: Int(durationInMinutes), distanceText: finalDistance, latitude: currentLocation?.coordinate.latitude, longitude: currentLocation?.coordinate.longitude)
                                             }
                                         }
                                     }
@@ -145,6 +166,9 @@ struct GameCard: View {
             RoundedRectangle(cornerRadius: 15)
                 .stroke(Color.deepBlue, lineWidth: 2)
         )
+        .onAppear {
+            locManager.requestWhenInUseAuthorization()
+        }
     }
 }
 

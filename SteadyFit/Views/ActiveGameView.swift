@@ -15,12 +15,15 @@ import Charts
 import Firebase
 import FirebaseAuth
 import HealthKit
+import CoreLocation
 
 struct ActiveGameView: View {
     @StateObject private var viewModel = ActiveGameViewModel()
     let gameCode : String
     let healthStore: HealthStore?
     @State private var navigateToVerificationView = false
+    let locManager = CLLocationManager()
+
 
 //    //initialize instance of class HealthStore
 //    private var healthStore: HealthStore?
@@ -39,6 +42,12 @@ struct ActiveGameView: View {
         var units = "miles"
         if gameData?.exerciseType == "swimming" {
             units = "yards"
+        }
+        
+        var currentLocation: CLLocation!
+
+        if CLLocationManager.authorizationStatus() == .authorizedWhenInUse {
+            currentLocation = locManager.location
         }
         
         let data = [ // Outer Circle
@@ -194,9 +203,11 @@ struct ActiveGameView: View {
                                                     print("activityType: ", activityType)
                                                     print("duration: ", durationInMinutes)
                                                     print("distance: ", finalDistance ?? "nil")
+                                                    print("longitude: ", currentLocation.coordinate.longitude)
+                                                    print("lattitude: ", currentLocation.coordinate.latitude)
                                                    
                                                     //SEND TO DB HERE
-                                                    healthStore.sendActivityToDB(gameCode: gameCode, activityType: activityType, durationInMinutes: Int(durationInMinutes), distanceText: finalDistance)
+                                                    healthStore.sendActivityToDB(gameCode: gameCode, activityType: activityType, durationInMinutes: Int(durationInMinutes), distanceText: finalDistance, latitude: currentLocation.coordinate.latitude, longitude: currentLocation.coordinate.longitude)
                                                 }
                                             }
                                         }
@@ -400,6 +411,7 @@ struct ActiveGameView: View {
         .onAppear {
             viewModel.loadCurrentGame(userId: Auth.auth().currentUser?.uid ?? "", gameCode: gameCode)
             viewModel.loadBetDetails(gameCode: gameCode)
+            locManager.requestWhenInUseAuthorization()
         }
     }
 }
