@@ -296,7 +296,7 @@ def create_game(request):
     frequency, distance, duration, adaptive_goals, start_date, password,
     latitude, longitude
 
-    latitude and longitude must not be null if exercise_type is strengthTraining or swimming
+    latitude and longitude must not be null if exercise_type is strength training or swimming
     frequncy, distance, password may be null
 
     Response format:
@@ -336,7 +336,7 @@ def create_game(request):
                     duration, adaptive_goals, start_date, password))
 
     # Set current user as player of this game
-    if exercise_type != "strengthTraining" and exercise_type != "swimming":
+    if exercise_type != "Strength Training" and exercise_type != "Swimming":
         lat = 0.0
         lon = 0.0
     else:
@@ -365,7 +365,7 @@ def join_game(request):
     Adds a user to a game with a valid game code.
 
     Request must contain: user ID, game code, password (password may be null), latitude, longitude
-    latitude and longitude must not be null if the game's exercise type is strengthTraining or swimming
+    latitude and longitude must not be null if the game's exercise type is strength training or swimming
 
     Response format:
     {
@@ -406,7 +406,7 @@ def join_game(request):
     if not game:
         return HttpResponse(status=404)
 
-    if game[2] != "strengthTraining" and game[2] != "swimming":
+    if game[2] != "Strength Training" and game[2] != "Swimming":
         lat = 0.0
         lon = 0.0
     else:
@@ -443,7 +443,7 @@ def add_workout(request):
     Adds a completed workout to a user's workout list
 
     Request must contain: user ID, Game code, Activity Type, Distance, Duration, latitude, longitude
-    latitude, longitude must not be null if activity_type is swimming or strengthTraining
+    latitude, longitude must not be null if activity_type is swimming or strength training
 
     Response format:
     {
@@ -486,7 +486,7 @@ def add_workout(request):
         return HttpResponse(status=400)
 
     # verify location
-    if activity_type == "swimming" or activity_type == "strengthTraining":
+    if activity_type == "Swimming" or activity_type == "Strength Training":
         request_lat = round(float(json_data.get("latitude")), 3)
         request_lon = round(float(json_data.get("longitude")), 3)
 
@@ -806,7 +806,7 @@ from django.conf import settings
 
 def weekly_update():
     challenges = {
-    "running": {
+    "Running": {
         "file": "running_challenge.csv",
         "name": "Running Challenge",
         "default_vars": {
@@ -815,7 +815,7 @@ def weekly_update():
         "get_challenge_tuple": lambda d, f: (d,), # (distance, frequency) -> challenge_params
         "get_generic_tuple": lambda d: (d, None)  # challenge_params - > (distance, frequency)
     },
-    "walking": {
+    "Walking": {
         "file": "walking_challenge.csv",
         "name": "Walking Challenge",
         "default_vars": {
@@ -824,7 +824,7 @@ def weekly_update():
         "get_challenge_tuple": lambda d, f: (d,),
         "get_generic_tuple": lambda d: (d, None)
     },
-    "swimming": {
+    "Swimming": {
         "file": "swimming_challenge.csv",
         "name": "Swimming Challenge",
         "default_vars": {
@@ -833,7 +833,7 @@ def weekly_update():
         "get_challenge_tuple": lambda d, f: (d,),
         "get_generic_tuple": lambda d: (d, None)
     },
-    "strengthTraining": {
+    "Strength Training": {
         "file": "strength_challenge.csv",
         "name": "Strength Training Challenge",
         "default_vars": {
@@ -842,7 +842,7 @@ def weekly_update():
         "get_challenge_tuple": lambda d, f: (f,),
         "get_generic_tuple": lambda f: (None, f)
     },
-    "cycling": {
+    "Cycling": {
         "file": "cycling_challenge.csv",
         "name": "Cycling Challenge",
         "default_vars": {
