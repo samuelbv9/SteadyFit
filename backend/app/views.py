@@ -341,7 +341,7 @@ def create_game(request):
         lon = 0.0
     else:
         lat = json_data.get("latitude")
-        lon = json_data.get("latitude")
+        lon = json_data.get("longitude")
         if not lat or not lon:
             return JsonResponse({"error": "Missing latitude or longitude. Required for swim and strength training."}, status=400)
 
@@ -411,7 +411,7 @@ def join_game(request):
         lon = 0.0
     else:
         lat = json_data.get("latitude")
-        lon = json_data.get("latitude")
+        lon = json_data.get("longitude")
         if not lat or not lon:
             return JsonResponse({"error": "Missing latitude or longitude. Required for swim and strength training."}, status=400)
 
