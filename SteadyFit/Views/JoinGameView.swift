@@ -70,6 +70,7 @@ struct JoinGamecode: View {
     @Environment(\.presentationMode) var presentationMode
     @State private var userInputGameCode = ""
     @State private var userInputPassword = ""
+    @State private var userInputAddress = ""
     @State private var navigateToHome = false
     var body: some View {
         NavigationLink(destination: HomeView(), isActive: $navigateToHome) {
@@ -87,6 +88,12 @@ struct JoinGamecode: View {
                     .padding(.bottom, 5)
                 Text("Password (Optional)")
                 TextInputField(text: $userInputPassword)
+                VStack(alignment: .leading) {
+                Text("Enter Location Address: ")
+                    TextField("Enter an address", text: $userInputAddress)
+                    .textFieldStyle(RoundedBorderTextFieldStyle())
+                    .padding(.horizontal, 20)
+                }
             }
             Spacer()
             VStack(spacing: 0) {
@@ -105,7 +112,7 @@ struct JoinGamecode: View {
                     }
                     Spacer()
                     Button(action: {
-                        GamesStore.shared.joinGame(userInputGameCode, userInputPassword)
+                        GamesStore.shared.joinGame(userInputGameCode, userInputPassword, userInputAddress)
                         navigateToHome = true               // Trigger navigation
                     }) {
                         HStack {

@@ -152,26 +152,27 @@ final class GamesStore: ObservableObject {
     
     func joinGame(_ gameCode: String, _ password: String, _ address: String) {
         
-        guard !address.isEmpty else {
-            return
+        if address.isEmpty {
+            self.performJoinGameRequest(gameCode: gameCode, password: password, longitude: 0, latitude: 0)
         }
-        
-        geocoder.geocodeAddressString(address) { placemarks, error in
-            if let error = error {
-                print("Error: \(error.localizedDescription)")
-                return
+        else {
+            geocoder.geocodeAddressString(address) { placemarks, error in
+                if let error = error {
+                    print("Error: \(error.localizedDescription)")
+                    return
+                }
+                
+                guard let location = placemarks?.first?.location else {
+                    print("No coordinates found for this address.")
+                    return
+                }
+                
+                let latitude = location.coordinate.latitude
+                let longitude = location.coordinate.longitude
+                print("Lat: \(latitude) Long: \(longitude)")
+                
+                self.performJoinGameRequest(gameCode: gameCode, password: password, longitude: longitude, latitude: latitude)
             }
-            
-            guard let location = placemarks?.first?.location else {
-                print("No coordinates found for this address.")
-                return
-            }
-            
-            let latitude = location.coordinate.latitude
-            let longitude = location.coordinate.longitude
-            print("Lat: \(latitude) Long: \(longitude)")
-            
-            self.performJoinGameRequest(gameCode: gameCode, password: password, longitude: longitude, latitude: latitude)
         }
     }
     
@@ -229,26 +230,27 @@ final class GamesStore: ObservableObject {
     
     
     func postGame(_ game: UserData) {
-        guard !game.address.isEmpty else {
-            return
+        if game.address.isEmpty {
+            self.performPostRequest(game: game, latitude: 0, longitude: 0)
         }
-        
-        geocoder.geocodeAddressString(game.address) { placemarks, error in
-            if let error = error {
-                print("Error: \(error.localizedDescription)")
-                return
+        else {
+            geocoder.geocodeAddressString(game.address) { placemarks, error in
+                if let error = error {
+                    print("Error: \(error.localizedDescription)")
+                    return
+                }
+                
+                guard let location = placemarks?.first?.location else {
+                    print("No coordinates found for this address.")
+                    return
+                }
+                
+                let latitude = location.coordinate.latitude
+                let longitude = location.coordinate.longitude
+                print("Lat: \(latitude) Long: \(longitude)")
+                
+                self.performPostRequest(game: game, latitude: latitude, longitude: longitude)
             }
-            
-            guard let location = placemarks?.first?.location else {
-                print("No coordinates found for this address.")
-                return
-            }
-            
-            let latitude = location.coordinate.latitude
-            let longitude = location.coordinate.longitude
-            print("Lat: \(latitude) Long: \(longitude)")
-            
-            self.performPostRequest(game: game, latitude: latitude, longitude: longitude)
         }
    }
     
