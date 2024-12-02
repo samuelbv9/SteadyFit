@@ -20,6 +20,7 @@ class UserData: ObservableObject {
     @Published var wagerStr: String = ""
     @Published var wagerInt: Int? = 0
     @Published var password: String = ""
+    @Published var address: String = ""
 }
 struct CreateGameView: View {
     @Environment(\.presentationMode) var presentationMode
@@ -141,6 +142,7 @@ struct CreateGameWagerView: View {
     @Environment(\.presentationMode) var presentationMode
     @ObservedObject var userData: UserData
     @State private var navigateToHome = false
+    @State private var address: String = ""
     
     private var perWeek: Double {
         if let wager = userData.wagerInt, let duration = userData.durationInt, duration != 0 {
@@ -196,10 +198,19 @@ struct CreateGameWagerView: View {
                         Text("Password (Optional):")
                         TextInputField(text: $userData.password)
                     }
+                    
+                    VStack(alignment: .leading) {
+                        if userData.selectedExerciseOption == "Swimming" || userData.selectedExerciseOption == "Strength Training" {
+                            Text("Enter Location Address: ")
+                            TextField("Enter an address", text: $userData.address)
+                                .textFieldStyle(RoundedBorderTextFieldStyle())
+                                .padding(.horizontal, 20)
+
+                        }
+                    }
                 }
                 .padding(.top, 20)
                 Spacer()
-                
                 VStack(spacing: 0) {
                     HStack {
                         Button(action: {
@@ -252,4 +263,5 @@ struct CreateGameWagerView: View {
 //    CreateGameFriendsView(userData: UserData())
 //    CreateGameView()
 //    CreateGameFriendsView(userData: UserData())
+    CreateGameWagerView(userData: UserData())
 }
