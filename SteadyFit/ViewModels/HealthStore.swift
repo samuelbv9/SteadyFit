@@ -178,7 +178,7 @@ class HealthStore {
     }
     
     // This function sends a specific workout to the database
-    func sendActivityToDB(gameCode: String, activityType: String, durationInMinutes: Int, distanceText: Double?) {
+    func sendActivityToDB(gameCode: String, activityType: String, durationInMinutes: Int, distanceText: Double?, latitude: Double?, longitude: Double?) {
         // Define the URL for the endpoint
         guard let url = URL(string: "https://52.200.16.208/add_workout/") else {
             print("Invalid URL")
