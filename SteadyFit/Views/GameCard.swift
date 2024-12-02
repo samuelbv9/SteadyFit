@@ -7,6 +7,9 @@
 
 import SwiftUI
 import HealthKit
+import Charts
+import CoreLocation
+
 
 struct GameCard: View {
     let exerciseType: String
@@ -14,6 +17,7 @@ struct GameCard: View {
     let currentProgress: Double
     let healthStore: HealthStore?
     let gameCode : String
+    let locManager = CLLocationManager()
     @State private var navigateToVerificationView = false
     
     // Computed property to determine units based on exercise type
@@ -58,6 +62,17 @@ struct GameCard: View {
     }
     
     var body: some View {
+        let data = [ // Outer Circle
+            GraphDataPoint(
+                day: "Mon",
+                hours: Double(currentProgress)
+            ),
+            GraphDataPoint(
+                day: "tues",
+                hours:  Double(goal)
+            )
+        ]
+        
         NavigationLink(destination: LoadingView(), isActive: $navigateToVerificationView) {
             EmptyView()
         }
@@ -65,6 +80,22 @@ struct GameCard: View {
             HStack {
                 Spacer()
                     Button {
+                        // Declare currentLocation as an optional
+                        var currentLocation: CLLocation?
+
+                        // Check location authorization status
+                        if CLLocationManager.authorizationStatus() == .authorizedWhenInUse || CLLocationManager.authorizationStatus() == .authorizedAlways {
+                            currentLocation = locManager.location
+                        } else {
+                            print("Location services not authorized.")
+                            return
+                        }
+
+                        // Safely unwrap currentLocation
+                        guard let location = currentLocation else {
+                            print("Unable to fetch current location.")
+                            return
+                        }
                         if let healthStore = healthStore {
                             //check if we have permmission to use metrics and if not request permission
                             healthStore.requestAuthorization { success in
@@ -94,9 +125,11 @@ struct GameCard: View {
                                                 print("activityType: ", activityType)
                                                 print("duration: ", durationInMinutes)
                                                 print("distance: ", finalDistance ?? "nil")
+                                                print("longitude: ", currentLocation?.coordinate.longitude)
+                                                print("lattitude: ", currentLocation?.coordinate.latitude)
                                                
                                                 //SEND TO DB HERE
-                                                healthStore.sendActivityToDB(gameCode: gameCode, activityType: activityType, durationInMinutes: Int(durationInMinutes), distanceText: finalDistance)
+                                                healthStore.sendActivityToDB(gameCode: gameCode, activityType: activityType, durationInMinutes: Int(durationInMinutes), distanceText: finalDistance, latitude: currentLocation?.coordinate.latitude, longitude: currentLocation?.coordinate.longitude)
                                             }
                                         }
                                     }
@@ -106,8 +139,18 @@ struct GameCard: View {
                         }
                     } label: {
                         ZStack{
+                            Chart {
+                                ForEach(data.indices, id: \.self) { index in
+                                    let d = data[index]
+                                    SectorMark(angle: .value("Hours", d.hours))
+                                        .foregroundStyle(Color.customColor2(for: index))
+                                }
+                            }
+                            .chartLegend(.hidden)
+                            .frame(width: 80, height: 80)
                             Circle()
                                 .stroke(Color.deepBlue, lineWidth: 2)
+                                .fill(.white)
                                 .frame(width: 57)
                             Text("Upload\n& Verify")
                                 .foregroundColor(.deepBlue)
@@ -119,22 +162,25 @@ struct GameCard: View {
                     .frame(width: 1, height: 82)
                     .foregroundColor(.lightGray)
                 Spacer()
-                VStack(alignment: .leading){
-                    Spacer()
-                    Text(exerciseType)
-                        .font(.custom("Poppins-Bold", size: 15))
-                    Spacer()
-                    Text(exerciseAction + " " + goalText + " " + unit)
-                    Text("Progress: \(currentProgressText) \(unit) / \(goalText) \(unit)")
-                    Spacer()
-                    NavigationLink(destination: ActiveGameView(gameCode: gameCode, healthStore: healthStore)
-                                    .navigationBarBackButtonHidden(true)) {
+                NavigationLink(destination: ActiveGameView(gameCode: gameCode, healthStore: healthStore)
+                                .navigationBarBackButtonHidden(true)) {
+                    VStack(alignment: .leading){
+                        Spacer()
+                        Text(exerciseType)
+                            .font(.custom("Poppins-Bold", size: 15))
+                        Spacer()
+                        Text(exerciseAction + " " + goalText + " " + unit)
+                        Text("Progress: \(currentProgressText) \(unit) / \(goalText) \(unit)")
+                        Spacer()
                         Text("View Game Details >")
                             .foregroundColor(.deepBlue)
                             .font(.custom("Poppins-Bold", size: 10))
+                            .padding(.bottom, 2)
+                        
+                        Spacer()
                     }
-                    Spacer()
                 }
+                    .foregroundColor(.black)
                 Spacer()
             }
         }
@@ -145,6 +191,9 @@ struct GameCard: View {
             RoundedRectangle(cornerRadius: 15)
                 .stroke(Color.deepBlue, lineWidth: 2)
         )
+        .onAppear {
+            locManager.requestWhenInUseAuthorization()
+        }
     }
 }
 

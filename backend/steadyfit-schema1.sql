@@ -14,7 +14,8 @@ CREATE TABLE Games (
     adaptiveGoals BOOLEAN NOT NULL,
     startDate     DATE NOT NULL,
     lastUpdated   INT NOT NULL DEFAULT 0,
-    isActive      BOOLEAN DEFAULT TRUE
+    isActive      BOOLEAN DEFAULT TRUE,
+    password      VARCHAR(25) DEFAULT NULL
 );
 
 CREATE TABLE GameParticipants (
@@ -28,7 +29,9 @@ CREATE TABLE GameParticipants (
     weekDistanceGoal    DECIMAL(10, 2) DEFAULT 0,
     totalFrequency       INTEGER DEFAULT 0,
     weekFrequency        INTEGER DEFAULT 0,
-    weekFrequencyGoal   INTEGER DEFAULT 0
+    weekFrequencyGoal   INTEGER DEFAULT 0,
+    latitude             DECIMAL(10, 4),
+    longitude            DECIMAL(10, 4),
     PRIMARY KEY (gameCode, userId),
     FOREIGN KEY (gameCode) REFERENCES Games(gameCode) ON DELETE CASCADE,
     FOREIGN KEY (userId) REFERENCES Users(userId) ON DELETE CASCADE
@@ -38,7 +41,7 @@ CREATE TABLE Activities (
     gameCode       VARCHAR(20) NOT NULL,
     userId         VARCHAR(255) NOT NULL,
     activity       VARCHAR(20) NOT NULL,
-    distance       DECIMAL(10, 2) DEFAULT 0,
+    distance   ""    DECIMAL(10, 2) DEFAULT 0,
     duration       INTEGER DEFAULT 0,
     timestamp      TIMESTAMP NOT NULL, 
     PRIMARY KEY (gameCode, userId, timestamp),

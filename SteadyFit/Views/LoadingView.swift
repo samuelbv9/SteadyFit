@@ -39,6 +39,7 @@ struct LoadingView: View {
                     .padding(20)
             }
         }
+        .navigationBarBackButtonHidden(true)
     }
 }
 

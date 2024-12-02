@@ -15,12 +15,15 @@ import Charts
 import Firebase
 import FirebaseAuth
 import HealthKit
+import CoreLocation
 
 struct ActiveGameView: View {
     @StateObject private var viewModel = ActiveGameViewModel()
     let gameCode : String
     let healthStore: HealthStore?
     @State private var navigateToVerificationView = false
+    let locManager = CLLocationManager()
+
 
 //    //initialize instance of class HealthStore
 //    private var healthStore: HealthStore?
@@ -41,34 +44,62 @@ struct ActiveGameView: View {
             units = "yards"
         }
         
+        var currentF = Double(viewModel.gameData?.currentFrequency ?? 0)
+        var currentD = Double(viewModel.gameData?.currentDistance ?? "0") ?? 0
+        let currentFgoal = Double(viewModel.gameData?.totalFrequency ?? 1)
+        let currentDgoal = Double(viewModel.gameData?.totalDistance ?? "1") ?? 1
+        if (!isStrengthTraining && (currentD > currentDgoal)) {
+            currentD = currentDgoal
+        }
+        else if (isStrengthTraining && (currentF > currentFgoal)) {
+            currentF = currentFgoal
+        }
+      
+        var currentLocation: CLLocation!  
+        if CLLocationManager.authorizationStatus() == .authorizedWhenInUse {
+            currentLocation = locManager.location
+        }
+        
         let data = [ // Outer Circle
             GraphDataPoint(
                 day: "Mon",
                 hours: isStrengthTraining ? 
-                    Double(viewModel.gameData?.currentFrequency ?? 0) ?? 0 :
-                    Double(viewModel.gameData?.currentDistance ?? "0") ?? 0
+                    currentF :
+                    currentD
             ),
             GraphDataPoint(
                 day: "tues",
                 hours:  isStrengthTraining ?
-                    Double(viewModel.gameData?.totalFrequency ?? 1) ?? 1 :
-                    Double(viewModel.gameData?.totalDistance ?? "1") ?? 1
+                    currentFgoal :
+                    currentDgoal
             )
         ]
         
-        let convertedD: Double = Double(viewModel.gameData?.weekDistance ?? "0") ?? 0.0
-        let convertedDgoal: Double = Double(viewModel.gameData?.weekDistanceGoal ?? "0") ?? 0.0
-        let convertedF:  Double = Double(viewModel.gameData?.weekFrequency ?? 0) ?? 0.0
-        let convertedFgoal:  Double = Double(viewModel.gameData?.weekFrequencyGoal ?? 0) ?? 0.0
+        var convertedD: Double = Double(viewModel.gameData?.weekDistance ?? "0") ?? 0.0
+        let convertedDgoal: Double = Double(viewModel.gameData?.weekDistanceGoal ?? "1") ?? 1.0
+        var convertedF:  Double = Double(viewModel.gameData?.weekFrequency ?? 0)
+        let convertedFgoal:  Double = Double(viewModel.gameData?.weekFrequencyGoal ?? 1)
+        
+        if (!isStrengthTraining && (convertedD > convertedDgoal)) {
+            convertedD = convertedDgoal
+        }
+        else if (isStrengthTraining && (convertedF > convertedFgoal)) {
+            convertedF = convertedFgoal
+        }
+        
         
         let data2 = [ // Inner Circle
             GraphDataPoint(
                 day: "Mon",
-                hours: convertedD
+                hours: isStrengthTraining ?
+                    convertedD :
+                    convertedF
             ),
             GraphDataPoint(
                 day: "tues",
-                hours:  convertedDgoal - convertedD
+                hours:  isStrengthTraining ?
+                    convertedDgoal - convertedD :
+                    convertedFgoal - convertedF
             )
         ]
         
@@ -100,11 +131,12 @@ struct ActiveGameView: View {
                         .kerning(-0.6) // Decreases letter spacing
                         .padding(.bottom, -16)
                     Text(gameCode)
-                        .font(.custom("Poppins-Bold", size: 30))
+                        .font(.custom("Poppins-Bold", size: 25))
                         .kerning(-0.6) // Decreases letter spacing
                 }
                 .padding(.bottom, -15)
                 .padding(.top, -15)
+                .padding(.leading, 30)
             }
             .padding(.top, 20)
             .padding(.bottom, 10)
@@ -130,18 +162,18 @@ struct ActiveGameView: View {
                                 .font(.custom("Poppins-Bold", size: 20))
                                 .kerning(-0.3) // Decreases letter spacing
                                 //.frame(maxWidth: 300, alignment: .leading)
-                                .padding(.leading, 20)
+                                .padding(.leading, 15)
                             Spacer()
                             // ####### HERE #############
                             if (isStrengthTraining) { // Show correct units
                                 Text("\(gameData?.weekFrequencyGoal ?? 0) times") // week distance goal
-                                    .padding(.trailing, 30)
-                                    .font(.custom("Poppins-Regular", size: 20))
+                                    .padding(.trailing, 20)
+                                    .font(.custom("Poppins-Regular", size: 18))
                                     .kerning(-0.3)
                             } else {
                                 Text("\(gameData?.weekDistanceGoal ?? "err") \(units)")
-                                    .padding(.trailing, 30)
-                                    .font(.custom("Poppins-Regular", size: 20))
+                                    .padding(.trailing, 20)
+                                    .font(.custom("Poppins-Regular", size: 18))
                                     .kerning(-0.3)
                             }
                         }
@@ -149,18 +181,18 @@ struct ActiveGameView: View {
                             Text("Current Progress") // This will need to change based on game
                                 .font(.custom("Poppins-Bold", size: 20))
                                 .kerning(-0.3) // Decreases letter spacing
-                                .padding(.leading, 20)
+                                .padding(.leading, 15)
                             Spacer()
                             // ####### HERE #############
                             if (isStrengthTraining) { // Show correct units
                                 Text("\(gameData?.weekFrequency ?? 0) times") // week distance
-                                    .padding(.trailing, 30)
-                                    .font(.custom("Poppins-Regular", size: 20))
+                                    .padding(.trailing, 20)
+                                    .font(.custom("Poppins-Regular", size: 18))
                                     .kerning(-0.3)
                             } else {
                                 Text("\(gameData?.weekDistance ?? "err") \(units)")
-                                    .padding(.trailing, 30)
-                                    .font(.custom("Poppins-Regular", size: 20))
+                                    .padding(.trailing, 20)
+                                    .font(.custom("Poppins-Regular", size: 18))
                                     .kerning(-0.3)
                             }
                         }
@@ -194,9 +226,11 @@ struct ActiveGameView: View {
                                                     print("activityType: ", activityType)
                                                     print("duration: ", durationInMinutes)
                                                     print("distance: ", finalDistance ?? "nil")
+                                                    print("longitude: ", currentLocation.coordinate.longitude)
+                                                    print("lattitude: ", currentLocation.coordinate.latitude)
                                                    
                                                     //SEND TO DB HERE
-                                                    healthStore.sendActivityToDB(gameCode: gameCode, activityType: activityType, durationInMinutes: Int(durationInMinutes), distanceText: finalDistance)
+                                                    healthStore.sendActivityToDB(gameCode: gameCode, activityType: activityType, durationInMinutes: Int(durationInMinutes), distanceText: finalDistance, latitude: currentLocation.coordinate.latitude, longitude: currentLocation.coordinate.longitude)
                                                 }
                                             }
                                         }
@@ -289,8 +323,8 @@ struct ActiveGameView: View {
                                 .frame(width: 50, height: 50)
                             let currentDistance = Double(viewModel.gameData?.currentDistance ?? "0") ?? 0
                             let totalDistance = Double(viewModel.gameData?.totalDistance ?? "1") ?? 1
-                            let currentFrequency = Double(viewModel.gameData?.currentFrequency ?? 0) ?? 0
-                            let totalFrequency = Double(viewModel.gameData?.totalFrequency ?? 0) ?? 0
+                            let currentFrequency = Double(viewModel.gameData?.currentFrequency ?? 0)
+                            let totalFrequency = Double(viewModel.gameData?.totalFrequency ?? 0)
                             let percentage = isStrengthTraining ?
                                 (currentFrequency / totalFrequency) * 100:
                                 (currentDistance / totalDistance) * 100
@@ -348,7 +382,7 @@ struct ActiveGameView: View {
                     // Format the dollar amount to two decimal places with a dollar sign
                     Text("$\(String(format: "%.2f", currentBalance))")
                         .font(.custom("Poppins-Bold", size: 27))
-                        .frame(width: 130, alignment: .leading)
+                        .frame(width: 130, alignment: .center)
                 }
                 
                 Image("chart-line")
@@ -400,6 +434,7 @@ struct ActiveGameView: View {
         .onAppear {
             viewModel.loadCurrentGame(userId: Auth.auth().currentUser?.uid ?? "", gameCode: gameCode)
             viewModel.loadBetDetails(gameCode: gameCode)
+            locManager.requestWhenInUseAuthorization()
         }
     }
 }
@@ -418,24 +453,6 @@ struct RoundedCorner: Shape {
     }
 }
 
-struct CustomCircle: Shape {
-    var trimTo: CGFloat = 1
-    var rotation: Double = 0
-    var lineWidth: CGFloat = 1
-
-    func path(in rect: CGRect) -> Path {
-        var path = Path()
-        path.addArc(center: CGPoint(x: rect.midX, y: rect.midY),
-                    radius: min(rect.width, rect.height) / 2,
-                    startAngle: .degrees(0),
-                    endAngle: .degrees(360),
-                    clockwise: false)
-        return path
-            .trimmedPath(from: 0, to: trimTo)
-            .strokedPath(StrokeStyle(lineWidth: lineWidth, lineCap: .round, lineJoin: .round))
-            .applying(CGAffineTransform(rotationAngle: 90.0))
-    }
-}
 
 extension Color {
     static func customColor(for index: Int) -> Color {
@@ -446,7 +463,7 @@ extension Color {
             return .darkGray
         // Add more cases as needed
         default:
-            return .gray
+            return .darkGray
         }
     }
     
