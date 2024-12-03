@@ -7,6 +7,7 @@
 
 import SwiftUI
 import Combine
+import FirebaseAuth
 
 class UserData: ObservableObject {
     @Published var selectedExerciseOption: String = "Choose an exercise"
@@ -227,8 +228,16 @@ struct CreateGameWagerView: View {
                         }
                         Spacer()
                         Button(action: {
-                            GamesStore.shared.postGame(userData) // Call postGame
-                            navigateToHome = true               // Trigger navigation
+                            GamesStore.shared.postGame(userData) { success in
+                                if success {
+                                    Task {
+                                        await GamesStore.shared.getActiveGames(userId: Auth.auth().currentUser?.uid ?? "0")
+                                        navigateToHome = true // Trigger navigation after refresh
+                                    }
+                                } else {
+                                    // Handle error (e.g., show an alert)
+                                }
+                            }
                         }) {
                             HStack {
                                 Text("Publish")

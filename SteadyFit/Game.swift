@@ -291,19 +291,20 @@ final class GamesStore: ObservableObject {
     }
     
     
-    func postGame(_ game: UserData) {
+    func postGame(_ game: UserData, completion: @escaping (Bool) -> Void) {
         if game.address.isEmpty {
-            self.performPostRequest(game: game, latitude: 0, longitude: 0)
-        }
-        else {
+            self.performPostRequest(game: game, latitude: 0, longitude: 0, completion: completion)
+        } else {
             geocoder.geocodeAddressString(game.address) { placemarks, error in
                 if let error = error {
                     print("Error: \(error.localizedDescription)")
+                    completion(false)
                     return
                 }
                 
                 guard let location = placemarks?.first?.location else {
                     print("No coordinates found for this address.")
+                    completion(false)
                     return
                 }
                 
@@ -311,12 +312,12 @@ final class GamesStore: ObservableObject {
                 let longitude = location.coordinate.longitude
                 print("Lat: \(latitude) Long: \(longitude)")
                 
-                self.performPostRequest(game: game, latitude: latitude, longitude: longitude)
+                self.performPostRequest(game: game, latitude: latitude, longitude: longitude, completion: completion)
             }
         }
-   }
+    }
     
-    func performPostRequest(game: UserData, latitude: Double, longitude: Double) {
+    func performPostRequest(game: UserData, latitude: Double, longitude: Double, completion: @escaping (Bool) -> Void) {
         // Create a Date object (current date)
         let currentDate = Date()
         let dateFormatter = DateFormatter()
@@ -361,14 +362,17 @@ final class GamesStore: ObservableObject {
            URLSession.shared.dataTask(with: request) { data, response, error in
                guard let _ = data, error == nil else {
                    print("postGame: NETWORKING ERROR")
+                   completion(false)
                    return
                }
                if let httpStatus = response as? HTTPURLResponse {
                    if httpStatus.statusCode != 200 {
                        print("postGame: HTTP STATUS: \(httpStatus.statusCode)")
+                       completion(false)
                        return
                    } else {
                        print("Completed")
+                       completion(true)
                    }
                }
            }.resume()
