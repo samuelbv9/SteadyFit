@@ -7,6 +7,7 @@
 //  This is the Profile Screen
 
 import SwiftUI
+import FirebaseAuth
 
 struct ProfileView: View {
     @StateObject var viewModel = ProfileViewModel()
@@ -18,13 +19,24 @@ struct ProfileView: View {
                 HeaderView()
                 Spacer()
                 
-                if let firstGame = gamesStore.activeGames.first {
-                    NavigationLink(destination: GameCompletedView(gameCode: firstGame.gameCode)) {
-                        Text("Previous Game")
+                Text("Your Past Games")
+                    .font(.custom("Poppins-Bold", size: 30))
+                    .padding(.bottom, 15)
+                    .padding(.top, 10)
+                ScrollView {
+                    //PastGameCard(exerciseType: "Running", duration: 5, betSize: 100, gameCode: "123")
+                    ForEach(gamesStore.pastGames, id: \.gameCode) { game in
+                        VStack(alignment: .leading, spacing: 5) {
+                            PastGameCard(
+                                exerciseType: game.exerciseType,
+                                duration: game.duration,
+                                betSize: game.betAmount,
+                                gameCode: game.gameCode
+                            )
+                        }
                     }
-                } else {
-                    Text("No Previous Game Available")
                 }
+                Spacer()
                 
                 LoginRegisterButton(title: "Logout", background: .deepBlue, action: viewModel.logout)
                 NavigationLink("", destination: LaunchView(), isActive: $viewModel.isLoggedOut)
@@ -35,6 +47,11 @@ struct ProfileView: View {
             }
             .frame(width: 350)
             .ignoresSafeArea()
+            .onAppear {
+                Task {
+                    await GamesStore.shared.getPastGames(userId: Auth.auth().currentUser?.uid ?? "0")
+                }
+            }
         }
     }
 }
