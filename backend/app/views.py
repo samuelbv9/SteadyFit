@@ -724,6 +724,95 @@ def personal_bet_details(request):
 
     return JsonResponse(response_data)
 
+@csrf_exempt
+def participants_bet_details(request):
+    """
+    Shows how much each participant owes other participants to allow users to easily settle up bets.
+    Request must contain game_code.
+
+    Response format:
+    {
+        debts: [
+            {
+                "debtor_id": string,
+                "debtor_email": string,
+                "creditor_id": string,
+                "creditor_email": string,
+                "balance": float
+            },
+            ...
+        ]
+    }
+    """
+    if request.method != 'GET':
+        return HttpResponse(status=404)
+
+    weekly_update()
+
+    cursor = connection.cursor()
+    game_code = request.GET.get("game_code")
+
+    if not game_code:
+        return HttpResponse(status=400)
+
+    cursor.execute("SELECT userId, balance FROM GameParticipants WHERE gameCode = %s", (game_code,))
+    participants = cursor.fetchall()
+    participant_data = {row[0]: row[1] for row in participants}
+
+    users = {}
+    for user_id in participant_data:
+        cursor.execute("SELECT email FROM Users WHERE userId = %s", (user_id,))
+        user = cursor.fetchone()
+        users[user_id] = user[0]
+    
+    transactions = settle_debts(participant_data)
+
+    response_data = []
+    for t in transactions:
+        cur_response = {}
+        cur_response["debtor_id"] = t[0]
+        cur_response["debtor_email"] = users[t[0]]
+        cur_response["creditor_id"] = t[1]
+        cur_response["creditor_email"] = users[t[1]]
+        cur_response["balance"] = t[2]
+
+        response_data.append(cur_response)
+    
+    return JsonResponse({"debts": response_data})
+
+
+def settle_debts(balances):
+    # Separate creditors and debtors
+    creditors = [(user, balance) for user, balance in balances.items() if balance > 0]
+    debtors = [(user, balance) for user, balance in balances.items() if balance < 0]
+    
+    # Sort creditors and debtors
+    creditors.sort(key=lambda x: x[1], reverse=True)  # Sort by positive balances descending
+    debtors.sort(key=lambda x: x[1])  # Sort by negative balances ascending
+
+    transactions = []
+
+    # Match creditors to debtors
+    i, j = 0, 0
+    while i < len(creditors) and j < len(debtors):
+        creditor, credit_amount = creditors[i]
+        debtor, debit_amount = debtors[j]
+
+        # Determine the settlement amount
+        settlement = min(credit_amount, -debit_amount)
+        transactions.append((debtor, creditor, settlement))
+
+        # Update balances
+        creditors[i] = (creditor, credit_amount - settlement)
+        debtors[j] = (debtor, debit_amount + settlement)
+
+        # Move to the next creditor or debtor if settled
+        if creditors[i][1] == 0:
+            i += 1
+        if debtors[j][1] == 0:
+            j += 1
+
+    return transactions
 
 @csrf_exempt
 def create_user(request):
