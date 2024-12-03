@@ -277,6 +277,10 @@ def game_details(request):
     if not game:
         return HttpResponse(status=404)
 
+        # Map game details to dictionary
+    game_columns = [desc[0] for desc in cursor.description]
+    game_data = dict(zip(game_columns, game))
+
         # Fetch participants' details along with their email
     cursor.execute("""
         SELECT 
@@ -304,7 +308,7 @@ def game_details(request):
     participants = cursor.fetchall()
 
     response_data = {
-        "gameData": game,
+        "gameData": game_data,
         "participantsData": [
             {
                 "gameCode": participant[0],
