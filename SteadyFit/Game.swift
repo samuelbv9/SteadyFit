@@ -62,17 +62,17 @@ final class GamesStore: ObservableObject {
                       let gameCode = game["gameCode"] as? String {
                        let weekFrequency = game["weekFrequency"] as? Int
                        let weekFrequencyGoal = game["weekFrequencyGoal"] as? Int
-                       let weekDistance = game["weekDistance"] as? Double
-                       let weekDistanceGoal = game["weekDistanceGoal"] as? Double
+                       let weekDistance = game["weekDistance"] as? String ?? "0.00"
+                       let weekDistanceGoal = game["weekDistanceGoal"] as? String ?? "0.00"
                        
                        let tempGame = Game(
                            gameCode: gameCode,
                            betAmount: 0.0,
                            exerciseType: exerciseType,
                            frequency: weekFrequency,
-                           distance: weekDistance,
+                           distance: Double(weekDistance),
                            frequencyGoal: weekFrequencyGoal,
-                           distanceGoal: weekDistanceGoal,
+                           distanceGoal: Double(weekDistanceGoal),
                            duration: 0,
                            adaptiveGoals: nil,
                            startDate: Date()
