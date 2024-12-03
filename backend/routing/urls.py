@@ -32,6 +32,7 @@ urlpatterns = [
     path('add_workout/', views.add_workout, name="add_workout"),
     path('create_user/', views.create_user, name="create_user"),
     path('get_activity_type/', views.get_activity_type, name="get_activity_type"),
+    path('initialize_elo/', views.initialize_elo, name="initialize_elo"),
     # path('update_date/', views.update_date, name="update_date"),
 
 ]
