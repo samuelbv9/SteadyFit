@@ -249,6 +249,7 @@ def game_details(request):
                 {
                         gameCode: string,
                         userId: string,
+                        userEmail: string,
                         amountGained: float,
                         amountLost: float,
                         balance: float, (amountGained - amountLost),
@@ -276,12 +277,50 @@ def game_details(request):
     if not game:
         return HttpResponse(status=404)
 
-    cursor.execute("SELECT * FROM GameParticipants WHERE gameCode = %s", (game_code,))
+        # Fetch participants' details along with their email
+    cursor.execute("""
+        SELECT 
+            gp.gameCode, 
+            gp.userId, 
+            u.email, 
+            gp.amountGained, 
+            gp.amountLost, 
+            gp.amountGained - gp.amountLost AS balance, 
+            gp.totalDistance, 
+            gp.weekDistance, 
+            gp.weekDistanceGoal, 
+            gp.totalFrequency, 
+            gp.weekFrequency, 
+            gp.weekFrequencyGoal 
+        FROM 
+            GameParticipants gp
+        JOIN 
+            Users u 
+        ON 
+            gp.userId = u.userId
+        WHERE 
+            gp.gameCode = %s
+    """, (game_code,))
     participants = cursor.fetchall()
 
     response_data = {
         "gameData": game,
-        "participantsData": participants
+        "participantsData": [
+            {
+                "gameCode": participant[0],
+                "userId": participant[1],
+                "email": participant[2],
+                "amountGained": participant[3],
+                "amountLost": participant[4],
+                "balance": participant[5],
+                "totalDistance": participant[6],
+                "weekDistance": participant[7],
+                "weekDistanceGoal": participant[8],
+                "totalFrequency": participant[9],
+                "weekFrequency": participant[10],
+                "weekFrequencyGoal": participant[11]
+            } for participant in participants
+        ]
     }
 
     return JsonResponse(response_data)
