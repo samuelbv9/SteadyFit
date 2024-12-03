@@ -8,6 +8,7 @@
 import Foundation
 import FirebaseAuth
 import SwiftUI
+import CoreLocation
 
 struct Game {
     var gameCode: String
@@ -34,6 +35,7 @@ struct UserProgress: Decodable {
 }
 
 final class GamesStore: ObservableObject {
+    private let geocoder = CLGeocoder()
     static let shared = GamesStore()
     @Published private(set) var activeGames: [Game] = []
     @Published private(set) var pastGames: [Game] = []
@@ -148,17 +150,52 @@ final class GamesStore: ObservableObject {
         
     }
     
-    func joinGame(_ gameCode: String, _ password: String) {
+    func joinGame(_ gameCode: String, _ password: String, _ address: String) {
+        
+        if address.isEmpty {
+            self.performJoinGameRequest(gameCode: gameCode, password: password, longitude: 0, latitude: 0)
+        }
+        else {
+            geocoder.geocodeAddressString(address) { placemarks, error in
+                if let error = error {
+                    print("Error: \(error.localizedDescription)")
+                    return
+                }
+                
+                guard let location = placemarks?.first?.location else {
+                    print("No coordinates found for this address.")
+                    return
+                }
+                
+                let latitude = location.coordinate.latitude
+                let longitude = location.coordinate.longitude
+                print("Lat: \(latitude) Long: \(longitude)")
+                
+                self.performJoinGameRequest(gameCode: gameCode, password: password, longitude: longitude, latitude: latitude)
+            }
+        }
+    }
+    
+    func performJoinGameRequest(gameCode: String, password: String, longitude: Double, latitude: Double) {
+        let json_latitude: Double? = latitude == 0 ? nil : latitude
+        let json_longitude: Double? = longitude == 0 ? nil : longitude
+        
+        
         var jsonObj: [String: Any?] = [
             "user_id": Auth.auth().currentUser?.uid,
             "game_code": gameCode,
+            "latitude": json_latitude,
+            "longitude": json_longitude
         ]
+        
+        // deal with nil values
+        var filteredJsonObj = jsonObj.compactMapValues { $0 }
                 
         if password != "" {
-            jsonObj["password"] = password
+            filteredJsonObj["password"] = password
         }
             
-        guard let jsonData = try? JSONSerialization.data(withJSONObject: jsonObj) else {
+        guard let jsonData = try? JSONSerialization.data(withJSONObject: filteredJsonObj) else {
            print("joinGame: jsonData serialization error")
            return
        }
@@ -191,13 +228,41 @@ final class GamesStore: ObservableObject {
        }
     }
     
+    
     func postGame(_ game: UserData) {
+        if game.address.isEmpty {
+            self.performPostRequest(game: game, latitude: 0, longitude: 0)
+        }
+        else {
+            geocoder.geocodeAddressString(game.address) { placemarks, error in
+                if let error = error {
+                    print("Error: \(error.localizedDescription)")
+                    return
+                }
+                
+                guard let location = placemarks?.first?.location else {
+                    print("No coordinates found for this address.")
+                    return
+                }
+                
+                let latitude = location.coordinate.latitude
+                let longitude = location.coordinate.longitude
+                print("Lat: \(latitude) Long: \(longitude)")
+                
+                self.performPostRequest(game: game, latitude: latitude, longitude: longitude)
+            }
+        }
+   }
+    
+    func performPostRequest(game: UserData, latitude: Double, longitude: Double) {
         // Create a Date object (current date)
         let currentDate = Date()
         let dateFormatter = DateFormatter()
         dateFormatter.dateFormat = "yyyy-MM-dd"
         let dateString = dateFormatter.string(from: currentDate)
         let password: String? = game.password.isEmpty ? nil : game.password
+        let json_latitude: Double? = latitude == 0 ? nil : latitude
+        let json_longitude: Double? = longitude == 0 ? nil : longitude
         
         let jsonObj: [String: Any?] = [
             "user_id": Auth.auth().currentUser?.uid,
@@ -208,7 +273,9 @@ final class GamesStore: ObservableObject {
             "duration": game.durationInt,
             "adaptive_goals": game.adaptiveGoalsChecked,
             "start_date": dateString,
-            "password" : password
+            "password" : password,
+            "latitude": json_latitude,
+            "longitude": json_longitude
         ]
         // deal with nil values
         let filteredJsonObj = jsonObj.compactMapValues { $0 }
@@ -244,5 +311,8 @@ final class GamesStore: ObservableObject {
                }
            }.resume()
        }
-   }
+    }
+    func postFitnessSurvey(_ data: FitnessSurveyData) {
+        print(data)
+    }
 }
