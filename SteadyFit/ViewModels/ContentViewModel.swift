@@ -13,6 +13,7 @@ import FirebaseAuth
 // Create an ObservableObject that is global
 class ContentViewModel: ObservableObject {
     @Published var currentUserId: String = ""
+    @Published var isSurveyCompleted: Bool = false
     private var handler: AuthStateDidChangeListenerHandle?
     
     // Listen for changes in user and update if change occurs

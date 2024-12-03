@@ -59,12 +59,16 @@ struct OnboardingTitleView: View {
 
 struct OnboardingSurveyView: View {
     @StateObject var fitnessSurveyData = FitnessSurveyData()
+    @State private var navigateToHome = false
     let physicalActivityPerWeekOptions = ["Choose frequency", "0 days", "1-2 days", "3-4 days", "5-6 days", "7 days"]
     let workRelatedActivityOptions = ["Choose option", "Yes, mostly sedentary with little physical activity", "Yes, moderately active (some walking or standing)", "Yes, very active (heavy physical labor)", "No"]
     let transportationRelatedActivityOptions = ["Choose option", "Mostly by car or public transportation", "Often walk or bike", "Mix of walking/biking and car/public transportation"]
     let sedentaryRelatedActivityOptions = ["Choose hours", "Less than 2 hours", "2-4 hours", "4-6 hours", "6-8 hours", "More than 8 hours"]
     let physicalActivityIntensityOptions = ["Choose intensity", "Mostly light (e.g., walking at a casual pace)", "Mostly moderate (e.g., brisk walking, biking)", "Mostly vigorous (e.g., running, heavy lifting)", "N/a"]
     var body: some View {
+        NavigationLink(destination: HomeView(), isActive: $navigateToHome) {
+            EmptyView()
+        }
         ZStack { // Wrap in ZStack to detect taps outside of text fields
             VStack {
                 HeaderView()
@@ -106,7 +110,7 @@ struct OnboardingSurveyView: View {
                         HStack {
                             Button(action: {
                                 GamesStore.shared.postFitnessSurvey(fitnessSurveyData)
-                                // navigateToHome = true
+                                 navigateToHome = true
                                 // Trigger navigation
                             }) {
                                 HStack {

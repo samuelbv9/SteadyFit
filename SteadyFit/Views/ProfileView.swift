@@ -27,8 +27,8 @@ struct ProfileView: View {
                 }
                 
                 LoginRegisterButton(title: "Logout", background: .deepBlue, action: viewModel.logout)
-                //NavigationLink("", destination: LaunchView(), isActive: $viewModel.isLoggedOut)
-                 //     .hidden()
+                NavigationLink("", destination: LaunchView(), isActive: $viewModel.isLoggedOut)
+                      .hidden()
                 
                 Spacer()
                 NavBarView(viewIndex: 2)

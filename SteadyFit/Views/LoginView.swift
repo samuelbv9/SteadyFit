@@ -15,6 +15,7 @@ import SwiftUI
 import FirebaseAuth
 
 struct LoginView: View {
+//    @StateObject var viewModel = LoginViewModel(contentViewModel: ContentViewModel())
     @StateObject var viewModel = LoginViewModel()
     var body: some View {
         NavigationView {
@@ -68,7 +69,12 @@ struct LoginView: View {
                         
                         LoginRegisterButton(title: "Login", background: .deepBlue, action: viewModel.login)
                             .padding()
-                        
+                        NavigationLink(
+                            destination: HomeView(), // Navigate to this view after success
+                            isActive: $viewModel.isLoginSuccessful
+                        ) {
+                            EmptyView() // This link is hidden, it only triggers when registration is successful
+                        }
                         HStack {
                             Text("Don't have an account? ")
                                 .font(.custom("Poppins-Light", size: 12))
