@@ -212,10 +212,10 @@ def active_games(request):
             "gameCode": game_code,
             "exerciseType": exercise_type,
             "duration": duration,
-            "betAmount": float(bet_amount),
+            "betAmount": bet_amount,
             "startDate": start_date,
-            "weekDistance": float(weekDistance),
-            "weekDistanceGoal": float(weekDistanceGoal),
+            "weekDistance": weekDistance,
+            "weekDistanceGoal": weekDistanceGoal,
             "weekFrequency": weekFrequency,
             "weekFrequencyGoal": weekFrequencyGoal
         })
@@ -249,6 +249,7 @@ def game_details(request):
                 {
                         gameCode: string,
                         userId: string,
+                        userEmail: string,
                         amountGained: float,
                         amountLost: float,
                         balance: float, (amountGained - amountLost),
@@ -276,12 +277,54 @@ def game_details(request):
     if not game:
         return HttpResponse(status=404)
 
-    cursor.execute("SELECT * FROM GameParticipants WHERE gameCode = %s", (game_code,))
+        # Map game details to dictionary
+    game_columns = [desc[0] for desc in cursor.description]
+    game_data = dict(zip(game_columns, game))
+
+        # Fetch participants' details along with their email
+    cursor.execute("""
+        SELECT 
+            gp.gameCode, 
+            gp.userId, 
+            u.email, 
+            gp.amountGained, 
+            gp.amountLost, 
+            gp.amountGained - gp.amountLost AS balance, 
+            gp.totalDistance, 
+            gp.weekDistance, 
+            gp.weekDistanceGoal, 
+            gp.totalFrequency, 
+            gp.weekFrequency, 
+            gp.weekFrequencyGoal 
+        FROM 
+            GameParticipants gp
+        JOIN 
+            Users u 
+        ON 
+            gp.userId = u.userId
+        WHERE 
+            gp.gameCode = %s
+    """, (game_code,))
     participants = cursor.fetchall()
 
     response_data = {
-        "gameData": game,
-        "participantsData": participants
+        "gameData": game_data,
+        "participantsData": [
+            {
+                "gameCode": participant[0],
+                "userId": participant[1],
+                "email": participant[2],
+                "amountGained": participant[3],
+                "amountLost": participant[4],
+                "balance": participant[5],
+                "totalDistance": participant[6],
+                "weekDistance": participant[7],
+                "weekDistanceGoal": participant[8],
+                "totalFrequency": participant[9],
+                "weekFrequency": participant[10],
+                "weekFrequencyGoal": participant[11]
+            } for participant in participants
+        ]
     }
 
     return JsonResponse(response_data)
@@ -499,9 +542,9 @@ def add_workout(request):
 
         # Get distance between two points
         allowable_leeway = 200
-        distance = geodesic((request_lat, request_lon), (game_lat, game_lon)).meters
+        distance_away = geodesic((request_lat, request_lon), (game_lat, game_lon)).meters
         # If distance is less than 200 meters away acceptable if not return too far
-        if distance > allowable_leeway:
+        if distance_away > allowable_leeway:
             return JsonResponse({"wrongLocation": "Location too far from the registered game area."})
 
     current_timestamp = timezone.now()
@@ -1014,6 +1057,8 @@ def weekly_update():
             else:
                 split_amount = 0
                 # 187.5 / 4 = 46.875 = 46.88 ------> (46.88 * 4 = 187.52) ------> 187.52 > original split_amount (187.5)
+            if len(losers) == len(participants):
+                weekly_amount = 0
 
             for p in participants:
                 user_id = p[0]
