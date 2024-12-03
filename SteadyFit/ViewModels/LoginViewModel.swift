@@ -11,15 +11,22 @@
 
 import Foundation
 import FirebaseAuth
+import SwiftUICore
 
 class LoginViewModel: ObservableObject {
     // Public vars
     @Published var email = ""
     @Published var password = ""
     @Published var errorMessage = ""
-    
-    init() {}
-    
+    @Published var isLoginSuccessful = false // Track registration success
+  
+//    init() {}
+//    
+//    var contentViewModel: ContentViewModel
+//    init(contentViewModel: ContentViewModel) {
+//        self.contentViewModel = contentViewModel
+//    }
+
     // Logs in user using FirebaseAuth
     func login(){
         guard validate() else {
@@ -33,7 +40,12 @@ class LoginViewModel: ObservableObject {
             }
             else {
                 // LOGIN
+//                self.contentViewModel.isSurveyCompleted = true
                 print("Signed in")
+                // Set registration success
+                  DispatchQueue.main.async {
+                      self.isLoginSuccessful = true
+                  }
             }
         }
     }

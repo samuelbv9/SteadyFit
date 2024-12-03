@@ -62,17 +62,17 @@ final class GamesStore: ObservableObject {
                       let gameCode = game["gameCode"] as? String {
                        let weekFrequency = game["weekFrequency"] as? Int
                        let weekFrequencyGoal = game["weekFrequencyGoal"] as? Int
-                       let weekDistance = game["weekDistance"] as? Double
-                       let weekDistanceGoal = game["weekDistanceGoal"] as? Double
+                       let weekDistance = game["weekDistance"] as? String ?? "0.00"
+                       let weekDistanceGoal = game["weekDistanceGoal"] as? String ?? "0.00"
                        
                        let tempGame = Game(
                            gameCode: gameCode,
                            betAmount: 0.0,
                            exerciseType: exerciseType,
                            frequency: weekFrequency,
-                           distance: weekDistance,
+                           distance: Double(weekDistance),
                            frequencyGoal: weekFrequencyGoal,
-                           distanceGoal: weekDistanceGoal,
+                           distanceGoal: Double(weekDistanceGoal),
                            duration: 0,
                            adaptiveGoals: nil,
                            startDate: Date()
@@ -88,6 +88,68 @@ final class GamesStore: ObservableObject {
                print("Error fetching active games: \(error.localizedDescription)")
            }
        }
+    
+    // USE THE past_games API TO STORE PAST GAMES
+    // DISPLAY THOSE ON THE PROFILE PAGE
+    // Just like it is done for active_game
+//  Response format:
+//    {
+//        "past_games":
+//            [
+//                {
+//                    "gameCode": game_code,
+                //    "exerciseType": exercise_type,
+                //    "duration": duration,
+                //    "betAmount": float(bet_amount),
+                //    "completed": time_completed
+//                }, ...
+//            ]
+//    }
+    
+    // TODO: Figure out "completed" and show it??
+    func getPastGames(userId: String) async {
+        guard let url = URL(string: "https://52.200.16.208/past_games/?user_id=\(userId)") else {
+            return
+        }
+        do {
+            let (data, _) = try await URLSession.shared.data(from: url)
+            let responseDict = try? JSONSerialization.jsonObject(with: data, options: []) as? [String: Any]
+            
+            guard let pastGamesArray = responseDict?["past_games"] as? [[String: Any]] else {
+                return
+            }
+
+            var games: [Game] = []
+
+            for game in pastGamesArray {
+                if let exerciseType = game["exerciseType"] as? String,
+                   let gameCode = game["gameCode"] as? String,
+                   let duration = game["duration"] as? Int,
+                    let betAmount = game["betAmount"] as? Double {
+                    
+                    let tempGame = Game(
+                        gameCode: gameCode,
+                        betAmount: betAmount,
+                        exerciseType: exerciseType,
+                        frequency: 0,
+                        distance: 0,
+                        frequencyGoal: 0,
+                        distanceGoal: 0,
+                        duration: duration,
+                        adaptiveGoals: nil,
+                        startDate: Date()
+                    )
+                    games.append(tempGame)
+                }
+            }
+            // Update UI on main thread
+            DispatchQueue.main.async {
+                self.pastGames = games
+            }
+        } catch {
+            print("Error fetching past games: \(error.localizedDescription)")
+        }
+    }
     
     func getBetBalances(_ gameCode: String) {
         // serial retrievals

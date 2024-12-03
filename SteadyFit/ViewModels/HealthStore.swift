@@ -205,7 +205,11 @@ class HealthStore {
         
         if let distance = distanceText {
             data["distance"] = distance
-
+        }
+        
+        if latitude != nil && longitude != nil {
+            data["latitude"] = latitude
+            data["longitude"] = longitude
         }
                 
         // Convert the data dictionary to JSON

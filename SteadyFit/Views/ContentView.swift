@@ -15,13 +15,11 @@ import FirebaseAuth
 
 struct ContentView: View {
     @StateObject var viewModel = ContentViewModel()
-
     var body: some View {
-        if viewModel.isSignedIn {
+        if viewModel.isSignedIn && viewModel.isSurveyCompleted {
             HomeView()
         } else {
             LaunchView()
-            //LoginView()
         }
     }
             

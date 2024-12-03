@@ -11,6 +11,7 @@ import FirebaseAuth
 
 class ProfileViewModel: ObservableObject {
     @Published var isLoggedOut = false
+    var healthStore: HealthStore?
     func logout() {
         do {
             try Auth.auth().signOut()
@@ -20,5 +21,9 @@ class ProfileViewModel: ObservableObject {
         catch {
             print("Failed to sign out: \(error.localizedDescription)")
         }
+    }
+    
+    init() {
+        healthStore = HealthStore()
     }
 }

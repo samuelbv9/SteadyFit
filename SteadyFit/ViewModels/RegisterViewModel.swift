@@ -17,7 +17,13 @@ class RegisterViewModel: ObservableObject {
     @Published var email = ""
     @Published var password = ""
     @Published var errorMessage = ""
+    @Published var isRegistrationSuccessful = false // Track registration success
     
+    var contentViewModel: ContentViewModel
+    init(contentViewModel: ContentViewModel) {
+        self.contentViewModel = contentViewModel
+    }
+
     // Registers the user using FirebaseAuth
     func register() {
         guard validate() else {
@@ -40,6 +46,12 @@ class RegisterViewModel: ObservableObject {
             
             //SEND UUID and username TO DB
             self.sendUserDataToDatabase(uid: uid, email: self.email)
+            
+            // Set registration success
+              DispatchQueue.main.async {
+                  self.isRegistrationSuccessful = true
+                  self.contentViewModel.isSurveyCompleted = true
+              }
         }
     }
     
