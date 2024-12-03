@@ -1014,6 +1014,8 @@ def weekly_update():
             else:
                 split_amount = 0
                 # 187.5 / 4 = 46.875 = 46.88 ------> (46.88 * 4 = 187.52) ------> 187.52 > original split_amount (187.5)
+            if len(losers) == len(participants):
+                weekly_amount = 0
 
             for p in participants:
                 user_id = p[0]
