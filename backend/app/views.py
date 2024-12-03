@@ -212,10 +212,10 @@ def active_games(request):
             "gameCode": game_code,
             "exerciseType": exercise_type,
             "duration": duration,
-            "betAmount": float(bet_amount),
+            "betAmount": bet_amount,
             "startDate": start_date,
-            "weekDistance": float(weekDistance),
-            "weekDistanceGoal": float(weekDistanceGoal),
+            "weekDistance": weekDistance,
+            "weekDistanceGoal": weekDistanceGoal,
             "weekFrequency": weekFrequency,
             "weekFrequencyGoal": weekFrequencyGoal
         })
