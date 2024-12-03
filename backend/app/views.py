@@ -538,9 +538,9 @@ def add_workout(request):
 
         # Get distance between two points
         allowable_leeway = 200
-        distance = geodesic((request_lat, request_lon), (game_lat, game_lon)).meters
+        distance_away = geodesic((request_lat, request_lon), (game_lat, game_lon)).meters
         # If distance is less than 200 meters away acceptable if not return too far
-        if distance > allowable_leeway:
+        if distance_away > allowable_leeway:
             return JsonResponse({"wrongLocation": "Location too far from the registered game area."})
 
     current_timestamp = timezone.now()
