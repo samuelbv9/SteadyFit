@@ -36,12 +36,12 @@ struct ActiveGameView: View {
         let gameData = viewModel.gameData
         let betData = viewModel.betDetails
         var isStrengthTraining = false
-        if gameData?.exerciseType == "strength training" {
+        if gameData?.exerciseType.lowercased() == "strength training" {
             isStrengthTraining = true
         }
-        var units = "miles"
-        if gameData?.exerciseType == "swimming" {
-            units = "yards"
+        var units = "mi"
+        if gameData?.exerciseType.lowercased() == "swimming" {
+            units = "yds"
         }
         
         var currentF = Double(viewModel.gameData?.currentFrequency ?? 0)
@@ -70,8 +70,8 @@ struct ActiveGameView: View {
             GraphDataPoint(
                 day: "tues",
                 hours:  isStrengthTraining ?
-                    currentFgoal :
-                    currentDgoal
+                    currentFgoal - currentF :
+                    currentDgoal - currentD
             )
         ]
         
@@ -92,14 +92,14 @@ struct ActiveGameView: View {
             GraphDataPoint(
                 day: "Mon",
                 hours: isStrengthTraining ?
-                    convertedD :
-                    convertedF
+                    convertedF :
+                    convertedD
             ),
             GraphDataPoint(
                 day: "tues",
                 hours:  isStrengthTraining ?
-                    convertedDgoal - convertedD :
-                    convertedFgoal - convertedF
+                    convertedFgoal - convertedF :
+                    convertedDgoal - convertedD
             )
         ]
         
@@ -359,7 +359,7 @@ struct ActiveGameView: View {
                         //stats
                         // ####### HERE #############
                         if (isStrengthTraining) {
-                            Text("\(gameData?.weekFrequency ?? 1)/\(gameData?.weekFrequencyGoal ?? 1) units")
+                            Text("\(gameData?.weekFrequency ?? 1)/\(gameData?.weekFrequencyGoal ?? 1) times")
                                 .font(.custom("Poppins-Regular", size: 18))
                                 .frame(width: 183, alignment: .leading)
                         } else {
