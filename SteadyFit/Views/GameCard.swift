@@ -61,6 +61,14 @@ struct GameCard: View {
         String(format: "%.2f", currentProgress)
     }
     
+    // Fixed for circle chart
+    private var fixedCurrentProgress: Double {
+        if currentProgress > goal {
+            return goal
+        }
+        return currentProgress
+    }
+    
     var body: some View {
         let data = [ // Outer Circle
             GraphDataPoint(
@@ -69,7 +77,7 @@ struct GameCard: View {
             ),
             GraphDataPoint(
                 day: "tues",
-                hours:  Double(goal)
+                hours:  Double(goal - fixedCurrentProgress)
             )
         ]
         
