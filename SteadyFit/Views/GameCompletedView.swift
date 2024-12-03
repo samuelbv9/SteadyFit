@@ -186,9 +186,13 @@ struct GameCompletedView: View {
             
             Spacer()
             VStack {
+                Text("Final Gain/Loss By User")
+                    .font(.custom("Poppins-Bold", size: 20))
+                    .padding(.bottom, 2)
                 if let participants = viewModel.gameData?.participantsData {
                     ForEach(participants, id: \.userId) { participant in
-                        Text(participant.email)
+                        Text(participant.email + ": $" + participant.balance)
+                            .font(.custom("Poppins-Regular", size: 15))
                     }
                 }
             }
