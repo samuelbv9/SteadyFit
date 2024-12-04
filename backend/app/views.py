@@ -18,9 +18,7 @@ from .adaptive.quiz import evaluate_quiz
 def goal(request):
     """
     Fetches goal details for the current game
-
     Request must contain: user_id, game_code
-
     Response format:
     {
         "exerciseType": float
@@ -41,6 +39,8 @@ def goal(request):
     if not game_code or not user_id:
         return HttpResponse(status=400)
 
+    weekly_update()
+    
     cursor = connection.cursor()
 
     cursor.execute("SELECT totalDistance, totalFrequency, weekDistanceGoal, weekFrequencyGoal, weekDistance, weekFrequency FROM GameParticipants WHERE gameCode = %s AND userId = %s", (game_code, user_id))
