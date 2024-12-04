@@ -3,13 +3,14 @@ import os
 
 class CaseSensitiveConfigParser(configparser.ConfigParser):
     def optionxform(self, optionstr: str) -> str:
-        return optionstr  # Do not change the case of options
+        # Do not change the case of options
+        return optionstr
 
 def create_default_config():
     """
     Creates a default config.ini file with example settings.
     """
-    config = configparser.ConfigParser()
+    config = CaseSensitiveConfigParser()
 
     # General settings
     config['General'] = {
@@ -74,10 +75,9 @@ def read_quiz_config() -> dict:
     """
     config = CaseSensitiveConfigParser()
 
-    # if not os.path.exists('quiz.ini'):
-    #     print("Quiz configuration file not found. Creating a default quiz.ini...")
-    #     create_default_config()
-    create_default_config()
+    if not os.path.exists('quiz.ini'):
+        print("Quiz configuration file not found. Creating a default quiz.ini...")
+        create_default_config()
 
     config.read('quiz.ini')
 
@@ -124,13 +124,10 @@ def evaluate_quiz(quiz_answers: list[tuple[str, str]]) -> int:
     score = 0
     for q, a in quiz_answers:
         if q not in questions:
-            raise InvalidQuestion(f"Question '{q}' does not exist in 'quiz.ini', these are the questions{questions}")
+            raise InvalidQuestion(f"Question '{q}' does not exist in 'quiz.ini', these are the questions: {questions}")
         if a not in questions[q]:
-            raise InvalidQuestion(f"Answer '{a}' is not valid for question '{q}', these are valid answers {questions[q]}")
+            raise InvalidQuestion(f"Answer '{a}' is not valid for question '{q}', these are valid answers: {questions[q]}")
 
         score += questions[q][a]
 
     return elo + mult * score
-
-
-
