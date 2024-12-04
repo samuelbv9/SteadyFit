@@ -900,7 +900,7 @@ def weekly_update():
 }
     # get the current date
     current_date = datetime.now().date()
-    # current_date = date(2024, 12, 1)
+    # current_date = date(2024, 11, 10)
     # current_date = date
     result = []
 
@@ -964,8 +964,6 @@ def weekly_update():
                 failed_freq = False
 
                 if week_distance is not None and week_distance_goal is not None:
-                    if week_freq_goal is not None:
-                        week_distance_goal = week_distance_goal * week_freq_goal
                     if week_distance < week_distance_goal:
                         failed_distance = True
 
