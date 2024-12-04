@@ -11,8 +11,6 @@ import json
 import random
 import string
 
-from .adaptive.applehealth import InitEloAppleHealth
-from .adaptive.quiz import evaluate_quiz
 
 @csrf_exempt
 def goal(request):
