@@ -120,7 +120,7 @@ def evaluate_quiz(quiz_answers: list[tuple[str, str]]) -> int:
     score = 0
     for q, a in quiz_answers:
         if q not in questions:
-            raise InvalidQuestion(f"Question '{q}' does not exist in 'quiz.ini'")
+            raise InvalidQuestion(f"Question '{q}' does not exist in 'quiz.ini', these are the questions{questions}")
         if a not in questions[q]:
             raise InvalidQuestion(f"Answer '{a}' is not valid for question '{q}'")
 
