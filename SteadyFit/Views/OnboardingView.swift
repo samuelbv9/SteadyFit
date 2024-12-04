@@ -195,7 +195,7 @@ struct OnboardingHealthSetupView: View {
     }
 }
 struct Response: Codable {
-    let ELO: Int
+    let ELO: Double
 }
 private func sendHealthDataToBackend(
     userId: String,
@@ -260,7 +260,8 @@ private func sendHealthDataToBackend(
                                    do {
                                        // Try to decode the response
                                        let responseObject = try JSONDecoder().decode(Response.self, from: data)
-                                       let completion_elo = responseObject.ELO // Store the status
+                                       let completion_elo = Int(responseObject.ELO.rounded()) // Store the status
+                                       
                                        elo = completion_elo
                                        print("Response Status: \(elo)")
                                        
