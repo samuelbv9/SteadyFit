@@ -100,20 +100,21 @@ class HealthKitManager {
 struct OnboardingHealthSetupView: View {
     @State private var navigateToSurvey = false
     @State private var healthKitError = false
-    
+    @State var navigateToCompletionScreen = false // State for completion screen
+
     var body: some View {
         NavigationStack {
             VStack {
                 Text("Connect to Apple Health")
                     .font(.custom("Poppins-Bold", size: 30))
                     .padding(.top, 80)
-                
+
                 Text("To personalize your experience, connect to Apple Health to automatically retrieve your VO2 max and resting heart rate.")
                     .font(.custom("Poppins", size: 20))
                     .padding(.top, 20)
-                
+
                 Spacer()
-                
+
                 Button(action: setupAppleHealth) {
                     Text("Set Up Apple Health")
                         .fontWeight(.medium)
@@ -124,15 +125,27 @@ struct OnboardingHealthSetupView: View {
                         .cornerRadius(10)
                 }
                 .padding()
-                
+
                 if healthKitError {
                     Text("Unable to retrieve data from Apple Health. Please complete the survey.")
                         .font(.custom("Poppins", size: 16))
                         .foregroundColor(.red)
                         .padding(.top, 10)
                 }
-                
-                NavigationLink(destination: OnboardingSurveyView(), isActive: $navigateToSurvey) {
+
+                // NavigationLink to OnboardingCompleteView
+                NavigationLink(
+                    destination: OnboardingCompleteView(),
+                    isActive: $navigateToCompletionScreen // Bind to state
+                ) {
+                    EmptyView()
+                }
+
+                // NavigationLink to Survey
+                NavigationLink(
+                    destination: OnboardingSurveyView(),
+                    isActive: $navigateToSurvey
+                ) {
                     EmptyView()
                 }
             }
@@ -142,23 +155,25 @@ struct OnboardingHealthSetupView: View {
     }
 
     private func setupAppleHealth() {
-        @State var navigateToCompletionScreen = false
         guard let user = Auth.auth().currentUser?.uid else {
-                print("No user is logged in.")
-                return
-            }
+            print("No user is logged in.")
+            return
+        }
         HealthKitManager.shared.requestAuthorization { success, error in
             if success {
                 HealthKitManager.shared.fetchHealthData { vo2Max, restingHeartRate in
                     if let vo2Max = vo2Max, let restingHeartRate = restingHeartRate {
                         sendHealthDataToBackend(
-                            userId: user, // Replace with the actual user ID
+                            userId: user,
                             appleHealth: true,
                             vo2Max: vo2Max,
                             restingHeartRate: restingHeartRate
-                        ){ success in
+                        ) { backendSuccess in
                             DispatchQueue.main.async {
-                                navigateToCompletionScreen = success
+                                if backendSuccess {
+                                    navigateToCompletionScreen = true // Trigger navigation
+                                    print("Navigate to completion screen: \(navigateToCompletionScreen)")
+                                }
                             }
                         }
                     } else {
@@ -177,6 +192,7 @@ struct OnboardingHealthSetupView: View {
         }
     }
 }
+
 private func sendHealthDataToBackend(
     userId: String,
     appleHealth: Bool,
@@ -185,7 +201,7 @@ private func sendHealthDataToBackend(
     quizAnswers: [[String]]? = nil,
     completion: @escaping (Bool) -> Void // Use completion handler
 ) {
-    guard let url = URL(string: "https://52.200.16.208/initialize_elo") else {
+    guard let url = URL(string: "https://52.200.16.208/initialize_elo/") else {
         print("Invalid URL")
         return
     }
@@ -202,6 +218,8 @@ private func sendHealthDataToBackend(
     if appleHealth {
         payload["VO2max"] = vo2Max
         payload["restingHeartRate"] = restingHeartRate
+        print("VO2max: \(String(describing: vo2Max))")
+        print("Resting Heart Rate: \(String(describing: restingHeartRate))")
     } else {
         payload["quizAnswers"] = quizAnswers
     }
@@ -220,10 +238,25 @@ private func sendHealthDataToBackend(
             return
         }
         
-        guard let httpResponse = response as? HTTPURLResponse, httpResponse.statusCode == 200 else {
-            print("Invalid response from backend")
-            return
+        if let httpResponse = response as? HTTPURLResponse {
+            if httpResponse.statusCode != 200 {
+                print("Invalid response from backend. Status Code: \(httpResponse.statusCode)")
+                if let data = data, let responseBody = String(data: data, encoding: .utf8) {
+                    print("Response body: \(responseBody)")
+                } else {
+                    print("No response body available.")
+                }
+                return
+            } else {
+                print("Successful response from backend. Status Code: \(httpResponse.statusCode)")
+                if let data = data, let responseBody = String(data: data, encoding: .utf8) {
+                    print("Response body: \(responseBody)")
+                }
+            }
+        } else {
+            print("Failed to cast response as HTTPURLResponse.")
         }
+        
         completion(true) // Notify success
         print("Successfully sent data to backend")
     }
