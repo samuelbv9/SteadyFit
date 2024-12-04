@@ -33,6 +33,7 @@ urlpatterns = [
     path('create_user/', views.create_user, name="create_user"),
     path('get_activity_type/', views.get_activity_type, name="get_activity_type"),
     path('personal_bet_details/', views.personal_bet_details, name="personal_bet_details"),
+    path('initialize_elo/', views.initialize_elo, name="initialize_elo"),
     # path('update_date/', views.update_date, name="update_date"),
 
 ]

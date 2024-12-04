@@ -488,7 +488,7 @@ extension HKWorkoutActivityType {
         case .walking: return "Walking"
         case .cycling: return "Cycling"
         case .swimming: return "Swimming"
-        case .traditionalStrengthTraining: return "Weightlifting"
+        case .traditionalStrengthTraining: return "Strength Training"
         default: return "Other Activity"
         }
     }
