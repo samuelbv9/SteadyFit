@@ -67,13 +67,13 @@ struct RegisterView: View {
                         
                         // Conditional navigation based on registration success
                         NavigationLink(
-                            destination: OnboardingSurveyView(), // Navigate to this view after success
+                            destination: OnboardingHealthSetupView(), // Navigate to this view after success
                             isActive: $viewModel.isRegistrationSuccessful
                         ) {
                             EmptyView() // This link is hidden, it only triggers when registration is successful
                         }
                         HStack {
-                            Text("Have an exisiting account? ")
+                            Text("Have an existing account? ")
                                 .font(.custom("Poppins-Light", size: 12))
                             NavigationLink("Login", destination: LoginView())
                                 .font(.custom("Poppins-Bold", size: 12))
@@ -91,7 +91,7 @@ struct RegisterView: View {
     }
 }
 
-
-#Preview {
-    RegisterView()
-}
+//
+//#Preview {
+//    RegisterView()
+//}
