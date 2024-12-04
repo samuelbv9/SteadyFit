@@ -29,6 +29,7 @@ class FitnessSurveyData: ObservableObject {
         ]
     }
 }
+var elo: Int = 0
 
 // MARK: - HealthKitManager
 class HealthKitManager {
@@ -170,7 +171,8 @@ struct OnboardingHealthSetupView: View {
                             restingHeartRate: restingHeartRate
                         ) { backendSuccess in
                             DispatchQueue.main.async {
-                                if backendSuccess {
+                                if backendSuccess != 0 {
+                                    elo = backendSuccess
                                     navigateToCompletionScreen = true // Trigger navigation
                                     print("Navigate to completion screen: \(navigateToCompletionScreen)")
                                 }
@@ -192,14 +194,16 @@ struct OnboardingHealthSetupView: View {
         }
     }
 }
-
+struct Response: Codable {
+    let ELO: Int
+}
 private func sendHealthDataToBackend(
     userId: String,
     appleHealth: Bool,
     vo2Max: Double? = nil,
     restingHeartRate: Double? = nil,
     quizAnswers: [[String]]? = nil,
-    completion: @escaping (Bool) -> Void // Use completion handler
+    completion: @escaping (Int) -> Void // Use completion handler
 ) {
     guard let url = URL(string: "https://52.200.16.208/initialize_elo/") else {
         print("Invalid URL")
@@ -248,16 +252,30 @@ private func sendHealthDataToBackend(
                 }
                 return
             } else {
-                print("Successful response from backend. Status Code: \(httpResponse.statusCode)")
-                if let data = data, let responseBody = String(data: data, encoding: .utf8) {
-                    print("Response body: \(responseBody)")
-                }
+//                print("Successful response from backend. Status Code: \(httpResponse.statusCode)")
+//                if let data = data, let responseBody = String(data: data, encoding: .utf8) {
+//                    print("Response body: \(responseBody)")
+//                }
+                if let data = data {
+                                   do {
+                                       // Try to decode the response
+                                       let responseObject = try JSONDecoder().decode(Response.self, from: data)
+                                       let completion_elo = responseObject.ELO // Store the status
+                                       elo = completion_elo
+                                       print("Response Status: \(elo)")
+                                       
+                                       completion(completion_elo) // Notify success with status
+                                   } catch {
+                                       print("Failed to decode response: \(error)")
+                                       completion(0) // Notify failure
+                                   }
+                               }
             }
         } else {
             print("Failed to cast response as HTTPURLResponse.")
         }
         
-        completion(true) // Notify success
+//        completion(true) // Notify success
         print("Successfully sent data to backend")
     }
     task.resume()
@@ -320,7 +338,11 @@ struct OnboardingSurveyView: View {
                     quizAnswers: quizAnswers
                 ){ success in
                     DispatchQueue.main.async {
-                        navigateToCompletionScreen = success
+                        if success != 0 {
+                            elo = success
+                            navigateToCompletionScreen = true // Trigger navigation
+                            print("Navigate to completion screen: \(navigateToCompletionScreen)")
+                        }
                     }
                 }
             }) {
@@ -355,6 +377,11 @@ struct OnboardingCompleteView: View {
                         .bold()
                         .font(.title)
                         .tracking(-1)
+                    Text("Your ELO score is \(elo)")
+                        .bold()
+                        .font(.title)
+                        .tracking(-1)
+                    
                     Text("Redirecting to your dashboard now...")
                         .font(.subheadline)
                         .tracking(-1)
