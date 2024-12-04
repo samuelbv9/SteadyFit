@@ -1095,3 +1095,71 @@ def weekly_update():
     connection.commit()
 
     return ({"result": result})
+#FIXME: Addaptive backend addition needs review
+@csrf_exempt
+def initialize_elo(request):
+    """
+    Takes in users a boolean to determine if the reuest came from the applehealth process or quiz
+    if apple health takes in the VO2 max and resting heart rate to intilize the elo score
+    if quiz takes in the quiz score to initialize the elo score
+
+    It stores this elo score in the UserEloRatings table to intialize the default elo score for the user.
+
+    Request must contain: user_id, applehealth, VO2max, restingHeartRate, quizanswers
+    "applehealth" is a boolean that is true if the request comes from the apple health process
+    
+    Response format:
+    {
+        "ELO": (float) 
+    }
+    """
+    if request.method != 'POST':
+        return HttpResponse(status=404)
+    
+    try:
+        # Parse the JSON data
+        json_data = json.loads(request.body)
+        user_id = json_data.get('user_id')
+        applehealth = json_data.get('applehealth')
+        VO2max = json_data.get('VO2max')
+        restingHeartRate = json_data.get('restingHeartRate')
+        quizAnswers = json_data.get('quizAnswers')
+
+        # Validate required fields
+        if not user_id:
+            return JsonResponse({"error": "user_id is required."}, status=400)
+        if applehealth is None:
+            return JsonResponse({"error": "'applehealth' is required and cannot be None."}, status=400)
+        
+        if applehealth:
+            if VO2max is None or restingHeartRate is None:
+                return JsonResponse({"error": "VO2max and restingHeartRate are required for Apple Health."}, status=400)
+
+            elo_score = InitEloAppleHealth(VO2max, restingHeartRate)
+        
+        else:
+            if quizAnswers is None or not isinstance(quizAnswers, list):
+                return JsonResponse({"error": "quizAnswers is required for quiz-based initialization."}, status=400)
+            
+            # Calculate quiz-based ELO using evaluate_quiz
+            elo_score = evaluate_quiz(quizAnswers)
+
+        # Store the calculated ELO in the database
+        with connection.cursor() as cursor:
+            cursor.execute("""
+                INSERT INTO UserEloRatings (userId, walkingElo, runningElo, swimmingElo, cyclingElo, strengthTrainingElo)
+                VALUES (%s, %s, %s, %s, %s, %s)
+                ON DUPLICATE KEY UPDATE
+                walkingElo = VALUES(walkingElo),
+                runningElo = VALUES(runningElo),
+                swimmingElo = VALUES(swimmingElo),
+                cyclingElo = VALUES(cyclingElo),
+                strengthTrainingElo = VALUES(strengthTrainingElo)
+            """, [user_id, elo_score, elo_score, elo_score, elo_score, elo_score])
+
+        return JsonResponse({"ELO": round(elo_score, 2)}, status=200)
+    
+    except json.JSONDecodeError:
+        return JsonResponse({"error": "Invalid JSON format."}, status=400)
+    except Exception as e:
+        return JsonResponse({"error": str(e)}, status=500)
