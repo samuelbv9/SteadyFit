@@ -24,6 +24,9 @@ struct HomeView: View {
                     .font(.custom("Poppins-Bold", size: 30))
                     .padding(.bottom, 20)
                 ScrollView {
+                    if gamesStore.activeGames.count == 0 {
+                        Text("You are not in any games. Create or join a game to get started!")
+                    }
                     ForEach(gamesStore.activeGames, id: \.gameCode) { game in
                         VStack(alignment: .leading, spacing: 5) {
                             if game.exerciseType == "Strength Training" {
@@ -45,13 +48,12 @@ struct HomeView: View {
                      await GamesStore.shared.getActiveGames(userId: Auth.auth().currentUser?.uid ?? "0")
                 }
             }
-            .navigationBarBackButtonHidden(true)
         }
         .refreshable {
             await GamesStore.shared.getActiveGames(userId: Auth.auth().currentUser?.uid ?? "0")
         }
+        .navigationBarBackButtonHidden(true)
     }
-    
 }
 
 #Preview {
