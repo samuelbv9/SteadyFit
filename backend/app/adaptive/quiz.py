@@ -1,6 +1,9 @@
 import configparser
 import os
 
+class CaseSensitiveConfigParser(configparser.ConfigParser):
+    def optionxform(self, optionstr: str) -> str:
+        return optionstr  # Do not change the case of options
 
 def create_default_config():
     """
@@ -69,7 +72,7 @@ def read_quiz_config() -> dict:
     Reads the quiz.ini file and returns a dictionary with configuration values.
     If the file doesn't exist, a default one is created.
     """
-    config = configparser.ConfigParser()
+    config = CaseSensitiveConfigParser()
 
     # if not os.path.exists('quiz.ini'):
     #     print("Quiz configuration file not found. Creating a default quiz.ini...")
