@@ -1108,13 +1108,14 @@ def initialize_elo(request):
             cursor.execute("""
                 INSERT INTO UserEloRatings (userId, walkingElo, runningElo, swimmingElo, cyclingElo, strengthTrainingElo)
                 VALUES (%s, %s, %s, %s, %s, %s)
-                ON DUPLICATE KEY UPDATE
-                walkingElo = VALUES(walkingElo),
-                runningElo = VALUES(runningElo),
-                swimmingElo = VALUES(swimmingElo),
-                cyclingElo = VALUES(cyclingElo),
-                strengthTrainingElo = VALUES(strengthTrainingElo)
+                ON CONFLICT (userId) DO UPDATE
+                SET walkingElo = EXCLUDED.walkingElo,
+                    runningElo = EXCLUDED.runningElo,
+                    swimmingElo = EXCLUDED.swimmingElo,
+                    cyclingElo = EXCLUDED.cyclingElo,
+                    strengthTrainingElo = EXCLUDED.strengthTrainingElo
             """, [user_id, elo_score, elo_score, elo_score, elo_score, elo_score])
+
 
         return JsonResponse({"ELO": round(elo_score, 2)}, status=200)
     
