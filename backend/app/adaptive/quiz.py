@@ -71,9 +71,10 @@ def read_quiz_config() -> dict:
     """
     config = configparser.ConfigParser()
 
-    if not os.path.exists('quiz.ini'):
-        print("Quiz configuration file not found. Creating a default quiz.ini...")
-        create_default_config()
+    # if not os.path.exists('quiz.ini'):
+    #     print("Quiz configuration file not found. Creating a default quiz.ini...")
+    #     create_default_config()
+    create_default_config()
 
     config.read('quiz.ini')
 
