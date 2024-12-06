@@ -844,7 +844,7 @@ from django.conf import settings
 
 
 # def update_date(request):
-#     test_date = date(2024, 12, 1)
+#     test_date = date(2024, 12, 14)
 #     # test_date += timedelta(days=1)
 #     r = weekly_update(test_date)
 #     return JsonResponse(r)
@@ -852,7 +852,7 @@ from django.conf import settings
 
 def weekly_update():
     challenges = {
-    "Running": {
+    "running": {
         "file": "running_challenge.csv",
         "name": "Running Challenge",
         "default_vars": {
@@ -861,7 +861,7 @@ def weekly_update():
         "get_challenge_tuple": lambda d, f: (d,), # (distance, frequency) -> challenge_params
         "get_generic_tuple": lambda d: (d, None)  # challenge_params - > (distance, frequency)
     },
-    "Walking": {
+    "walking": {
         "file": "walking_challenge.csv",
         "name": "Walking Challenge",
         "default_vars": {
@@ -870,7 +870,7 @@ def weekly_update():
         "get_challenge_tuple": lambda d, f: (d,),
         "get_generic_tuple": lambda d: (d, None)
     },
-    "Swimming": {
+    "swimming": {
         "file": "swimming_challenge.csv",
         "name": "Swimming Challenge",
         "default_vars": {
@@ -879,7 +879,7 @@ def weekly_update():
         "get_challenge_tuple": lambda d, f: (d,),
         "get_generic_tuple": lambda d: (d, None)
     },
-    "Strength Training": {
+    "strengthTraining": {
         "file": "strength_challenge.csv",
         "name": "Strength Training Challenge",
         "default_vars": {
@@ -888,7 +888,7 @@ def weekly_update():
         "get_challenge_tuple": lambda d, f: (f,),
         "get_generic_tuple": lambda f: (None, f)
     },
-    "Cycling": {
+    "cycling": {
         "file": "cycling_challenge.csv",
         "name": "Cycling Challenge",
         "default_vars": {
@@ -900,7 +900,7 @@ def weekly_update():
 }
     # get the current date
     current_date = datetime.now().date()
-    # current_date = date(2024, 11, 10)
+    # current_date = date(2024, 12, 20)
     # current_date = date
     result = []
 
@@ -917,7 +917,12 @@ def weekly_update():
     for game in games:
         # start_date is of type datetime.date
         game_code, start_date, last_updated, bet_amount, duration, adaptive_goals, exercise_type = game
-        # check if a week has passed
+        exercise_type = exercise_type.lower()
+        if exercise_type not in ["running", "cycling", "walking", "swimming"]:
+            exercise_type = "strengthTraining"
+
+
+        #check if a week has passed
         weeks_elapsed = (current_date - start_date).days // 7
 
         # if a week has passed, do updates
