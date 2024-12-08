@@ -2,10 +2,10 @@
 
 | Video  |  Wiki |  Agile |
 |:-----:|:-----:|:--------:|
-|[<img src="LINKHERE">][video]|[<img src="LINKHERE">][wiki]|[<img src="https://eecs441.eecs.umich.edu/img/admin/trello.png">][agile]|
+|[<img src="https://eecs441.eecs.umich.edu/img/admin/video.png">][video]|[<img src="https://eecs441.eecs.umich.edu/img/admin/wiki.png">][wiki]|[<img src="https://eecs441.eecs.umich.edu/img/admin/trello.png">][agile]|
 
-![Elevator Pitch](LINKHERE) <!-- MUST be placed in publicly accessible github -->
-![Team](LINKHERE)
+![Elevator Pitch](https://raw.githubusercontent.com/samuelbv9/SteadyFit/main/.github/images/steadyfit_pitch.png) 
+![Team](/assets/team.png)
 
 [video]: TODO
 [wiki]: https://github.com/samuelbv9/SteadyFit/wiki
